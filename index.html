@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Allenamento">
+<title>Allenamento Federico</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
+.container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
+.subtitle { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+.status { font-size: 12px; color: #888; min-height: 18px; margin-bottom: 1rem; }
+.week-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+.week-btn { padding: 6px 12px; font-size: 13px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.week-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; font-weight: 500; }
+.card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.card-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+.card-title { font-size: 15px; font-weight: 600; }
+.date-input { height: 34px; font-size: 13px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; padding: 0 8px; }
+.section-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.warmup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.25rem; }
+.warmup-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.warmup-item input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; accent-color: #1a1a1a; }
+.ex-row { border-bottom: 1px solid #f0f0f0; padding: 10px 0; }
+.ex-row:last-child { border-bottom: none; }
+.ex-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.ex-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
+.posture-toggle { font-size: 12px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 8px; -webkit-tap-highlight-color: transparent; }
+.posture-content { display: none; font-size: 12px; color: #666; line-height: 1.6; margin-bottom: 8px; }
+.posture-content.open { display: block; }
+.posture-content ul { padding-left: 1.2rem; }
+.posture-content li { margin-bottom: 2px; }
+.series-inputs { display: flex; gap: 8px; flex-wrap: wrap; }
+.rep-input { width: 60px; height: 42px; text-align: center; font-size: 17px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; -webkit-appearance: none; }
+.rep-input:focus { outline: none; border-color: #1a1a1a; }
+.meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
+.meta-row label { font-size: 13px; color: #888; }
+.time-input { width: 80px; height: 38px; font-size: 14px; text-align: center; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; padding: 0 8px; }
+.notes-area { width: 100%; min-height: 70px; font-size: 14px; font-family: inherit; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: #f8f8f6; color: #1a1a1a; resize: vertical; }
+.notes-area:focus { outline: none; border-color: #1a1a1a; }
+.vacation-box { text-align: center; padding: 1.5rem; color: #888; font-size: 14px; }
+@media (prefers-color-scheme: dark) {
+  body { background: #111; color: #f0f0f0; }
+  .card { background: #1c1c1e; border-color: #2c2c2e; }
+  .week-btn { background: #1c1c1e; border-color: #3a3a3c; color: #f0f0f0; }
+  .week-btn.active { background: #f0f0f0; color: #111; border-color: #f0f0f0; }
+  .rep-input, .time-input, .date-input, .notes-area { background: #2c2c2e; border-color: #3a3a3c; color: #f0f0f0; }
+  .ex-row { border-color: #2c2c2e; }
+  .warmup-item input[type=checkbox] { accent-color: #f0f0f0; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Allenamento</h1>
+  
+  <div class="status" id="statusMsg">Connessione...</div>
+  <div class="week-selector" id="weekSelector"></div>
+  <div id="mainContent"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://rmnvlhqfqjqcpqawodsb.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtbnZsaHFmcWpxY3BxYXdvZHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NTI1NDMsImV4cCI6MjA5ODIyODU0M30.ANBwMezQEnb7tYVMtN6os1yZv8wnNjEQLtKI48BreeM";
+
+const WEEKS = [
+  { id: 0, label: "29/6–5/7", sessions: 3 },
+  { id: 1, label: "6–12/7", sessions: 3 },
+  { id: 2, label: "13–19/7", sessions: 3 },
+  { id: 3, label: "20–25/7", sessions: 3 },
+  { id: 4, label: "2–3/8 🏖", sessions: 1, vacation: true },
+  { id: 5, label: "11–16/8", sessions: 3 },
+  { id: 6, label: "17–23/8", sessions: 3 },
+  { id: 7, label: "24–30/8", sessions: 3 },
+];
+
+const EXERCISES = [
+  { id: "legpress", name: "Leg press", startKg: 90, posture: ["Piedi larghezza spalle, punte leggermente in fuori", "Ginocchia seguono le punte — non collassare verso dentro", "Non bloccare il ginocchio in estensione — fermati a 5-10° prima", "Schiena incollata allo schienale per tutta la serie", "Scendi finché cosce parallele al pavimento"] },
+  { id: "chest", name: "Chest press inclinata", startKg: 10, kgLabel: "5+5", posture: ["Schiena incollata alla panca, non inarcare", "Gomiti a ~45° dal corpo — non perpendicolari (a croce)", "Spingi simmetrico, non sbilanciarti", "Movimento controllato anche in discesa"] },
+  { id: "lat", name: "Lat pulldown presa stretta", startKg: 40, posture: ["Petto leggermente in fuori", "Tira verso il petto, non verso la pancia", "Non dondolare il busto", "Senti le scapole scendere e stringersi alla fine"] },
+  { id: "shoulder", name: "Shoulder press", startKg: 25, posture: ["Schiena dritta, core attivo", "Non inarcare la lombare", "Non alzare le spalle verso le orecchie", "Scendi finché gomiti a 90°, non oltre"] },
+  { id: "row", name: "Cable row", startKg: 30, posture: ["Schiena dritta e ferma — non dondolare", "Tira verso l'ombelico, gomiti vicini al corpo", "Finisci schiacciando le scapole insieme", "Le gambe restano ferme"] },
+  { id: "legcurl", name: "Leg curl", startKg: 45, posture: ["Fianchi incollati alla macchina", "Non strappare — movimento fluido", "Fase di discesa lenta e controllata"] },
+];
+
+const WARMUP = ["Ballerinas 2×20", "Leg overs 2×7", "Salti al muro 3×5", "Presa isometrica 3×20 sec"];
+
+let DB = {};
+let currentWeek = 0;
+let saveTimer = null;
+
+function dbKey(wId, sIdx, type, id) { return `w${wId}_s${sIdx}_${type}_${id}`; }
+function dbGet(key) { return DB[key] || ""; }
+function dbSet(key, val) {
+  DB[key] = val;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveDB, 800);
+}
+
+async function apiFetch(method, body) {
+  const url = `${SUPABASE_URL}/rest/v1/allenamento`;
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": method === "POST" ? "resolution=merge-duplicates" : ""
+  };
+  const res = await fetch(method === "GET" ? url + "?select=key,value" : url, {
+    method, headers, body: body ? JSON.stringify(body) : undefined
+  });
+  if (method === "GET") return await res.json();
+  return res.ok;
+}
+
+async function loadDB() {
+  setStatus("Caricamento...");
+  try {
+    const rows = await apiFetch("GET");
+    DB = {};
+    for (const row of rows) DB[row.key] = row.value;
+    setStatus("✓ connesso");
+    setTimeout(() => setStatus(""), 2000);
+  } catch(e) {
+    setStatus("⚠ offline — dati non salvati");
+  }
+  renderWeekSelector();
+  renderContent();
+  schedulePing();
+}
+
+async function saveDB() {
+  const body = Object.entries(DB).map(([key, value]) => ({ key, value, updated_at: new Date().toISOString() }));
+  if (!body.length) return;
+  try {
+    await apiFetch("POST", body);
+    setStatus("✓ salvato");
+    setTimeout(() => setStatus(""), 1500);
+  } catch(e) {
+    setStatus("⚠ errore salvataggio");
+  }
+}
+
+function schedulePing() {
+  const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
+  const last = parseInt(localStorage.getItem("last_ping") || "0");
+  const now = Date.now();
+  if (now - last > FIVE_DAYS) {
+    apiFetch("GET").then(() => localStorage.setItem("last_ping", now));
+  }
+}
+
+function setStatus(msg) { const el = document.getElementById("statusMsg"); if (el) el.textContent = msg; }
+
+function getKgRep(exercise, weekIdx, sessionIdx) {
+  let total = 0;
+  for (let w = 0; w < weekIdx; w++) total += WEEKS[w].sessions;
+  total += sessionIdx;
+  let kg = exercise.startKg, rep = 6;
+  for (let s = 0; s < total; s++) { rep++; if (rep > 8) { rep = 6; kg += (kg >= 40 ? 5 : 2.5); } }
+  return { kg, rep };
+}
+
+function renderWeekSelector() {
+  document.getElementById("weekSelector").innerHTML = WEEKS.map(w =>
+    `<button class="week-btn ${w.id === currentWeek ? 'active' : ''}" onclick="selectWeek(${w.id})">${w.label}</button>`
+  ).join("");
+}
+
+function selectWeek(id) { currentWeek = id; renderWeekSelector(); renderContent(); }
+
+function renderContent() {
+  const week = WEEKS[currentWeek];
+  let html = "";
+  for (let s = 0; s < week.sessions; s++) html += renderSession(week, s);
+  document.getElementById("mainContent").innerHTML = html;
+}
+
+function renderSession(week, sIdx) {
+  const label = week.vacation ? "Sessione unica (se riesci 💪)" : `Sessione ${sIdx + 1}`;
+
+  const warmupHtml = WARMUP.map((w, i) => {
+    const key = dbKey(week.id, sIdx, "wu", i);
+    const checked = dbGet(key) === "1" ? "checked" : "";
+    return `<div class="warmup-item"><input type="checkbox" id="wu_${week.id}_${sIdx}_${i}" ${checked} onchange="toggleCheck(${week.id},${sIdx},${i},this.checked)"><label for="wu_${week.id}_${sIdx}_${i}">${w}</label></div>`;
+  }).join("");
+
+  const exHtml = EXERCISES.map(ex => {
+    const { kg, rep } = getKgRep(ex, week.id, sIdx);
+    const kgLabel = ex.kgLabel || `${kg}`;
+    const pid = `p_${week.id}_${sIdx}_${ex.id}`;
+    const postureItems = ex.posture.map(p => `<li>${p}</li>`).join("");
+    const seriesInputs = [0,1,2].map(s => {
+      const key = dbKey(week.id, sIdx, ex.id, s);
+      return `<input class="rep-input" type="number" min="0" max="30" inputmode="numeric" placeholder="${rep}" value="${dbGet(key)}" oninput="setRep(${week.id},${sIdx},'${ex.id}',${s},this.value)">`;
+    }).join("");
+
+    return `<div class="ex-row">
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-meta">${kgLabel} kg · target ×${rep}</div>
+      <button class="posture-toggle" onclick="togglePosture('${pid}')"><span id="arr_${pid}">▸</span> postura</button>
+      <div class="posture-content" id="${pid}"><ul>${postureItems}</ul></div>
+      <div class="series-inputs">${seriesInputs}</div>
+    </div>`;
+  }).join("");
+
+  const timeKey = dbKey(week.id, sIdx, "meta", "time");
+  const notesKey = dbKey(week.id, sIdx, "meta", "notes");
+  const dateKey = dbKey(week.id, sIdx, "meta", "date");
+
+  return `<div class="card">
+    <div class="card-header">
+      <div class="card-title">${label}</div>
+      <input class="date-input" type="date" value="${dbGet(dateKey)}" oninput="dbSet('${dateKey}',this.value)">
+    </div>
+    <p class="section-label">Riscaldamento</p>
+    <div class="warmup-grid">${warmupHtml}</div>
+    <br>
+    <p class="section-label">Esercizi — 3 serie · rec 90 sec</p>
+    ${exHtml}
+    <br>
+    <div class="meta-row">
+      <label>Durata:</label>
+      <input class="time-input" type="text" placeholder="1h05" value="${dbGet(timeKey)}" oninput="dbSet('${timeKey}',this.value)">
+    </div>
+    <p class="section-label">Note / riflessioni</p>
+    <textarea class="notes-area" placeholder="Pesi troppo facili/difficili, come ti sei sentito..." oninput="dbSet('${notesKey}',this.value)">${dbGet(notesKey)}</textarea>
+  </div>`;
+}
+
+function togglePosture(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle("open");
+  const arr = document.getElementById("arr_" + id);
+  if (arr) arr.textContent = el.classList.contains("open") ? "▾" : "▸";
+}
+function toggleCheck(wId, sIdx, i, checked) { dbSet(dbKey(wId, sIdx, "wu", i), checked ? "1" : "0"); }
+function setRep(wId, sIdx, exId, s, val) { dbSet(dbKey(wId, sIdx, exId, s), val); }
+
+loadDB();
+</script>
+</body>
+</html>
