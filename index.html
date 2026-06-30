@@ -12,8 +12,10 @@
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
 .container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
-.subtitle { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
 .status { font-size: 12px; color: #888; min-height: 18px; margin-bottom: 1rem; }
+.nav-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+.nav-tab { padding: 7px 16px; font-size: 14px; border: 1px solid #ddd; border-radius: 20px; background: #fff; color: #888; cursor: pointer; }
+.nav-tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .week-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
 .week-btn { padding: 6px 12px; font-size: 13px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .week-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; font-weight: 500; }
@@ -34,39 +36,66 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
 .posture-content.open { display: block; }
 .posture-content ul { padding-left: 1.2rem; }
 .posture-content li { margin-bottom: 2px; }
-.series-inputs { display: flex; gap: 8px; flex-wrap: wrap; }
-.rep-input { width: 60px; height: 42px; text-align: center; font-size: 17px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; -webkit-appearance: none; }
+.series-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rep-input { width: 58px; height: 42px; text-align: center; font-size: 17px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; -webkit-appearance: none; }
 .rep-input:focus { outline: none; border-color: #1a1a1a; }
-
-.timer-btn { height: 42px; padding: 0 14px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; cursor: pointer; font-variant-numeric: tabular-nums; min-width: 70px; -webkit-tap-highlight-color: transparent; }
+.timer-btn { height: 42px; padding: 0 14px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; cursor: pointer; font-variant-numeric: tabular-nums; min-width: 68px; -webkit-tap-highlight-color: transparent; }
 .timer-btn.running { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .timer-btn.done { background: #4caf50; color: #fff; border-color: #4caf50; }
-@media (prefers-color-scheme: dark) { .timer-btn { background: #2c2c2e; border-color: #3a3a3c; color: #f0f0f0; } .timer-btn.running { background: #f0f0f0; color: #111; } }
-
 .meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
 .meta-row label { font-size: 13px; color: #888; }
 .time-input { width: 80px; height: 38px; font-size: 14px; text-align: center; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; padding: 0 8px; }
 .notes-area { width: 100%; min-height: 70px; font-size: 14px; font-family: inherit; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: #f8f8f6; color: #1a1a1a; resize: vertical; }
 .notes-area:focus { outline: none; border-color: #1a1a1a; }
-.vacation-box { text-align: center; padding: 1.5rem; color: #888; font-size: 14px; }
+.complete-btn { width: 100%; margin-top: 1rem; padding: 14px; font-size: 16px; font-weight: 600; border: none; border-radius: 10px; background: #1a1a1a; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.complete-btn:active { opacity: 0.8; }
+
+/* CONFETTI */
+#confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none; }
+
+/* PROGRESS PAGE */
+.progress-container { padding: 1rem 0; }
+.progress-bar-wrap { background: #e8e8e8; border-radius: 20px; height: 18px; margin-bottom: 0.5rem; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, #4caf50, #8bc34a); transition: width 0.8s ease; }
+.progress-label { font-size: 13px; color: #888; margin-bottom: 2rem; }
+.stickman-wrap { display: flex; justify-content: center; margin-bottom: 2rem; }
+.sessions-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 1rem; }
+.session-dot { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #ccc; }
+.session-dot.done { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
+
 @media (prefers-color-scheme: dark) {
   body { background: #111; color: #f0f0f0; }
   .card { background: #1c1c1e; border-color: #2c2c2e; }
   .week-btn { background: #1c1c1e; border-color: #3a3a3c; color: #f0f0f0; }
   .week-btn.active { background: #f0f0f0; color: #111; border-color: #f0f0f0; }
-  .rep-input, .time-input, .date-input, .notes-area { background: #2c2c2e; border-color: #3a3a3c; color: #f0f0f0; }
+  .nav-tab { background: #1c1c1e; border-color: #3a3a3c; }
+  .nav-tab.active { background: #f0f0f0; color: #111; }
+  .rep-input, .time-input, .date-input, .notes-area, .timer-btn { background: #2c2c2e; border-color: #3a3a3c; color: #f0f0f0; }
   .ex-row { border-color: #2c2c2e; }
   .warmup-item input[type=checkbox] { accent-color: #f0f0f0; }
+  .complete-btn { background: #f0f0f0; color: #111; }
+  .progress-bar-wrap { background: #2c2c2e; }
+  .session-dot { border-color: #3a3a3c; color: #555; }
+  .session-dot.done { background: #f0f0f0; border-color: #f0f0f0; color: #111; }
 }
 </style>
 </head>
 <body>
+<canvas id="confetti-canvas"></canvas>
 <div class="container">
-  <h1>Allenamento</h1>
-  
+  <h1>Allenamento 💪</h1>
   <div class="status" id="statusMsg">Connessione...</div>
-  <div class="week-selector" id="weekSelector"></div>
-  <div id="mainContent"></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('training')">Allenamento</button>
+    <button class="nav-tab" onclick="showPage('progress')">Progressi</button>
+  </div>
+  <div id="page-training">
+    <div class="week-selector" id="weekSelector"></div>
+    <div id="mainContent"></div>
+  </div>
+  <div id="page-progress" style="display:none;">
+    <div id="progressContent"></div>
+  </div>
 </div>
 
 <script>
@@ -84,27 +113,80 @@ const WEEKS = [
   { id: 7, label: "24–30/8", sessions: 3 },
 ];
 
+const BASE_KG = { legpress: 100, chest: 10, lat: 45, shoulder: 30, row: 30, legcurl: 45 };
+const KG_INCREMENT = { legpress: 5, chest: 2.5, lat: 5, shoulder: 5, row: 5, legcurl: 5 };
+const KG_LABEL = { chest: "5+5" };
+
 const EXERCISES = [
-  { id: "legpress", name: "Leg press", startKg: 100, posture: ["Piedi larghezza spalle, punte leggermente in fuori", "Ginocchia seguono le punte — non collassare verso dentro", "Non bloccare il ginocchio in estensione — fermati a 5-10° prima", "Schiena incollata allo schienale per tutta la serie", "Scendi finché cosce parallele al pavimento"] },
-  { id: "chest", name: "Chest press inclinata", startKg: 10, kgLabel: "5+5", posture: ["Schiena incollata alla panca, non inarcare", "Gomiti a ~45° dal corpo — non perpendicolari (a croce)", "Spingi simmetrico, non sbilanciarti", "Movimento controllato anche in discesa"] },
-  { id: "lat", name: "Lat pulldown presa stretta", startKg: 45, posture: ["Petto leggermente in fuori", "Tira verso il petto, non verso la pancia", "Non dondolare il busto", "Senti le scapole scendere e stringersi alla fine"] },
-  { id: "shoulder", name: "Shoulder press", startKg: 30, posture: ["Schiena dritta, core attivo", "Non inarcare la lombare", "Non alzare le spalle verso le orecchie", "Scendi finché gomiti a 90°, non oltre"] },
-  { id: "row", name: "Cable row", startKg: 30, posture: ["Schiena dritta e ferma — non dondolare", "Tira verso l'ombelico, gomiti vicini al corpo", "Finisci schiacciando le scapole insieme", "Le gambe restano ferme"] },
-  { id: "legcurl", name: "Leg curl", startKg: 45, posture: ["Fianchi incollati alla macchina", "Non strappare — movimento fluido", "Fase di discesa lenta e controllata"] },
+  { id: "legpress", name: "Leg press", posture: ["Piedi larghezza spalle, punte leggermente in fuori", "Ginocchia seguono le punte — non collassare verso dentro", "Non bloccare il ginocchio in estensione — fermati a 5-10° prima", "Schiena incollata allo schienale per tutta la serie", "Scendi finché cosce parallele al pavimento"] },
+  { id: "chest", name: "Chest press inclinata", posture: ["Schiena incollata alla panca, non inarcare", "Gomiti a ~45° dal corpo — non perpendicolari (a croce)", "Spingi simmetrico, non sbilanciarti", "Movimento controllato anche in discesa"] },
+  { id: "lat", name: "Lat pulldown presa stretta", posture: ["Petto leggermente in fuori", "Tira verso il petto, non verso la pancia", "Non dondolare il busto", "Senti le scapole scendere e stringersi alla fine"] },
+  { id: "shoulder", name: "Shoulder press", posture: ["Schiena dritta, core attivo", "Non inarcare la lombare", "Non alzare le spalle verso le orecchie", "Scendi finché gomiti a 90°, non oltre"] },
+  { id: "row", name: "Cable row", posture: ["Schiena dritta e ferma — non dondolare", "Tira verso l'ombelico, gomiti vicini al corpo", "Finisci schiacciando le scapole insieme", "Le gambe restano ferme"] },
+  { id: "legcurl", name: "Leg curl", posture: ["Fianchi incollati alla macchina", "Non strappare — movimento fluido", "Fase di discesa lenta e controllata"] },
 ];
 
 const WARMUP = ["Ballerinas 2×20", "Leg overs 2×7", "Salti al muro 3×5", "Presa isometrica 3×20 sec"];
 
+// Sounds
+const SOUNDS = [
+  "https://www.myinstants.com/media/sounds/vine-boom.mp3",
+  "https://freesound.org/data/previews/341/341695_5858296-lq.mp3",
+  "https://freesound.org/data/previews/397/397354_4284968-lq.mp3",
+  "https://freesound.org/data/previews/456/456966_4921277-lq.mp3",
+  "https://freesound.org/data/previews/411/411089_5121236-lq.mp3",
+];
+
 let DB = {};
 let currentWeek = 0;
+let currentPage = 'training';
 let saveTimer = null;
 
 function dbKey(wId, sIdx, type, id) { return `w${wId}_s${sIdx}_${type}_${id}`; }
 function dbGet(key) { return DB[key] || ""; }
-function dbSet(key, val) {
-  DB[key] = val;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveDB, 800);
+function dbSet(key, val) { DB[key] = val; clearTimeout(saveTimer); saveTimer = setTimeout(saveDB, 800); }
+
+// Compute kg for a given exercise at a given session index (0-based globally)
+function computeKg(exId, globalSession) {
+  // Check if any previous session unlocked a weight increase
+  let kg = BASE_KG[exId];
+  for (let g = 0; g < globalSession; g++) {
+    const {wId, sIdx} = globalToLocal(g);
+    const reps = [0,1,2].map(s => parseInt(dbGet(dbKey(wId, sIdx, exId, s))) || 0);
+    if (reps[0] >= 8 && reps[1] >= 8 && reps[2] >= 8) {
+      kg += KG_INCREMENT[exId];
+    }
+  }
+  return kg;
+}
+
+function globalToLocal(g) {
+  let count = 0;
+  for (let w = 0; w < WEEKS.length; w++) {
+    for (let s = 0; s < WEEKS[w].sessions; s++) {
+      if (count === g) return { wId: w, sIdx: s };
+      count++;
+    }
+  }
+  return { wId: 0, sIdx: 0 };
+}
+
+function localToGlobal(wId, sIdx) {
+  let count = 0;
+  for (let w = 0; w < wId; w++) count += WEEKS[w].sessions;
+  return count + sIdx;
+}
+
+function getKgForSession(exId, wId, sIdx) {
+  return computeKg(exId, localToGlobal(wId, sIdx));
+}
+
+function formatKg(exId, kg) {
+  if (exId === 'chest') {
+    const half = kg / 2;
+    return `${half}+${half}`;
+  }
+  return `${kg}`;
 }
 
 async function apiFetch(method, body) {
@@ -130,9 +212,7 @@ async function loadDB() {
     for (const row of rows) DB[row.key] = row.value;
     setStatus("✓ connesso");
     setTimeout(() => setStatus(""), 2000);
-  } catch(e) {
-    setStatus("⚠ offline — dati non salvati");
-  }
+  } catch(e) { setStatus("⚠ offline"); }
   renderWeekSelector();
   renderContent();
   schedulePing();
@@ -145,9 +225,7 @@ async function saveDB() {
     await apiFetch("POST", body);
     setStatus("✓ salvato");
     setTimeout(() => setStatus(""), 1500);
-  } catch(e) {
-    setStatus("⚠ errore salvataggio");
-  }
+  } catch(e) { setStatus("⚠ errore salvataggio"); }
 }
 
 function schedulePing() {
@@ -160,14 +238,12 @@ function schedulePing() {
 }
 
 function setStatus(msg) { const el = document.getElementById("statusMsg"); if (el) el.textContent = msg; }
-
-function getKgRep(exercise, weekIdx, sessionIdx) {
-  let total = 0;
-  for (let w = 0; w < weekIdx; w++) total += WEEKS[w].sessions;
-  total += sessionIdx;
-  let kg = exercise.startKg, rep = 6;
-  for (let s = 0; s < total; s++) { rep++; if (rep > 8) { rep = 6; kg += (kg >= 40 ? 5 : 2.5); } }
-  return { kg, rep };
+function showPage(page) {
+  currentPage = page;
+  document.getElementById('page-training').style.display = page === 'training' ? '' : 'none';
+  document.getElementById('page-progress').style.display = page === 'progress' ? '' : 'none';
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&page==='training')||(i===1&&page==='progress')));
+  if (page === 'progress') renderProgress();
 }
 
 function renderWeekSelector() {
@@ -187,6 +263,7 @@ function renderContent() {
 
 function renderSession(week, sIdx) {
   const label = week.vacation ? "Sessione unica (se riesci 💪)" : `Sessione ${sIdx + 1}`;
+  const gIdx = localToGlobal(week.id, sIdx);
 
   const warmupHtml = WARMUP.map((w, i) => {
     const key = dbKey(week.id, sIdx, "wu", i);
@@ -195,23 +272,24 @@ function renderSession(week, sIdx) {
   }).join("");
 
   const exHtml = EXERCISES.map(ex => {
-    const { kg, rep } = getKgRep(ex, week.id, sIdx);
-    const kgLabel = ex.kgLabel || `${kg}`;
+    const kg = getKgForSession(ex.id, week.id, sIdx);
+    const kgLabel = formatKg(ex.id, kg);
     const pid = `p_${week.id}_${sIdx}_${ex.id}`;
+    const tid = `timer_${week.id}_${sIdx}_${ex.id}`;
     const postureItems = ex.posture.map(p => `<li>${p}</li>`).join("");
     const seriesInputs = [0,1,2].map(s => {
       const key = dbKey(week.id, sIdx, ex.id, s);
-      return `<input class="rep-input" type="number" min="0" max="30" inputmode="numeric" placeholder="${rep}" value="${dbGet(key)}" oninput="setRep(${week.id},${sIdx},'${ex.id}',${s},this.value)">`;
+      return `<input class="rep-input" type="number" min="0" max="30" inputmode="numeric" placeholder="—" value="${dbGet(key)}" oninput="setRep(${week.id},${sIdx},'${ex.id}',${s},this.value)">`;
     }).join("");
 
     return `<div class="ex-row">
       <div class="ex-name">${ex.name}</div>
-      <div class="ex-meta">${kgLabel} kg · target ×${rep}</div>
+      <div class="ex-meta">${kgLabel} kg · target ×8</div>
       <button class="posture-toggle" onclick="togglePosture('${pid}')"><span id="arr_${pid}">▸</span> postura</button>
       <div class="posture-content" id="${pid}"><ul>${postureItems}</ul></div>
-      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-        <div class="series-inputs">${seriesInputs}</div>
-        <button class="timer-btn" id="timer_${week.id}_${sIdx}_${ex.id}" onclick="startTimer('timer_' + ${week.id} + '_' + ${sIdx} + '_' + '${ex.id}')">1:30</button>
+      <div class="series-row">
+        ${seriesInputs}
+        <button class="timer-btn" id="${tid}" onclick="startTimer('${tid}')">1:30</button>
       </div>
     </div>`;
   }).join("");
@@ -219,6 +297,7 @@ function renderSession(week, sIdx) {
   const timeKey = dbKey(week.id, sIdx, "meta", "time");
   const notesKey = dbKey(week.id, sIdx, "meta", "notes");
   const dateKey = dbKey(week.id, sIdx, "meta", "date");
+  const doneKey = dbKey(week.id, sIdx, "meta", "done");
 
   return `<div class="card">
     <div class="card-header">
@@ -236,70 +315,221 @@ function renderSession(week, sIdx) {
       <input class="time-input" type="text" placeholder="1h05" value="${dbGet(timeKey)}" oninput="dbSet('${timeKey}',this.value)">
     </div>
     <p class="section-label">Note / riflessioni</p>
-    <textarea class="notes-area" placeholder="Pesi troppo facili/difficili, come ti sei sentito..." oninput="dbSet('${notesKey}',this.value)">${dbGet(notesKey)}</textarea>
+    <textarea class="notes-area" placeholder="Come è andata..." oninput="dbSet('${notesKey}',this.value)">${dbGet(notesKey)}</textarea>
+    ${dbGet(doneKey) !== '1' ? `<button class="complete-btn" onclick="completeSession(${week.id},${sIdx})">🎉 Sessione completata!</button>` : `<div style="text-align:center;margin-top:1rem;font-size:14px;color:#4caf50;">✓ Completata</div>`}
   </div>`;
 }
 
+// ---- TIMER ----
+let timerInterval = null;
+let timerEl = null;
+
+function startTimer(btnId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  if (timerEl === btn && timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null; timerEl = null;
+    btn.textContent = '1:30'; btn.className = 'timer-btn'; return;
+  }
+  if (timerInterval) { clearInterval(timerInterval); if (timerEl) { timerEl.textContent = '1:30'; timerEl.className = 'timer-btn'; } }
+  timerEl = btn;
+  let secs = 90;
+  btn.className = 'timer-btn running';
+  function tick() {
+    secs--;
+    if (secs <= 0) {
+      clearInterval(timerInterval); timerInterval = null; timerEl = null;
+      btn.textContent = '✓'; btn.className = 'timer-btn done';
+      if (navigator.vibrate) navigator.vibrate([200,100,200]);
+      setTimeout(() => { btn.textContent = '1:30'; btn.className = 'timer-btn'; }, 3000);
+      return;
+    }
+    btn.textContent = Math.floor(secs/60) + ':' + String(secs%60).padStart(2,'0');
+  }
+  tick(); timerInterval = setInterval(tick, 1000);
+}
+
+// ---- COMPLETE SESSION ----
+function completeSession(wId, sIdx) {
+  const doneKey = dbKey(wId, sIdx, "meta", "done");
+  dbSet(doneKey, '1');
+  triggerCelebration();
+  setTimeout(() => renderContent(), 500);
+}
+
+// ---- CONFETTI ----
+function triggerCelebration() {
+  playSound();
+  launchConfetti();
+}
+
+function playSound() {
+  const sounds = [
+    "https://freesound.org/data/previews/341/341695_5858296-lq.mp3",
+    "https://freesound.org/data/previews/320/320655_1661766-lq.mp3",
+    "https://freesound.org/data/previews/397/397354_4284968-lq.mp3",
+    "https://freesound.org/data/previews/456/456966_4921277-lq.mp3",
+    "https://freesound.org/data/previews/411/411089_5121236-lq.mp3",
+  ];
+  // pick based on total completed sessions for variety
+  const completed = Object.keys(DB).filter(k => k.includes('_meta_done')).length;
+  const url = sounds[completed % sounds.length];
+  try { new Audio(url).play(); } catch(e) {}
+}
+
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const completed = Object.keys(DB).filter(k => k.includes('_meta_done')).length;
+  const palettes = [
+    ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff'],
+    ['#f72585','#7209b7','#3a0ca3','#4cc9f0'],
+    ['#ff9f1c','#ffbf69','#cbf3f0','#2ec4b6'],
+    ['#e63946','#457b9d','#a8dadc','#f1faee'],
+    ['#606c38','#dda15e','#bc6c25','#fefae0'],
+  ];
+  const colors = palettes[completed % palettes.length];
+
+  const particles = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10,
+    r: Math.random() * 8 + 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    speed: Math.random() * 4 + 2,
+    spin: Math.random() * 0.2 - 0.1,
+    angle: Math.random() * Math.PI * 2,
+    drift: Math.random() * 2 - 1,
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.y += p.speed;
+      p.x += p.drift;
+      p.angle += p.spin;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 120) requestAnimationFrame(draw);
+    else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display='none'; }
+  }
+  draw();
+}
+
+// ---- PROGRESS PAGE ----
+function renderProgress() {
+  const totalSessions = WEEKS.reduce((a,w) => a + w.sessions, 0);
+  const completedKeys = Object.keys(DB).filter(k => k.includes('_meta_done') && DB[k] === '1');
+  const completed = completedKeys.length;
+  const pct = Math.round((completed / 21) * 100);
+
+  const dots = Array.from({length: 21}, (_,i) => {
+    const done = i < completed;
+    return `<div class="session-dot ${done ? 'done' : ''}">${done ? '✓' : i+1}</div>`;
+  }).join("");
+
+  // Stickman SVG with progressive muscles
+  const muscleLevel = Math.floor(completed / 3); // 0-7 levels
+  const stickman = buildStickman(muscleLevel);
+
+  document.getElementById('progressContent').innerHTML = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:0.75rem;">Progressi — ${completed}/21 sessioni</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+      <div class="progress-label">${pct}% completato</div>
+      <div class="stickman-wrap">${stickman}</div>
+      <p class="section-label">Sessioni completate</p>
+      <div class="sessions-grid">${dots}</div>
+    </div>
+    ${renderStrengthProgress()}
+  `;
+}
+
+function buildStickman(level) {
+  // level 0-7: progressive muscle appearance
+  const armW = 4 + level * 1.5;
+  const legW = 4 + level * 1.5;
+  const bodyW = 8 + level * 2;
+  const headR = 20;
+  const color = level === 0 ? '#aaa' : level < 3 ? '#888' : level < 6 ? '#555' : '#1a1a1a';
+  const bicepVisible = level >= 2;
+  const absVisible = level >= 4;
+  const calveVisible = level >= 6;
+
+  return `<svg width="120" height="200" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Head -->
+    <circle cx="60" cy="30" r="${headR}" fill="none" stroke="${color}" stroke-width="3"/>
+    <!-- Eyes -->
+    <circle cx="53" cy="27" r="2.5" fill="${color}"/>
+    <circle cx="67" cy="27" r="2.5" fill="${color}"/>
+    <!-- Smile -->
+    <path d="M 52 35 Q 60 ${42 + level} 68 35" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+    <!-- Body -->
+    <line x1="60" y1="50" x2="60" y2="120" stroke="${color}" stroke-width="${bodyW}" stroke-linecap="round"/>
+    ${absVisible ? `<line x1="55" y1="75" x2="65" y2="75" stroke="#fff" stroke-width="2"/>
+    <line x1="55" y1="90" x2="65" y2="90" stroke="#fff" stroke-width="2"/>` : ''}
+    <!-- Left arm -->
+    <line x1="60" y1="65" x2="25" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
+    ${bicepVisible ? `<ellipse cx="40" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(-40 40 78)"/>` : ''}
+    <!-- Right arm -->
+    <line x1="60" y1="65" x2="95" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
+    ${bicepVisible ? `<ellipse cx="80" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(40 80 78)"/>` : ''}
+    <!-- Left leg -->
+    <line x1="60" y1="120" x2="35" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
+    ${calveVisible ? `<ellipse cx="40" cy="158" rx="7" ry="4" fill="${color}" transform="rotate(20 40 158)"/>` : ''}
+    <!-- Right leg -->
+    <line x1="60" y1="120" x2="85" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
+    ${calveVisible ? `<ellipse cx="80" cy="158" rx="7" ry="4" fill="${color}" transform="rotate(-20 80 158)"/>` : ''}
+    <!-- Level label -->
+    <text x="60" y="195" text-anchor="middle" font-size="11" fill="#aaa">Livello ${level}/7</text>
+  </svg>`;
+}
+
+function renderStrengthProgress() {
+  let html = '<div class="card"><div class="card-title" style="margin-bottom:1rem;">Progressione pesi</div>';
+  EXERCISES.forEach(ex => {
+    const weights = [];
+    let g = 0;
+    for (let w = 0; w < WEEKS.length; w++) {
+      for (let s = 0; s < WEEKS[w].sessions; s++) {
+        const kg = computeKg(ex.id, g);
+        const doneKey = dbKey(w, s, "meta", "done");
+        if (DB[doneKey] === '1') weights.push(kg);
+        g++;
+      }
+    }
+    if (weights.length === 0) return;
+    const start = weights[0];
+    const current = weights[weights.length - 1];
+    const gain = current - start;
+    html += `<div style="margin-bottom:0.75rem;">
+      <div style="font-size:13px;font-weight:500;">${ex.name}</div>
+      <div style="font-size:12px;color:#888;">${formatKg(ex.id, start)} kg → ${formatKg(ex.id, current)} kg ${gain > 0 ? `<span style="color:#4caf50">+${gain}kg</span>` : ''}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleCheck(wId, sIdx, i, checked) { dbSet(dbKey(wId, sIdx, "wu", i), checked ? "1" : "0"); }
+function setRep(wId, sIdx, exId, s, val) { dbSet(dbKey(wId, sIdx, exId, s), val); }
 function togglePosture(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.classList.toggle("open");
   const arr = document.getElementById("arr_" + id);
   if (arr) arr.textContent = el.classList.contains("open") ? "▾" : "▸";
-}
-function toggleCheck(wId, sIdx, i, checked) { dbSet(dbKey(wId, sIdx, "wu", i), checked ? "1" : "0"); }
-function setRep(wId, sIdx, exId, s, val) { dbSet(dbKey(wId, sIdx, exId, s), val); }
-
-
-// Timer
-let timerInterval = null;
-let timerEl = null;
-let timerSeconds = 0;
-
-function startTimer(btnId) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  
-  // If already running this timer, reset it
-  if (timerEl === btn && timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    timerEl = null;
-    btn.textContent = '1:30';
-    btn.className = 'timer-btn';
-    return;
-  }
-  
-  // Stop any running timer
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    if (timerEl) { timerEl.textContent = '1:30'; timerEl.className = 'timer-btn'; }
-  }
-  
-  timerEl = btn;
-  timerSeconds = 90;
-  btn.className = 'timer-btn running';
-  
-  function tick() {
-    timerSeconds--;
-    if (timerSeconds <= 0) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      timerEl = null;
-      btn.textContent = '✓';
-      btn.className = 'timer-btn done';
-      // Vibrate if supported
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      setTimeout(() => { btn.textContent = '1:30'; btn.className = 'timer-btn'; }, 3000);
-      return;
-    }
-    const m = Math.floor(timerSeconds / 60);
-    const s = timerSeconds % 60;
-    btn.textContent = m + ':' + String(s).padStart(2, '0');
-  }
-  
-  tick();
-  timerInterval = setInterval(tick, 1000);
 }
 
 loadDB();
