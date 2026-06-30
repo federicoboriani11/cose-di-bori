@@ -37,6 +37,12 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
 .series-inputs { display: flex; gap: 8px; flex-wrap: wrap; }
 .rep-input { width: 60px; height: 42px; text-align: center; font-size: 17px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; -webkit-appearance: none; }
 .rep-input:focus { outline: none; border-color: #1a1a1a; }
+
+.timer-btn { height: 42px; padding: 0 14px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; cursor: pointer; font-variant-numeric: tabular-nums; min-width: 70px; -webkit-tap-highlight-color: transparent; }
+.timer-btn.running { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.timer-btn.done { background: #4caf50; color: #fff; border-color: #4caf50; }
+@media (prefers-color-scheme: dark) { .timer-btn { background: #2c2c2e; border-color: #3a3a3c; color: #f0f0f0; } .timer-btn.running { background: #f0f0f0; color: #111; } }
+
 .meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
 .meta-row label { font-size: 13px; color: #888; }
 .time-input { width: 80px; height: 38px; font-size: 14px; text-align: center; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; padding: 0 8px; }
@@ -79,10 +85,10 @@ const WEEKS = [
 ];
 
 const EXERCISES = [
-  { id: "legpress", name: "Leg press", startKg: 90, posture: ["Piedi larghezza spalle, punte leggermente in fuori", "Ginocchia seguono le punte — non collassare verso dentro", "Non bloccare il ginocchio in estensione — fermati a 5-10° prima", "Schiena incollata allo schienale per tutta la serie", "Scendi finché cosce parallele al pavimento"] },
+  { id: "legpress", name: "Leg press", startKg: 100, posture: ["Piedi larghezza spalle, punte leggermente in fuori", "Ginocchia seguono le punte — non collassare verso dentro", "Non bloccare il ginocchio in estensione — fermati a 5-10° prima", "Schiena incollata allo schienale per tutta la serie", "Scendi finché cosce parallele al pavimento"] },
   { id: "chest", name: "Chest press inclinata", startKg: 10, kgLabel: "5+5", posture: ["Schiena incollata alla panca, non inarcare", "Gomiti a ~45° dal corpo — non perpendicolari (a croce)", "Spingi simmetrico, non sbilanciarti", "Movimento controllato anche in discesa"] },
-  { id: "lat", name: "Lat pulldown presa stretta", startKg: 40, posture: ["Petto leggermente in fuori", "Tira verso il petto, non verso la pancia", "Non dondolare il busto", "Senti le scapole scendere e stringersi alla fine"] },
-  { id: "shoulder", name: "Shoulder press", startKg: 25, posture: ["Schiena dritta, core attivo", "Non inarcare la lombare", "Non alzare le spalle verso le orecchie", "Scendi finché gomiti a 90°, non oltre"] },
+  { id: "lat", name: "Lat pulldown presa stretta", startKg: 45, posture: ["Petto leggermente in fuori", "Tira verso il petto, non verso la pancia", "Non dondolare il busto", "Senti le scapole scendere e stringersi alla fine"] },
+  { id: "shoulder", name: "Shoulder press", startKg: 30, posture: ["Schiena dritta, core attivo", "Non inarcare la lombare", "Non alzare le spalle verso le orecchie", "Scendi finché gomiti a 90°, non oltre"] },
   { id: "row", name: "Cable row", startKg: 30, posture: ["Schiena dritta e ferma — non dondolare", "Tira verso l'ombelico, gomiti vicini al corpo", "Finisci schiacciando le scapole insieme", "Le gambe restano ferme"] },
   { id: "legcurl", name: "Leg curl", startKg: 45, posture: ["Fianchi incollati alla macchina", "Non strappare — movimento fluido", "Fase di discesa lenta e controllata"] },
 ];
@@ -203,7 +209,10 @@ function renderSession(week, sIdx) {
       <div class="ex-meta">${kgLabel} kg · target ×${rep}</div>
       <button class="posture-toggle" onclick="togglePosture('${pid}')"><span id="arr_${pid}">▸</span> postura</button>
       <div class="posture-content" id="${pid}"><ul>${postureItems}</ul></div>
-      <div class="series-inputs">${seriesInputs}</div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div class="series-inputs">${seriesInputs}</div>
+        <button class="timer-btn" id="timer_${week.id}_${sIdx}_${ex.id}" onclick="startTimer('timer_' + ${week.id} + '_' + ${sIdx} + '_' + '${ex.id}')">1:30</button>
+      </div>
     </div>`;
   }).join("");
 
@@ -240,6 +249,58 @@ function togglePosture(id) {
 }
 function toggleCheck(wId, sIdx, i, checked) { dbSet(dbKey(wId, sIdx, "wu", i), checked ? "1" : "0"); }
 function setRep(wId, sIdx, exId, s, val) { dbSet(dbKey(wId, sIdx, exId, s), val); }
+
+
+// Timer
+let timerInterval = null;
+let timerEl = null;
+let timerSeconds = 0;
+
+function startTimer(btnId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  
+  // If already running this timer, reset it
+  if (timerEl === btn && timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerEl = null;
+    btn.textContent = '1:30';
+    btn.className = 'timer-btn';
+    return;
+  }
+  
+  // Stop any running timer
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    if (timerEl) { timerEl.textContent = '1:30'; timerEl.className = 'timer-btn'; }
+  }
+  
+  timerEl = btn;
+  timerSeconds = 90;
+  btn.className = 'timer-btn running';
+  
+  function tick() {
+    timerSeconds--;
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerEl = null;
+      btn.textContent = '✓';
+      btn.className = 'timer-btn done';
+      // Vibrate if supported
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      setTimeout(() => { btn.textContent = '1:30'; btn.className = 'timer-btn'; }, 3000);
+      return;
+    }
+    const m = Math.floor(timerSeconds / 60);
+    const s = timerSeconds % 60;
+    btn.textContent = m + ':' + String(s).padStart(2, '0');
+  }
+  
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
 
 loadDB();
 </script>
