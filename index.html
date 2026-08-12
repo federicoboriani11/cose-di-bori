@@ -1,5 +1,3 @@
-
-Index · HTML
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -18,9 +16,20 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
 .nav-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
 .nav-tab { padding: 7px 16px; font-size: 14px; border: 1px solid #ddd; border-radius: 20px; background: #fff; color: #888; cursor: pointer; }
 .nav-tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.week-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
-.week-btn { padding: 6px 12px; font-size: 13px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+/* MONTH GROUPS */
+.month-group { margin-bottom: 1.5rem; }
+.month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+.month-label { font-size: 13px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+.week-selector { display: flex; flex-wrap: wrap; gap: 8px; }
+.week-btn { padding: 6px 12px; font-size: 13px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; cursor: pointer; }
 .week-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; font-weight: 500; }
+.week-btn.run-only { border-color: #4d96ff; color: #4d96ff; }
+.week-btn.run-only.active { background: #4d96ff; color: #fff; border-color: #4d96ff; }
+.add-month-btn { font-size: 13px; color: #888; background: none; border: 1px dashed #ddd; border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.add-month-btn:hover { border-color: #1a1a1a; color: #1a1a1a; }
+
+/* CARDS */
 .card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
 .card-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
 .card-title { font-size: 15px; font-weight: 600; }
@@ -31,9 +40,8 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
 .warmup-item input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; accent-color: #1a1a1a; }
 .ex-row { border-bottom: 1px solid #f0f0f0; padding: 10px 0; }
 .ex-row:last-child { border-bottom: none; }
-.ex-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
-.ex-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
-.posture-toggle { font-size: 12px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 8px; -webkit-tap-highlight-color: transparent; }
+.ex-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.posture-toggle { font-size: 12px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 8px; }
 .posture-content { display: none; font-size: 12px; color: #666; line-height: 1.6; margin-bottom: 8px; }
 .posture-content.open { display: block; }
 .posture-content ul { padding-left: 1.2rem; }
@@ -41,7 +49,9 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
 .series-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .rep-input { width: 58px; height: 42px; text-align: center; font-size: 17px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; -webkit-appearance: none; }
 .rep-input:focus { outline: none; border-color: #1a1a1a; }
-.timer-btn { height: 42px; padding: 0 14px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; cursor: pointer; font-variant-numeric: tabular-nums; min-width: 68px; -webkit-tap-highlight-color: transparent; }
+.kg-input { width: 65px; height: 32px; text-align: center; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; background: #f8f8f6; color: #1a1a1a; -webkit-appearance: none; padding: 0 4px; }
+.kg-input:focus { outline: none; border-color: #1a1a1a; }
+.timer-btn { height: 42px; padding: 0 14px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; cursor: pointer; font-variant-numeric: tabular-nums; min-width: 68px; }
 .timer-btn.running { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .timer-btn.done { background: #4caf50; color: #fff; border-color: #4caf50; }
 .meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
@@ -49,35 +59,45 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
 .time-input { width: 80px; height: 38px; font-size: 14px; text-align: center; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f6; color: #1a1a1a; padding: 0 8px; }
 .notes-area { width: 100%; min-height: 70px; font-size: 14px; font-family: inherit; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: #f8f8f6; color: #1a1a1a; resize: vertical; }
 .notes-area:focus { outline: none; border-color: #1a1a1a; }
-.complete-btn { width: 100%; margin-top: 1rem; padding: 14px; font-size: 16px; font-weight: 600; border: none; border-radius: 10px; background: #1a1a1a; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.complete-btn:active { opacity: 0.8; }
- 
-/* CONFETTI */
-#confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none; }
- 
-/* PROGRESS PAGE */
-.progress-container { padding: 1rem 0; }
-.progress-bar-wrap { background: #e8e8e8; border-radius: 20px; height: 18px; margin-bottom: 0.5rem; overflow: hidden; }
+.complete-btn { width: 100%; margin-top: 1rem; padding: 14px; font-size: 16px; font-weight: 600; border: none; border-radius: 10px; background: #1a1a1a; color: #fff; cursor: pointer; }
+.toggle-run-btn { font-size: 12px; padding: 4px 10px; border: 1px solid #4d96ff; border-radius: 6px; background: none; color: #4d96ff; cursor: pointer; margin-left: 8px; }
+.toggle-run-btn.active { background: #4d96ff; color: #fff; }
+
+/* RUN SESSION */
+.run-field { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+.run-field label { width: 160px; color: #888; flex-shrink: 0; }
+.run-input { height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 6px; background: #f8f8f6; color: #1a1a1a; padding: 0 8px; width: 70px; text-align: center; }
+.run-editable { height: 30px; font-size: 13px; border: 1px solid #ddd; border-radius: 6px; background: #f8f8f6; color: #1a1a1a; padding: 0 8px; flex: 1; }
+.lancio-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+.lancio-tipo { height: 30px; font-size: 12px; border: 1px solid #ddd; border-radius: 6px; background: #f8f8f6; padding: 0 6px; flex: 1; min-width: 100px; color: #1a1a1a; }
+.lancio-num { width: 48px; height: 30px; font-size: 13px; text-align: center; border: 1px solid #ddd; border-radius: 6px; background: #f8f8f6; color: #1a1a1a; }
+.lancio-label { font-size: 11px; color: #888; }
+.add-lancio-btn { font-size: 12px; color: #888; background: none; border: 1px dashed #ddd; border-radius: 6px; padding: 4px 10px; cursor: pointer; margin-top: 4px; }
+.remove-lancio-btn { font-size: 14px; color: #ccc; background: none; border: none; cursor: pointer; padding: 0 2px; }
+
+/* PROGRESS */
+.progress-bar-wrap { background: #e8e8e8; border-radius: 20px; height: 14px; margin-bottom: 0.5rem; overflow: hidden; }
 .progress-bar-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, #4caf50, #8bc34a); transition: width 0.8s ease; }
-.progress-label { font-size: 13px; color: #888; margin-bottom: 2rem; }
-.stickman-wrap { display: flex; justify-content: center; margin-bottom: 2rem; }
-.sessions-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 1rem; }
-.session-dot { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #ccc; }
+.sessions-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 1rem; }
+.session-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; }
 .session-dot.done { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
- 
+.stickman-wrap { display: flex; justify-content: center; margin: 1rem 0; }
+
+canvas#confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none; }
+
 @media (prefers-color-scheme: dark) {
   body { background: #111; color: #f0f0f0; }
   .card { background: #1c1c1e; border-color: #2c2c2e; }
   .week-btn { background: #1c1c1e; border-color: #3a3a3c; color: #f0f0f0; }
-  .week-btn.active { background: #f0f0f0; color: #111; border-color: #f0f0f0; }
+  .week-btn.active { background: #f0f0f0; color: #111; }
   .nav-tab { background: #1c1c1e; border-color: #3a3a3c; }
   .nav-tab.active { background: #f0f0f0; color: #111; }
-  .rep-input, .time-input, .date-input, .notes-area, .timer-btn { background: #2c2c2e; border-color: #3a3a3c; color: #f0f0f0; }
+  .rep-input, .time-input, .date-input, .notes-area, .timer-btn, .kg-input, .run-input, .run-editable, .lancio-tipo, .lancio-num { background: #2c2c2e; border-color: #3a3a3c; color: #f0f0f0; }
   .ex-row { border-color: #2c2c2e; }
   .warmup-item input[type=checkbox] { accent-color: #f0f0f0; }
   .complete-btn { background: #f0f0f0; color: #111; }
   .progress-bar-wrap { background: #2c2c2e; }
-  .session-dot { border-color: #3a3a3c; color: #555; }
+  .session-dot { border-color: #3a3a3c; }
   .session-dot.done { background: #f0f0f0; border-color: #f0f0f0; color: #111; }
 }
 </style>
@@ -88,569 +108,532 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
   <h1>Allenamento 💪</h1>
   <div class="status" id="statusMsg">Connessione...</div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('training')">Allenamento</button>
+    <button class="nav-tab active" onclick="showPage('training')">Palestra</button>
     <button class="nav-tab" onclick="showPage('progress')">Progressi</button>
   </div>
-  <div id="page-training">
-    <div class="week-selector" id="weekSelector"></div>
-    <div id="mainContent"></div>
-  </div>
-  <div id="page-progress" style="display:none;">
-    <div id="progressContent"></div>
-  </div>
+  <div id="page-training"></div>
+  <div id="page-progress" style="display:none;"></div>
 </div>
- 
+
 <script>
 const SUPABASE_URL = "https://rmnvlhqfqjqcpqawodsb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtbnZsaHFmcWpxY3BxYXdvZHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NTI1NDMsImV4cCI6MjA5ODIyODU0M30.ANBwMezQEnb7tYVMtN6os1yZv8wnNjEQLtKI48BreeM";
- 
-const WEEKS = [
-  { id: 0, label: "29/6–5/7", sessions: 3 },
-  { id: 1, label: "6–12/7", sessions: 3 },
-  { id: 2, label: "13–19/7", sessions: 3 },
-  { id: 3, label: "20–25/7", sessions: 3 },
-  { id: 4, label: "2–3/8 🏖", sessions: 1, vacation: true },
-  { id: 5, label: "11–16/8", sessions: 3 },
-  { id: 6, label: "17–23/8", sessions: 3 },
-  { id: 7, label: "24–30/8", sessions: 3 },
+
+// MONTHS config — stored in DB so user can add more
+const DEFAULT_MONTHS = [
+  {
+    id: "jul", label: "Luglio",
+    weeks: [
+      { id: "w0", label: "29/6–5/7", sessions: 3, runOnly: false },
+      { id: "w1", label: "6–12/7", sessions: 3, runOnly: false },
+      { id: "w2", label: "13–19/7", sessions: 3, runOnly: false },
+      { id: "w3", label: "20–25/7", sessions: 3, runOnly: false },
+    ]
+  },
+  {
+    id: "aug", label: "Agosto 🏖️ (pale chiusa)",
+    weeks: [
+      { id: "w0", label: "12–16/8", sessions: 3, runOnly: true },
+      { id: "w1", label: "17–23/8", sessions: 3, runOnly: true },
+      { id: "w2", label: "24–30/8", sessions: 3, runOnly: true },
+    ]
+  },
+  {
+    id: "sep", label: "Settembre",
+    weeks: [
+      { id: "w0", label: "31/8–6/9", sessions: 3, runOnly: false },
+      { id: "w1", label: "7–13/9", sessions: 3, runOnly: false },
+      { id: "w2", label: "14–20/9", sessions: 3, runOnly: false },
+      { id: "w3", label: "21–30/9", sessions: 3, runOnly: false },
+    ]
+  },
 ];
- 
-// Historical weights per exercise (array indexed by global session 0..N)
-const HISTORICAL_KG = {
-  chest:    [10, 10, 10, 10, 10],
-  shoulder: [40, 40, 40, 40, 40],
-  legpress: [90, 95, 95, 95, 100],
-  lat:      [50, 50, 50, 50, 50],
-  row:      [25, 25, 30, 30, 35],
-  legcurl:  [30, 30, 35, 35, 40],
-};
-const KG_INCREMENT = { legpress: 5, chest: 2.5, lat: 5, shoulder: 5, row: 5, legcurl: 5 };
-const BASE_KG = { legpress: 95, chest: 10, lat: 50, shoulder: 40, row: 25, legcurl: 30 };
- 
+
 const EXERCISES = [
-  { id: "chest", name: "Chest press inclinata", posture: ["Schiena incollata alla panca, non inarcare", "Gomiti a ~45° dal corpo — non perpendicolari (a croce)", "Spingi simmetrico, non sbilanciarti", "Movimento controllato anche in discesa"] },
-  { id: "shoulder", name: "Shoulder press", posture: ["Schiena dritta, core attivo", "Non inarcare la lombare", "Non alzare le spalle verso le orecchie", "Scendi finché gomiti a 90°, non oltre"] },
-  { id: "legpress", name: "Leg press", posture: ["Piedi larghezza spalle, punte leggermente in fuori", "Ginocchia seguono le punte — non collassare verso dentro", "Non bloccare il ginocchio in estensione — fermati a 5-10° prima", "Schiena incollata allo schienale per tutta la serie", "Avvicina le ginocchia al petto finché il bacino non si stacca"] },
-  { id: "lat", name: "Lat pulldown presa stretta", posture: ["Petto leggermente in fuori", "Tira verso il petto, non verso la pancia", "Non dondolare il busto", "Senti le scapole scendere e stringersi alla fine"] },
-  { id: "row", name: "Low pulley (cable row)", posture: ["Schiena dritta e ferma — non dondolare", "Tira verso l'ombelico, gomiti vicini al corpo", "Finisci schiacciando le scapole insieme", "Le gambe restano ferme"] },
-  { id: "legcurl", name: "Leg curl", posture: ["Fianchi incollati alla macchina", "Non strappare — movimento fluido", "Fase di discesa lenta e controllata"] },
+  { id: "chest", name: "Chest press inclinata", posture: ["Schiena incollata alla panca, non inarcare", "Gomiti a ~45° dal corpo", "Spingi simmetrico", "Movimento controllato in discesa"] },
+  { id: "shoulder", name: "Shoulder press", posture: ["Schiena dritta, core attivo", "Non inarcare la lombare", "Scendi finché gomiti a 90°"] },
+  { id: "legpress", name: "Leg press", posture: ["Piedi larghezza spalle", "Ginocchia seguono le punte", "Avvicina le ginocchia al petto finché il bacino non si stacca"] },
+  { id: "lat", name: "Lat pulldown presa stretta", posture: ["Petto in fuori", "Tira verso il petto", "Non dondolare", "Scapole scendono alla fine"] },
+  { id: "row", name: "Low pulley (cable row)", posture: ["Schiena dritta e ferma", "Tira verso ombelico, gomiti vicini", "Stringi le scapole alla fine"] },
+  { id: "legcurl", name: "Leg curl", posture: ["Fianchi incollati", "Movimento fluido", "Fase discesa lenta"] },
 ];
- 
 const WARMUP = ["Ballerinas 2×20", "Leg overs 2×7", "Salti al muro 3×5", "Presa isometrica 3×20 sec"];
- 
-// Sounds
-const SOUNDS = [
-  "https://www.myinstants.com/media/sounds/vine-boom.mp3",
-  "https://freesound.org/data/previews/341/341695_5858296-lq.mp3",
-  "https://freesound.org/data/previews/397/397354_4284968-lq.mp3",
-  "https://freesound.org/data/previews/456/456966_4921277-lq.mp3",
-  "https://freesound.org/data/previews/411/411089_5121236-lq.mp3",
-];
- 
+const BASE_KG = { chest: 10, shoulder: 40, legpress: 95, lat: 50, row: 25, legcurl: 30 };
+const KG_INCREMENT = { chest: 2.5, shoulder: 5, legpress: 5, lat: 5, row: 5, legcurl: 5 };
+// Historical KG for first 5 sessions (luglio)
+const HIST_KG = {
+  chest:    [10,10,10,10,10],
+  shoulder: [40,40,40,40,40],
+  legpress: [90,95,95,95,100],
+  lat:      [50,50,50,50,50],
+  row:      [25,25,30,30,35],
+  legcurl:  [30,30,35,35,40],
+};
+const DEFAULT_RUN = {
+  fartlek_min: 15, fartlek_desc: "1 min corsa / 1 min camminata",
+  scatti_n: 10, scatti_m: 20, scatti_rec: "recupero camminata",
+  lanci: [{ tipo: "Sbomba in porta", messe: "", sbagliate: "" }],
+  note: "", done: false,
+};
+
 let DB = {};
-let currentWeek = 0;
+let MONTHS = JSON.parse(JSON.stringify(DEFAULT_MONTHS));
 let currentPage = 'training';
+// current selection: { monthIdx, weekIdx }
+let sel = { monthIdx: 0, weekIdx: 0 };
 let saveTimer = null;
- 
-function dbKey(wId, sIdx, type, id) { return `w${wId}_s${sIdx}_${type}_${id}`; }
+
+// ---- DB ----
+function dbKey(monthId, weekId, sIdx, field, sub) {
+  return `${monthId}_${weekId}_s${sIdx}_${field}${sub !== undefined ? '_' + sub : ''}`;
+}
 function dbGet(key) { return DB[key] || ""; }
-function dbSet(key, val) { DB[key] = val; clearTimeout(saveTimer); saveTimer = setTimeout(saveDB, 800); }
- 
-// Compute kg for a given exercise at a given session index (0-based globally)
-function computeKg(exId, globalSession) {
-  // Check if any previous session unlocked a weight increase
-  let kg = BASE_KG[exId];
-  for (let g = 0; g < globalSession; g++) {
-    const {wId, sIdx} = globalToLocal(g);
-    const reps = [0,1,2].map(s => parseInt(dbGet(dbKey(wId, sIdx, exId, s))) || 0);
-    if (reps[0] >= 8 && reps[1] >= 8 && reps[2] >= 8) {
-      kg += KG_INCREMENT[exId];
-    }
-  }
-  return kg;
-}
- 
-function globalToLocal(g) {
-  let count = 0;
-  for (let w = 0; w < WEEKS.length; w++) {
-    for (let s = 0; s < WEEKS[w].sessions; s++) {
-      if (count === g) return { wId: w, sIdx: s };
-      count++;
-    }
-  }
-  return { wId: 0, sIdx: 0 };
-}
- 
-function localToGlobal(wId, sIdx) {
-  let count = 0;
-  for (let w = 0; w < wId; w++) count += WEEKS[w].sessions;
-  return count + sIdx;
-}
- 
-function getKgForSession(exId, wId, sIdx) {
-  const overrideKey = `kg_override_${wId}_${sIdx}_${exId}`;
-  const override = dbGet(overrideKey);
-  if (override) return parseFloat(override);
-  const g = localToGlobal(wId, sIdx);
-  if (HISTORICAL_KG[exId] && g < HISTORICAL_KG[exId].length) {
-    return HISTORICAL_KG[exId][g];
-  }
-  return computeKg(exId, g);
-}
- 
- 
- 
-function formatKg(exId, kg) {
-  if (exId === 'chest') {
-    const half = kg / 2;
-    return `${half}+${half}`;
-  }
-  return `${kg}`;
-}
- 
-function getPrevSessionReps(exId, wId, sIdx) {
-  // Find previous completed session
-  const g = localToGlobal(wId, sIdx);
-  if (g === 0) return null;
-  const {wId: pw, sIdx: ps} = globalToLocal(g - 1);
-  const reps = [0,1,2].map(s => parseInt(dbGet(dbKey(pw, ps, exId, s))) || 0);
-  if (reps.every(r => r === 0)) return null;
-  return reps;
-}
- 
-function getProgressColor(exId, wId, sIdx) {
-  const prev = getPrevSessionReps(exId, wId, sIdx);
-  if (!prev) return null;
-  const curr = [0,1,2].map(s => parseInt(dbGet(dbKey(wId, sIdx, exId, s))) || 0);
-  if (curr.every(r => r === 0)) return null;
-  
-  // Compare total reps done so far (only non-zero current series)
-  const currFilled = curr.filter(r => r > 0);
-  const prevSlice = prev.slice(0, currFilled.length);
-  const currSum = currFilled.reduce((a,b) => a+b, 0);
-  const prevSum = prevSlice.reduce((a,b) => a+b, 0);
-  
-  // Also check kg
-  const currKg = getNextKg(exId, wId, sIdx);
-  const prevKg = getKgForSession(exId, localToGlobal(wId, sIdx) > 0 ? globalToLocal(localToGlobal(wId,sIdx)-1).wId : wId, localToGlobal(wId, sIdx) > 0 ? globalToLocal(localToGlobal(wId,sIdx)-1).sIdx : sIdx);
-  
-  if (currKg > prevKg) return 'green';
-  if (currSum >= prevSum) return 'green';
-  return 'red';
-}
- 
+function dbSet(key, val) { DB[key] = String(val); clearTimeout(saveTimer); saveTimer = setTimeout(saveDB, 800); }
+
+// ---- SUPABASE ----
 async function apiFetch(method, body) {
   const url = `${SUPABASE_URL}/rest/v1/allenamento`;
-  const headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": `Bearer ${SUPABASE_KEY}`,
-    "Content-Type": "application/json",
-    "Prefer": method === "POST" ? "resolution=merge-duplicates" : ""
-  };
-  const res = await fetch(method === "GET" ? url + "?select=key,value" : url, {
-    method, headers, body: body ? JSON.stringify(body) : undefined
-  });
+  const headers = { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", "Prefer": method === "POST" ? "resolution=merge-duplicates" : "" };
+  const res = await fetch(method === "GET" ? url + "?select=key,value" : url, { method, headers, body: body ? JSON.stringify(body) : undefined });
   if (method === "GET") return await res.json();
   return res.ok;
 }
- 
 async function loadDB() {
   setStatus("Caricamento...");
   try {
     const rows = await apiFetch("GET");
     DB = {};
     for (const row of rows) DB[row.key] = row.value;
-    setStatus("✓ connesso");
-    setTimeout(() => setStatus(""), 2000);
+    const saved = dbGet("__months_config__");
+    if (saved) MONTHS = JSON.parse(saved);
+    setStatus("✓ connesso"); setTimeout(() => setStatus(""), 2000);
   } catch(e) { setStatus("⚠ offline"); }
-  renderWeekSelector();
-  renderContent();
+  renderPage();
   schedulePing();
 }
- 
 async function saveDB() {
   const body = Object.entries(DB).map(([key, value]) => ({ key, value, updated_at: new Date().toISOString() }));
   if (!body.length) return;
-  try {
-    await apiFetch("POST", body);
-    setStatus("✓ salvato");
-    setTimeout(() => setStatus(""), 1500);
-  } catch(e) { setStatus("⚠ errore salvataggio"); }
+  try { await apiFetch("POST", body); setStatus("✓ salvato"); setTimeout(() => setStatus(""), 1500); }
+  catch(e) { setStatus("⚠ errore"); }
 }
- 
 function schedulePing() {
-  const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
-  const last = parseInt(localStorage.getItem("last_ping") || "0");
+  const FIVE_DAYS = 5*24*60*60*1000;
+  const last = parseInt(localStorage.getItem("last_ping")||"0");
   const now = Date.now();
-  if (now - last > FIVE_DAYS) {
-    apiFetch("GET").then(() => localStorage.setItem("last_ping", now));
-  }
+  if (now - last > FIVE_DAYS) apiFetch("GET").then(() => localStorage.setItem("last_ping", String(now)));
 }
- 
 function setStatus(msg) { const el = document.getElementById("statusMsg"); if (el) el.textContent = msg; }
+function saveMonths() { dbSet("__months_config__", JSON.stringify(MONTHS)); }
+
+// ---- NAVIGATION ----
 function showPage(page) {
   currentPage = page;
   document.getElementById('page-training').style.display = page === 'training' ? '' : 'none';
   document.getElementById('page-progress').style.display = page === 'progress' ? '' : 'none';
-  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&page==='training')||(i===1&&page==='progress')));
-  if (page === 'progress') renderProgress();
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', ['training','progress'][i] === page));
+  renderPage();
 }
- 
-function renderWeekSelector() {
-  document.getElementById("weekSelector").innerHTML = WEEKS.map(w =>
-    `<button class="week-btn ${w.id === currentWeek ? 'active' : ''}" onclick="selectWeek(${w.id})">${w.label}</button>`
-  ).join("");
+function renderPage() {
+  if (currentPage === 'training') renderTraining();
+  else renderProgress();
 }
- 
-function selectWeek(id) { currentWeek = id; renderWeekSelector(); renderContent(); }
- 
-function renderContent() {
-  const week = WEEKS[currentWeek];
-  let html = "";
-  for (let s = 0; s < week.sessions; s++) html += renderSession(week, s);
-  document.getElementById("mainContent").innerHTML = html;
+
+// ---- KG LOGIC ----
+// Get all gym sessions in order (month → week → session), only non-runOnly
+function getAllGymSessions() {
+  const list = [];
+  MONTHS.forEach(m => m.weeks.forEach(w => {
+    for (let s = 0; s < w.sessions; s++) list.push({ monthId: m.id, weekId: w.id, sIdx: s, runOnly: w.runOnly });
+  }));
+  return list;
 }
- 
-function renderSession(week, sIdx) {
-  const label = week.vacation ? "Sessione unica (se riesci 💪)" : `Sessione ${sIdx + 1}`;
-  const gIdx = localToGlobal(week.id, sIdx);
- 
+function getGymSessionIndex(monthId, weekId, sIdx) {
+  const all = getAllGymSessions().filter(x => !x.runOnly);
+  return all.findIndex(x => x.monthId === monthId && x.weekId === weekId && x.sIdx === sIdx);
+}
+function getKgForSession(exId, monthId, weekId, sIdx) {
+  const overKey = `kg_override_${monthId}_${weekId}_s${sIdx}_${exId}`;
+  const over = dbGet(overKey);
+  if (over) return parseFloat(over);
+  const g = getGymSessionIndex(monthId, weekId, sIdx);
+  if (g < 0) return BASE_KG[exId];
+  if (HIST_KG[exId] && g < HIST_KG[exId].length) return HIST_KG[exId][g];
+  // compute from base
+  let kg = BASE_KG[exId];
+  const all = getAllGymSessions().filter(x => !x.runOnly);
+  for (let i = 0; i < g; i++) {
+    const prev = all[i];
+    const reps = [0,1,2].map(s => parseInt(dbGet(`${prev.monthId}_${prev.weekId}_s${prev.sIdx}_${exId}_${s}`)) || 0);
+    if (reps[0] >= 8 && reps[1] >= 8 && reps[2] >= 8) kg += KG_INCREMENT[exId];
+  }
+  return kg;
+}
+function setKgOverride(monthId, weekId, sIdx, exId, val) {
+  const kg = parseFloat(val); if (isNaN(kg)) return;
+  DB[`kg_override_${monthId}_${weekId}_s${sIdx}_${exId}`] = String(kg);
+  // propagate
+  const all = getAllGymSessions().filter(x => !x.runOnly);
+  const g = getGymSessionIndex(monthId, weekId, sIdx);
+  let prevKg = kg;
+  for (let i = g + 1; i < all.length; i++) {
+    const cur = all[i]; const prev = all[i-1];
+    const prevReps = [0,1,2].map(s => parseInt(dbGet(`${prev.monthId}_${prev.weekId}_s${prev.sIdx}_${exId}_${s}`)) || 0);
+    const allEight = prevReps[0] >= 8 && prevReps[1] >= 8 && prevReps[2] >= 8;
+    const nextKg = allEight ? prevKg + KG_INCREMENT[exId] : prevKg;
+    DB[`kg_override_${cur.monthId}_${cur.weekId}_s${cur.sIdx}_${exId}`] = String(nextKg);
+    prevKg = nextKg;
+  }
+  saveDB(); renderPage();
+}
+
+// ---- TRAINING PAGE ----
+function renderTraining() {
+  let html = '';
+  MONTHS.forEach((month, mIdx) => {
+    html += `<div class="month-group">
+      <div class="month-header">
+        <span class="month-label">${month.label}</span>
+      </div>
+      <div class="week-selector" style="margin-bottom:0.5rem;">`;
+    month.weeks.forEach((week, wIdx) => {
+      const isActive = sel.monthIdx === mIdx && sel.weekIdx === wIdx;
+      const runClass = week.runOnly ? 'run-only' : '';
+      html += `<button class="week-btn ${runClass} ${isActive ? 'active' : ''}" onclick="selectWeek(${mIdx},${wIdx})">${week.label}${week.runOnly ? ' 🏃' : ''}</button>`;
+    });
+    html += `</div></div>`;
+  });
+  html += `<button class="add-month-btn" onclick="addMonth()">+ Aggiungi mese</button>`;
+  html += `<div id="sessionContent" style="margin-top:1.5rem;"></div>`;
+  document.getElementById('page-training').innerHTML = html;
+  renderSessionContent();
+}
+
+function selectWeek(mIdx, wIdx) {
+  sel = { monthIdx: mIdx, weekIdx: wIdx };
+  renderTraining();
+}
+
+function renderSessionContent() {
+  const month = MONTHS[sel.monthIdx];
+  const week = month?.weeks[sel.weekIdx];
+  if (!week) return;
+  let html = '';
+  for (let s = 0; s < week.sessions; s++) {
+    const sessionRunOnly = week.runOnly || dbGet(`run_override_${month.id}_${week.id}_s${s}`) === '1';
+    html += sessionRunOnly
+      ? renderRunSession(month.id, week.id, s, true)
+      : renderGymSession(month.id, week.id, s);
+  }
+  const el = document.getElementById('sessionContent');
+  if (el) el.innerHTML = html;
+}
+
+function renderGymSession(monthId, weekId, sIdx) {
   const warmupHtml = WARMUP.map((w, i) => {
-    const key = dbKey(week.id, sIdx, "wu", i);
+    const key = `${monthId}_${weekId}_s${sIdx}_wu_${i}`;
     const checked = dbGet(key) === "1" ? "checked" : "";
-    return `<div class="warmup-item"><input type="checkbox" id="wu_${week.id}_${sIdx}_${i}" ${checked} onchange="toggleCheck(${week.id},${sIdx},${i},this.checked)"><label for="wu_${week.id}_${sIdx}_${i}">${w}</label></div>`;
+    return `<div class="warmup-item"><input type="checkbox" id="${key}" ${checked} onchange="dbSet('${key}',this.checked?'1':'0')"><label for="${key}">${w}</label></div>`;
   }).join("");
- 
+
   const exHtml = EXERCISES.map(ex => {
-    const kg = getKgForSession(ex.id, week.id, sIdx);
-    const kgLabel = formatKg(ex.id, kg);
-    const pid = `p_${week.id}_${sIdx}_${ex.id}`;
-    const tid = `timer_${week.id}_${sIdx}_${ex.id}`;
+    const kg = getKgForSession(ex.id, monthId, weekId, sIdx);
+    const pid = `p_${monthId}_${weekId}_${sIdx}_${ex.id}`;
+    const tid = `t_${monthId}_${weekId}_${sIdx}_${ex.id}`;
     const postureItems = ex.posture.map(p => `<li>${p}</li>`).join("");
+    // progress dot
+    const g = getGymSessionIndex(monthId, weekId, sIdx);
+    let progDot = '';
+    if (g > 0) {
+      const all = getAllGymSessions().filter(x => !x.runOnly);
+      const prev = all[g-1];
+      if (prev) {
+        const prevReps = [0,1,2].map(s => parseInt(dbGet(`${prev.monthId}_${prev.weekId}_s${prev.sIdx}_${ex.id}_${s}`)) || 0);
+        const currReps = [0,1,2].map(s => parseInt(dbGet(`${monthId}_${weekId}_s${sIdx}_${ex.id}_${s}`)) || 0);
+        if (currReps.some(r => r > 0)) {
+          const filled = currReps.filter(r=>r>0).length;
+          const green = kg > getKgForSession(ex.id, prev.monthId, prev.weekId, prev.sIdx) || currReps.slice(0,filled).reduce((a,b)=>a+b,0) >= prevReps.slice(0,filled).reduce((a,b)=>a+b,0);
+          progDot = `<span style="width:9px;height:9px;border-radius:50%;background:${green?'#4caf50':'#f44336'};display:inline-block;margin-left:6px;vertical-align:middle;"></span>`;
+        }
+      }
+    }
     const seriesInputs = [0,1,2].map(s => {
-      const key = dbKey(week.id, sIdx, ex.id, s);
-      return `<input class="rep-input" type="number" min="0" max="30" inputmode="numeric" placeholder="—" value="${dbGet(key)}" oninput="setRep(${week.id},${sIdx},'${ex.id}',${s},this.value)">`;
+      const key = `${monthId}_${weekId}_s${sIdx}_${ex.id}_${s}`;
+      return `<input class="rep-input" type="number" min="0" max="30" inputmode="numeric" placeholder="—" value="${dbGet(key)}" oninput="dbSet('${key}',this.value);renderSessionContent()">`;
     }).join("");
- 
     return `<div class="ex-row">
-      <div class="ex-name">${ex.name}</div>
-      <div class="ex-meta" style="display:flex;align-items:center;gap:6px;">
-        <input type="number" step="2.5" inputmode="decimal" value="${kg}" 
-          style="width:65px;height:26px;font-size:13px;text-align:center;border:1px solid #555;border-radius:6px;background:#2c2c2e;color:#f0f0f0;padding:0 4px;"
-          oninput="setKgOverride(${week.id},${sIdx},'${ex.id}',this.value)">
-        <span style="color:#888;">kg · target ×8</span>
+      <div style="display:flex;align-items:center;margin-bottom:4px;"><span class="ex-name">${ex.name}</span>${progDot}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <input class="kg-input" type="number" step="2.5" inputmode="decimal" value="${kg}" onchange="setKgOverride('${monthId}','${weekId}',${sIdx},'${ex.id}',this.value)">
+        <span style="font-size:12px;color:#888;">kg · target ×8</span>
       </div>
       <button class="posture-toggle" onclick="togglePosture('${pid}')"><span id="arr_${pid}">▸</span> postura</button>
       <div class="posture-content" id="${pid}"><ul>${postureItems}</ul></div>
-      <div class="series-row">
-        ${seriesInputs}
-        <button class="timer-btn" id="${tid}" onclick="startTimer('${tid}')">1:30</button>
-      </div>
+      <div class="series-row">${seriesInputs}<button class="timer-btn" id="${tid}" onclick="startTimer('${tid}')">1:30</button></div>
     </div>`;
   }).join("");
- 
-  const timeKey = dbKey(week.id, sIdx, "meta", "time");
-  const notesKey = dbKey(week.id, sIdx, "meta", "notes");
-  const dateKey = dbKey(week.id, sIdx, "meta", "date");
-  const doneKey = dbKey(week.id, sIdx, "meta", "done");
- 
+
+  const timeKey = `${monthId}_${weekId}_s${sIdx}_meta_time`;
+  const notesKey = `${monthId}_${weekId}_s${sIdx}_meta_notes`;
+  const dateKey = `${monthId}_${weekId}_s${sIdx}_meta_date`;
+  const doneKey = `${monthId}_${weekId}_s${sIdx}_meta_done`;
+
   return `<div class="card">
     <div class="card-header">
-      <div class="card-title">${label}</div>
+      <div style="display:flex;align-items:center;">
+        <div class="card-title">Sessione ${sIdx+1}</div>
+        <button class="toggle-run-btn" onclick="toggleRunOverride('${monthId}','${weekId}',${sIdx})">🏃 Solo corsa</button>
+      </div>
       <input class="date-input" type="date" value="${dbGet(dateKey)}" oninput="dbSet('${dateKey}',this.value)">
     </div>
     <p class="section-label">Riscaldamento</p>
-    <div class="warmup-grid">${warmupHtml}</div>
-    <br>
+    <div class="warmup-grid">${warmupHtml}</div><br>
     <p class="section-label">Esercizi — 3 serie · rec 90 sec</p>
-    ${exHtml}
-    <br>
-    <div class="meta-row">
-      <label>Durata:</label>
-      <input class="time-input" type="text" placeholder="1h05" value="${dbGet(timeKey)}" oninput="dbSet('${timeKey}',this.value)">
-    </div>
-    <p class="section-label">Note / riflessioni</p>
-    <textarea class="notes-area" placeholder="Come è andata..." oninput="dbSet('${notesKey}',this.value)">${dbGet(notesKey)}</textarea>
-    ${dbGet(doneKey) !== '1' ? `<button class="complete-btn" onclick="completeSession(${week.id},${sIdx})">🎉 Sessione completata!</button>` : `<div style="text-align:center;margin-top:1rem;font-size:14px;color:#4caf50;">✓ Completata</div>`}
+    ${exHtml}<br>
+    <div class="meta-row"><label>Durata:</label><input class="time-input" type="text" placeholder="1h05" value="${dbGet(timeKey)}" oninput="dbSet('${timeKey}',this.value)"></div>
+    <p class="section-label">Note</p>
+    <textarea class="notes-area" oninput="dbSet('${notesKey}',this.value)">${dbGet(notesKey)}</textarea>
+    ${dbGet(doneKey) !== '1'
+      ? `<button class="complete-btn" onclick="completeSession('${monthId}','${weekId}',${sIdx})">🎉 Sessione completata!</button>`
+      : `<div style="text-align:center;margin-top:1rem;font-size:14px;color:#4caf50;">✓ Completata</div>`}
   </div>`;
 }
- 
+
+function toggleRunOverride(monthId, weekId, sIdx) {
+  const key = `run_override_${monthId}_${weekId}_s${sIdx}`;
+  const current = dbGet(key) === '1';
+  dbSet(key, current ? '0' : '1');
+  renderSessionContent();
+}
+
+function renderRunSession(monthId, weekId, sIdx, showToggle) {
+  const dataKey = `rundata_${monthId}_${weekId}_s${sIdx}`;
+  let data = JSON.parse(JSON.stringify(DEFAULT_RUN));
+  const saved = dbGet(dataKey);
+  if (saved) { try { data = JSON.parse(saved); } catch(e) {} }
+
+  const lanciHtml = data.lanci.map((l, i) => `
+    <div class="lancio-row">
+      <input class="lancio-tipo" type="text" placeholder="Tipo lancio" value="${l.tipo||''}" oninput="updateLancio('${monthId}','${weekId}',${sIdx},${i},'tipo',this.value)">
+      <span class="lancio-label">✅</span>
+      <input class="lancio-num" type="number" inputmode="numeric" min="0" placeholder="0" value="${l.messe||''}" oninput="updateLancio('${monthId}','${weekId}',${sIdx},${i},'messe',this.value)">
+      <span class="lancio-label">❌</span>
+      <input class="lancio-num" type="number" inputmode="numeric" min="0" placeholder="0" value="${l.sbagliate||''}" oninput="updateLancio('${monthId}','${weekId}',${sIdx},${i},'sbagliate',this.value)">
+      <button class="remove-lancio-btn" onclick="removeLancio('${monthId}','${weekId}',${sIdx},${i})">✕</button>
+    </div>`).join('');
+
+  const doneKey = `${monthId}_${weekId}_s${sIdx}_meta_done`;
+  const dateKey = `${monthId}_${weekId}_s${sIdx}_meta_date`;
+
+  return `<div class="card">
+    <div class="card-header">
+      <div style="display:flex;align-items:center;">
+        <div class="card-title">Sessione ${sIdx+1} 🏃</div>
+        ${showToggle ? `<button class="toggle-run-btn active" onclick="toggleRunOverride('${monthId}','${weekId}',${sIdx})">← Palestra</button>` : ''}
+      </div>
+      <input class="date-input" type="date" value="${dbGet(dateKey)}" oninput="dbSet('${dateKey}',this.value)">
+    </div>
+    <p class="section-label">Corsa</p>
+    <div class="run-field"><label>Fartlek (min):</label><input class="run-input" type="number" inputmode="numeric" value="${data.fartlek_min}" oninput="updateRun('${monthId}','${weekId}',${sIdx},'fartlek_min',this.value)"></div>
+    <div class="run-field"><label>Tipo:</label><input class="run-editable" type="text" value="${data.fartlek_desc}" oninput="updateRun('${monthId}','${weekId}',${sIdx},'fartlek_desc',this.value)"></div>
+    <div class="run-field"><label>Scatti (n):</label><input class="run-input" type="number" inputmode="numeric" value="${data.scatti_n}" oninput="updateRun('${monthId}','${weekId}',${sIdx},'scatti_n',this.value)"></div>
+    <div class="run-field"><label>Distanza (m):</label><input class="run-input" type="number" inputmode="numeric" value="${data.scatti_m}" oninput="updateRun('${monthId}','${weekId}',${sIdx},'scatti_m',this.value)"></div>
+    <div class="run-field"><label>Recupero:</label><input class="run-editable" type="text" value="${data.scatti_rec}" oninput="updateRun('${monthId}','${weekId}',${sIdx},'scatti_rec',this.value)"></div>
+    <p class="section-label" style="margin-top:10px;">🥏 Lanci</p>
+    ${lanciHtml}
+    <button class="add-lancio-btn" onclick="addLancio('${monthId}','${weekId}',${sIdx})">+ Aggiungi tipo lancio</button>
+    <div class="run-field" style="margin-top:8px;"><label>Note:</label><input class="run-editable" type="text" value="${data.note||''}" oninput="updateRun('${monthId}','${weekId}',${sIdx},'note',this.value)"></div>
+    ${dbGet(doneKey) !== '1'
+      ? `<button class="complete-btn" style="margin-top:1rem;" onclick="completeSession('${monthId}','${weekId}',${sIdx})">🎉 Sessione completata!</button>`
+      : `<div style="text-align:center;margin-top:1rem;font-size:14px;color:#4caf50;">✓ Completata</div>`}
+  </div>`;
+}
+
+function getRunData(monthId, weekId, sIdx) {
+  const key = `rundata_${monthId}_${weekId}_s${sIdx}`;
+  let data = JSON.parse(JSON.stringify(DEFAULT_RUN));
+  const saved = dbGet(key);
+  if (saved) { try { data = JSON.parse(saved); } catch(e) {} }
+  return data;
+}
+function saveRunData(monthId, weekId, sIdx, data) {
+  dbSet(`rundata_${monthId}_${weekId}_s${sIdx}`, JSON.stringify(data));
+}
+function updateRun(monthId, weekId, sIdx, field, val) {
+  const data = getRunData(monthId, weekId, sIdx);
+  data[field] = ['fartlek_min','scatti_n','scatti_m'].includes(field) ? parseFloat(val)||0 : val;
+  saveRunData(monthId, weekId, sIdx, data);
+}
+function updateLancio(monthId, weekId, sIdx, i, field, val) {
+  const data = getRunData(monthId, weekId, sIdx);
+  data.lanci[i][field] = val;
+  saveRunData(monthId, weekId, sIdx, data);
+}
+function addLancio(monthId, weekId, sIdx) {
+  const data = getRunData(monthId, weekId, sIdx);
+  data.lanci.push({ tipo: "", messe: "", sbagliate: "" });
+  saveRunData(monthId, weekId, sIdx, data);
+  renderSessionContent();
+}
+function removeLancio(monthId, weekId, sIdx, i) {
+  const data = getRunData(monthId, weekId, sIdx);
+  data.lanci.splice(i, 1);
+  saveRunData(monthId, weekId, sIdx, data);
+  renderSessionContent();
+}
+
+function completeSession(monthId, weekId, sIdx) {
+  dbSet(`${monthId}_${weekId}_s${sIdx}_meta_done`, '1');
+  triggerCelebration();
+  renderSessionContent();
+}
+
+// ---- ADD MONTH ----
+function addMonth() {
+  const names = ["Ottobre","Novembre","Dicembre","Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno"];
+  const existing = MONTHS.map(m => m.label.split(" ")[0]);
+  const next = names.find(n => !existing.includes(n)) || `Mese ${MONTHS.length + 1}`;
+  const id = next.toLowerCase().substring(0,3) + Date.now();
+  MONTHS.push({
+    id,
+    label: next,
+    weeks: [
+      { id: "w0", label: "Sett. 1", sessions: 3, runOnly: false },
+      { id: "w1", label: "Sett. 2", sessions: 3, runOnly: false },
+      { id: "w2", label: "Sett. 3", sessions: 3, runOnly: false },
+      { id: "w3", label: "Sett. 4", sessions: 3, runOnly: false },
+    ]
+  });
+  saveMonths();
+  sel = { monthIdx: MONTHS.length - 1, weekIdx: 0 };
+  renderTraining();
+}
+
 // ---- TIMER ----
-let timerInterval = null;
-let timerEl = null;
- 
+let timerInterval = null, timerEl = null;
 function startTimer(btnId) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
-  if (timerEl === btn && timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null; timerEl = null;
-    btn.textContent = '1:30'; btn.className = 'timer-btn'; return;
-  }
+  if (timerEl === btn && timerInterval) { clearInterval(timerInterval); timerInterval = null; timerEl = null; btn.textContent = '1:30'; btn.className = 'timer-btn'; return; }
   if (timerInterval) { clearInterval(timerInterval); if (timerEl) { timerEl.textContent = '1:30'; timerEl.className = 'timer-btn'; } }
-  timerEl = btn;
-  let secs = 90;
-  btn.className = 'timer-btn running';
+  timerEl = btn; let secs = 90; btn.className = 'timer-btn running';
   function tick() {
     secs--;
-    if (secs <= 0) {
-      clearInterval(timerInterval); timerInterval = null; timerEl = null;
-      btn.textContent = '✓'; btn.className = 'timer-btn done';
-      if (navigator.vibrate) navigator.vibrate([200,100,200]);
-      setTimeout(() => { btn.textContent = '1:30'; btn.className = 'timer-btn'; }, 3000);
-      return;
-    }
+    if (secs <= 0) { clearInterval(timerInterval); timerInterval = null; timerEl = null; btn.textContent = '✓'; btn.className = 'timer-btn done'; if (navigator.vibrate) navigator.vibrate([200,100,200]); setTimeout(() => { btn.textContent = '1:30'; btn.className = 'timer-btn'; }, 3000); return; }
     btn.textContent = Math.floor(secs/60) + ':' + String(secs%60).padStart(2,'0');
   }
   tick(); timerInterval = setInterval(tick, 1000);
 }
- 
-// ---- COMPLETE SESSION ----
-function completeSession(wId, sIdx) {
-  const doneKey = dbKey(wId, sIdx, "meta", "done");
-  dbSet(doneKey, '1');
-  triggerCelebration();
-  setTimeout(() => renderContent(), 500);
+
+// ---- CELEBRATION ----
+function triggerCelebration() { launchConfetti(); playBeep(); }
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523,659,784,1047].forEach((freq, i) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'square';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.2);
+      osc.start(ctx.currentTime + i*0.15); osc.stop(ctx.currentTime + i*0.15 + 0.2);
+    });
+  } catch(e) {}
 }
- 
-// ---- CONFETTI ----
-function triggerCelebration() {
-  playSound();
-  launchConfetti();
-}
- 
-function playSound() {
-  const sounds = [
-    "https://freesound.org/data/previews/341/341695_5858296-lq.mp3",
-    "https://freesound.org/data/previews/320/320655_1661766-lq.mp3",
-    "https://freesound.org/data/previews/397/397354_4284968-lq.mp3",
-    "https://freesound.org/data/previews/456/456966_4921277-lq.mp3",
-    "https://freesound.org/data/previews/411/411089_5121236-lq.mp3",
-  ];
-  // pick based on total completed sessions for variety
-  const completed = Object.keys(DB).filter(k => k.includes('_meta_done')).length;
-  const url = sounds[completed % sounds.length];
-  try { new Audio(url).play(); } catch(e) {}
-}
- 
 function launchConfetti() {
   const canvas = document.getElementById('confetti-canvas');
   canvas.style.display = 'block';
   const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
- 
-  const completed = Object.keys(DB).filter(k => k.includes('_meta_done')).length;
-  const palettes = [
-    ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff'],
-    ['#f72585','#7209b7','#3a0ca3','#4cc9f0'],
-    ['#ff9f1c','#ffbf69','#cbf3f0','#2ec4b6'],
-    ['#e63946','#457b9d','#a8dadc','#f1faee'],
-    ['#606c38','#dda15e','#bc6c25','#fefae0'],
-  ];
-  const colors = palettes[completed % palettes.length];
- 
-  const particles = Array.from({length: 120}, () => ({
-    x: Math.random() * canvas.width,
-    y: -10,
-    r: Math.random() * 8 + 4,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    speed: Math.random() * 4 + 2,
-    spin: Math.random() * 0.2 - 0.1,
-    angle: Math.random() * Math.PI * 2,
-    drift: Math.random() * 2 - 1,
-  }));
- 
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#f72585','#4cc9f0'];
+  const particles = Array.from({length:120}, () => ({ x: Math.random()*canvas.width, y: -10, r: Math.random()*8+4, color: colors[Math.floor(Math.random()*colors.length)], speed: Math.random()*4+2, spin: Math.random()*0.2-0.1, angle: Math.random()*Math.PI*2, drift: Math.random()*2-1 }));
   let frame = 0;
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => {
-      p.y += p.speed;
-      p.x += p.drift;
-      p.angle += p.spin;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r);
-      ctx.restore();
-    });
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p => { p.y+=p.speed; p.x+=p.drift; p.angle+=p.spin; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle); ctx.fillStyle=p.color; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r); ctx.restore(); });
     frame++;
     if (frame < 120) requestAnimationFrame(draw);
     else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display='none'; }
   }
   draw();
 }
- 
-// ---- PROGRESS PAGE ----
+
+// ---- PROGRESS ----
 function renderProgress() {
-  const totalSessions = WEEKS.reduce((a,w) => a + w.sessions, 0);
-  const completedKeys = Object.keys(DB).filter(k => k.includes('_meta_done') && DB[k] === '1');
-  const completed = completedKeys.length;
-  const pct = Math.round((completed / 21) * 100);
- 
-  const dots = Array.from({length: 21}, (_,i) => {
-    const done = i < completed;
-    return `<div class="session-dot ${done ? 'done' : ''}">${done ? '✓' : i+1}</div>`;
-  }).join("");
- 
-  // Stickman SVG with progressive muscles
-  const muscleLevel = Math.floor(completed / 3); // 0-7 levels
-  const stickman = buildStickman(muscleLevel);
- 
-  document.getElementById('progressContent').innerHTML = `
-    <div class="card">
-      <div class="card-title" style="margin-bottom:0.75rem;">Progressi — ${completed}/21 sessioni</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
-      <div class="progress-label">${pct}% completato</div>
-      <div class="stickman-wrap">${stickman}</div>
-      <p class="section-label">Sessioni completate</p>
-      <div class="sessions-grid">${dots}</div>
-    </div>
-    ${renderStrengthProgress()}
-  `;
-}
- 
-function buildStickman(level) {
-  // level 0-7: progressive muscle appearance
-  const armW = 4 + level * 1.5;
-  const legW = 4 + level * 1.5;
-  const bodyW = 8 + level * 2;
-  const headR = 20;
-  const color = level === 0 ? '#aaa' : level < 3 ? '#888' : level < 6 ? '#555' : '#1a1a1a';
-  const bicepVisible = level >= 2;
-  const absVisible = level >= 4;
-  const calveVisible = level >= 6;
- 
-  return `<svg width="120" height="200" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
-    <!-- Head -->
-    <circle cx="60" cy="30" r="${headR}" fill="none" stroke="${color}" stroke-width="3"/>
-    <!-- Eyes -->
-    <circle cx="53" cy="27" r="2.5" fill="${color}"/>
-    <circle cx="67" cy="27" r="2.5" fill="${color}"/>
-    <!-- Smile -->
-    <path d="M 52 35 Q 60 ${42 + level} 68 35" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
-    <!-- Body -->
-    <line x1="60" y1="50" x2="60" y2="120" stroke="${color}" stroke-width="${bodyW}" stroke-linecap="round"/>
-    ${absVisible ? `<line x1="55" y1="75" x2="65" y2="75" stroke="#fff" stroke-width="2"/>
-    <line x1="55" y1="90" x2="65" y2="90" stroke="#fff" stroke-width="2"/>` : ''}
-    <!-- Left arm -->
-    <line x1="60" y1="65" x2="25" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
-    ${bicepVisible ? `<ellipse cx="40" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(-40 40 78)"/>` : ''}
-    <!-- Right arm -->
-    <line x1="60" y1="65" x2="95" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
-    ${bicepVisible ? `<ellipse cx="80" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(40 80 78)"/>` : ''}
-    <!-- Left leg -->
-    <line x1="60" y1="120" x2="35" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
-    ${calveVisible ? `<ellipse cx="40" cy="158" rx="7" ry="4" fill="${color}" transform="rotate(20 40 158)"/>` : ''}
-    <!-- Right leg -->
-    <line x1="60" y1="120" x2="85" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
-    ${calveVisible ? `<ellipse cx="80" cy="158" rx="7" ry="4" fill="${color}" transform="rotate(-20 80 158)"/>` : ''}
-    <!-- Level label -->
-    <text x="60" y="195" text-anchor="middle" font-size="11" fill="#aaa">Livello ${level}/7</text>
-  </svg>`;
-}
- 
-function renderStrengthProgress() {
-  let html = '<div class="card"><div class="card-title" style="margin-bottom:1rem;">Progressione pesi</div>';
-  EXERCISES.forEach(ex => {
-    const weights = [];
-    let g = 0;
-    for (let w = 0; w < WEEKS.length; w++) {
-      for (let s = 0; s < WEEKS[w].sessions; s++) {
-        const kg = computeKg(ex.id, g);
-        const doneKey = dbKey(w, s, "meta", "done");
-        if (DB[doneKey] === '1') weights.push(kg);
-        g++;
+  const allGym = getAllGymSessions().filter(x => !x.runOnly);
+  const gymDone = allGym.filter(x => dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1').length;
+  const muscleLevel = Math.min(7, Math.floor(gymDone/3));
+  const gymDots = allGym.map((x, i) => {
+    const done = dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1';
+    return `<div class="session-dot ${done?'done':''}">${done?'✓':i+1}</div>`;
+  }).join('');
+
+  // Run sessions
+  const allRun = [];
+  MONTHS.forEach(m => m.weeks.forEach(w => {
+    for (let s = 0; s < w.sessions; s++) {
+      if (w.runOnly || dbGet(`run_override_${m.id}_${w.id}_s${s}`) === '1') {
+        allRun.push({ monthId: m.id, weekId: w.id, sIdx: s });
       }
     }
-    if (weights.length === 0) return;
-    const start = weights[0];
-    const current = weights[weights.length - 1];
-    const gain = current - start;
-    html += `<div style="margin-bottom:0.75rem;">
-      <div style="font-size:13px;font-weight:500;">${ex.name}</div>
-      <div style="font-size:12px;color:#888;">${formatKg(ex.id, start)} kg → ${formatKg(ex.id, current)} kg ${gain > 0 ? `<span style="color:#4caf50">+${gain}kg</span>` : ''}</div>
-    </div>`;
+  }));
+  const runDone = allRun.filter(x => dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1').length;
+
+  let strengthHtml = '<div class="card"><div class="card-title" style="margin-bottom:1rem;">Progressione pesi</div>';
+  EXERCISES.forEach(ex => {
+    const weights = allGym.filter(x => dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1').map(x => getKgForSession(ex.id, x.monthId, x.weekId, x.sIdx));
+    if (!weights.length) return;
+    const gain = weights[weights.length-1] - weights[0];
+    strengthHtml += `<div style="margin-bottom:.75rem;"><div style="font-size:13px;font-weight:500;">${ex.name}</div><div style="font-size:12px;color:#888;">${weights[0]} → ${weights[weights.length-1]} kg ${gain>0?`<span style="color:#4caf50">+${gain}kg</span>`:''}</div></div>`;
   });
-  html += '</div>';
-  return html;
+  strengthHtml += '</div>';
+
+  document.getElementById('page-progress').innerHTML = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:.75rem;">💪 Palestra — ${gymDone}/${allGym.length} sessioni</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${allGym.length?Math.round(gymDone/allGym.length*100):0}%;"></div></div>
+      <div style="font-size:13px;color:#888;margin-bottom:1rem;">${allGym.length?Math.round(gymDone/allGym.length*100):0}% completato</div>
+      <div class="stickman-wrap">${buildStickman(muscleLevel)}</div>
+      <div class="sessions-grid">${gymDots}</div>
+      <button class="add-month-btn" style="margin-top:.5rem;" onclick="addMonth();showPage('training')">+ Aggiungi mese</button>
+    </div>
+    ${allRun.length ? `<div class="card">
+      <div class="card-title" style="margin-bottom:.75rem;">🏃 Corsa — ${runDone}/${allRun.length} sessioni</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${Math.round(runDone/allRun.length*100)}%;background:linear-gradient(90deg,#4d96ff,#4cc9f0);"></div></div>
+      <div style="font-size:13px;color:#888;">${Math.round(runDone/allRun.length*100)}% completato</div>
+    </div>` : ''}
+    ${strengthHtml}
+  `;
 }
- 
-function toggleCheck(wId, sIdx, i, checked) { dbSet(dbKey(wId, sIdx, "wu", i), checked ? "1" : "0"); }
-function setRep(wId, sIdx, exId, s, val) { 
-  dbSet(dbKey(wId, sIdx, exId, s), val);
-  // Update progress dot
-  setTimeout(() => {
-    const color = getProgressColor(exId, wId, sIdx);
-    const dot = document.querySelector(`#rep_${wId}_${sIdx}_${exId}_0`)?.closest('.ex-row')?.querySelector('span[style*="border-radius:50%"]');
-    if (dot && color) { dot.style.background = color === 'green' ? '#4caf50' : '#f44336'; dot.style.display = 'inline-block'; }
-    else if (dot) dot.style.display = 'none';
-  }, 100);
+
+function buildStickman(level) {
+  const armW=4+level*1.5, legW=4+level*1.5, bodyW=8+level*2;
+  const color=level===0?'#aaa':level<3?'#888':level<6?'#555':'#1a1a1a';
+  return `<svg width="120" height="210" viewBox="0 0 120 210" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="30" r="20" fill="none" stroke="${color}" stroke-width="3"/>
+    <circle cx="53" cy="27" r="2.5" fill="${color}"/>
+    <circle cx="67" cy="27" r="2.5" fill="${color}"/>
+    <path d="M 52 35 Q 60 ${42+level} 68 35" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+    <line x1="60" y1="50" x2="60" y2="120" stroke="${color}" stroke-width="${bodyW}" stroke-linecap="round"/>
+    ${level>=4?`<line x1="55" y1="75" x2="65" y2="75" stroke="#fff" stroke-width="2"/><line x1="55" y1="90" x2="65" y2="90" stroke="#fff" stroke-width="2"/>`:''}
+    <line x1="60" y1="65" x2="25" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
+    ${level>=2?`<ellipse cx="40" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(-40 40 78)"/>`:''}
+    <line x1="60" y1="65" x2="95" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
+    ${level>=2?`<ellipse cx="80" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(40 80 78)"/>`:''}
+    <line x1="60" y1="120" x2="35" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
+    <line x1="60" y1="120" x2="85" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
+    <text x="60" y="200" text-anchor="middle" font-size="11" fill="#aaa">Livello ${level}/7</text>
+  </svg>`;
 }
-function setKgOverride(wId, sIdx, exId, val) {
-  const kg = parseFloat(val);
-  if (isNaN(kg)) return;
-  DB[`kg_override_${wId}_${sIdx}_${exId}`] = String(kg);
-  // Propagate to future sessions:
-  // next session gets kg + increment IF this session had 8-8-8, otherwise same kg
-  // each subsequent session then inherits from the one before it
-  const increment = exId === 'chest' ? 2.5 : 5;
-  let prevKg = kg;
-  let g = localToGlobal(wId, sIdx);
-  let totalSessions = 0;
-  for (let w = 0; w < WEEKS.length; w++) totalSessions += WEEKS[w].sessions;
-  let nextG = g + 1;
-  while (nextG < totalSessions) {
-    const {wId: fw, sIdx: fs} = globalToLocal(nextG);
-    const {wId: pw, sIdx: ps} = globalToLocal(nextG - 1);
-    // Check if previous session had 8-8-8
-    const prevReps = [0,1,2].map(s => parseInt(dbGet(dbKey(pw, ps, exId, s))) || 0);
-    const allEight = prevReps[0] >= 8 && prevReps[1] >= 8 && prevReps[2] >= 8;
-    // Only increment once when crossing the 8-8-8 threshold
-    const nextKg = allEight ? prevKg + increment : prevKg;
-    DB[`kg_override_${fw}_${fs}_${exId}`] = String(nextKg);
-    prevKg = nextKg;
-    nextG++;
-  }
-  saveDB();
-  renderContent();
-}
+
 function togglePosture(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
+  const el = document.getElementById(id); if (!el) return;
   el.classList.toggle("open");
-  const arr = document.getElementById("arr_" + id);
+  const arr = document.getElementById("arr_"+id);
   if (arr) arr.textContent = el.classList.contains("open") ? "▾" : "▸";
 }
- 
+
 loadDB();
 </script>
 </body>
 </html>
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
