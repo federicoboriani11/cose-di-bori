@@ -122,7 +122,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // MONTHS config — stored in DB so user can add more
 const DEFAULT_MONTHS = [
   {
-    id: "jul", label: "Luglio",
+    id: "", label: "Luglio",
     weeks: [
       { id: "w0", label: "29/6–5/7", sessions: 3, runOnly: false },
       { id: "w1", label: "6–12/7", sessions: 3, runOnly: false },
@@ -185,10 +185,20 @@ let saveTimer = null;
 
 // ---- DB ----
 function dbKey(monthId, weekId, sIdx, field, sub) {
-  return `${monthId}_${weekId}_s${sIdx}_${field}${sub !== undefined ? '_' + sub : ''}`;
+  const prefix = monthId ? `${monthId}_` : '';
+  return `${prefix}${weekId}_s${sIdx}_${field}${sub !== undefined ? '_' + sub : ''}`;
 }
 function dbGet(key) { return DB[key] || ""; }
 function dbSet(key, val) { DB[key] = String(val); clearTimeout(saveTimer); saveTimer = setTimeout(saveDB, 800); }
+function mk(monthId, weekId, sIdx, field, sub) {
+  const prefix = monthId ? `${monthId}_` : '';
+  let key = `${prefix}${weekId}_s${sIdx}_${field}`;
+  if (sub !== undefined) key += '_' + sub;
+  return key;
+}
+function mkRun(monthId, weekId, sIdx) { return `rundata_${monthId||'jul'}_${weekId}_s${sIdx}`; }
+function mkRunOverride(monthId, weekId, sIdx) { return `run_override_${monthId||'jul'}_${weekId}_s${sIdx}`; }
+function mkKgOverride(monthId, weekId, sIdx, exId) { return `kg_override_${monthId||'jul'}_${weekId}_s${sIdx}_${exId}`; }
 
 // ---- SUPABASE ----
 async function apiFetch(method, body) {
@@ -253,7 +263,7 @@ function getGymSessionIndex(monthId, weekId, sIdx) {
   return all.findIndex(x => x.monthId === monthId && x.weekId === weekId && x.sIdx === sIdx);
 }
 function getKgForSession(exId, monthId, weekId, sIdx) {
-  const overKey = `kg_override_${monthId}_${weekId}_s${sIdx}_${exId}`;
+  const overKey = mkKgOverride(monthId, weekId, sIdx, exId);
   const over = dbGet(overKey);
   if (over) return parseFloat(over);
   const g = getGymSessionIndex(monthId, weekId, sIdx);
@@ -264,24 +274,24 @@ function getKgForSession(exId, monthId, weekId, sIdx) {
   const all = getAllGymSessions().filter(x => !x.runOnly);
   for (let i = 0; i < g; i++) {
     const prev = all[i];
-    const reps = [0,1,2].map(s => parseInt(dbGet(`${prev.monthId}_${prev.weekId}_s${prev.sIdx}_${exId}_${s}`)) || 0);
+    const reps = [0,1,2].map(s => parseInt(dbGet(mk(prev.monthId, prev.weekId, prev.sIdx, exId, s))) || 0);
     if (reps[0] >= 8 && reps[1] >= 8 && reps[2] >= 8) kg += KG_INCREMENT[exId];
   }
   return kg;
 }
 function setKgOverride(monthId, weekId, sIdx, exId, val) {
   const kg = parseFloat(val); if (isNaN(kg)) return;
-  DB[`kg_override_${monthId}_${weekId}_s${sIdx}_${exId}`] = String(kg);
+  DB[mkKgOverride(monthId, weekId, sIdx, exId)] = String(kg);
   // propagate
   const all = getAllGymSessions().filter(x => !x.runOnly);
   const g = getGymSessionIndex(monthId, weekId, sIdx);
   let prevKg = kg;
   for (let i = g + 1; i < all.length; i++) {
     const cur = all[i]; const prev = all[i-1];
-    const prevReps = [0,1,2].map(s => parseInt(dbGet(`${prev.monthId}_${prev.weekId}_s${prev.sIdx}_${exId}_${s}`)) || 0);
+    const prevReps = [0,1,2].map(s => parseInt(dbGet(mk(prev.monthId, prev.weekId, prev.sIdx, exId, s))) || 0);
     const allEight = prevReps[0] >= 8 && prevReps[1] >= 8 && prevReps[2] >= 8;
     const nextKg = allEight ? prevKg + KG_INCREMENT[exId] : prevKg;
-    DB[`kg_override_${cur.monthId}_${cur.weekId}_s${cur.sIdx}_${exId}`] = String(nextKg);
+    DB[mkKgOverride(cur.monthId, cur.weekId, cur.sIdx, exId)] = String(nextKg);
     prevKg = nextKg;
   }
   saveDB(); renderPage();
@@ -331,7 +341,7 @@ function renderSessionContent() {
 
 function renderGymSession(monthId, weekId, sIdx) {
   const warmupHtml = WARMUP.map((w, i) => {
-    const key = `${monthId}_${weekId}_s${sIdx}_wu_${i}`;
+    const key = mk(monthId, weekId, sIdx, "wu", i);
     const checked = dbGet(key) === "1" ? "checked" : "";
     return `<div class="warmup-item"><input type="checkbox" id="${key}" ${checked} onchange="dbSet('${key}',this.checked?'1':'0')"><label for="${key}">${w}</label></div>`;
   }).join("");
@@ -348,8 +358,8 @@ function renderGymSession(monthId, weekId, sIdx) {
       const all = getAllGymSessions().filter(x => !x.runOnly);
       const prev = all[g-1];
       if (prev) {
-        const prevReps = [0,1,2].map(s => parseInt(dbGet(`${prev.monthId}_${prev.weekId}_s${prev.sIdx}_${ex.id}_${s}`)) || 0);
-        const currReps = [0,1,2].map(s => parseInt(dbGet(`${monthId}_${weekId}_s${sIdx}_${ex.id}_${s}`)) || 0);
+        const prevReps = [0,1,2].map(s => parseInt(dbGet(mk(prev.monthId, prev.weekId, prev.sIdx, ex.id, s))) || 0);
+        const currReps = [0,1,2].map(s => parseInt(dbGet(mk(monthId, weekId, sIdx, ex.id, s))) || 0);
         if (currReps.some(r => r > 0)) {
           const filled = currReps.filter(r=>r>0).length;
           const green = kg > getKgForSession(ex.id, prev.monthId, prev.weekId, prev.sIdx) || currReps.slice(0,filled).reduce((a,b)=>a+b,0) >= prevReps.slice(0,filled).reduce((a,b)=>a+b,0);
@@ -358,7 +368,7 @@ function renderGymSession(monthId, weekId, sIdx) {
       }
     }
     const seriesInputs = [0,1,2].map(s => {
-      const key = `${monthId}_${weekId}_s${sIdx}_${ex.id}_${s}`;
+      const key = mk(monthId, weekId, sIdx, ex.id, s);
       return `<input class="rep-input" type="number" min="0" max="30" inputmode="numeric" placeholder="—" value="${dbGet(key)}" oninput="dbSet('${key}',this.value);renderSessionContent()">`;
     }).join("");
     return `<div class="ex-row">
@@ -373,10 +383,10 @@ function renderGymSession(monthId, weekId, sIdx) {
     </div>`;
   }).join("");
 
-  const timeKey = `${monthId}_${weekId}_s${sIdx}_meta_time`;
-  const notesKey = `${monthId}_${weekId}_s${sIdx}_meta_notes`;
-  const dateKey = `${monthId}_${weekId}_s${sIdx}_meta_date`;
-  const doneKey = `${monthId}_${weekId}_s${sIdx}_meta_done`;
+  const timeKey = mk(monthId, weekId, sIdx, 'meta', 'time');
+  const notesKey = mk(monthId, weekId, sIdx, 'meta', 'notes');
+  const dateKey = mk(monthId, weekId, sIdx, 'meta', 'date');
+  const doneKey = mk(monthId, weekId, sIdx, 'meta', 'done');
 
   return `<div class="card">
     <div class="card-header">
@@ -400,14 +410,14 @@ function renderGymSession(monthId, weekId, sIdx) {
 }
 
 function toggleRunOverride(monthId, weekId, sIdx) {
-  const key = `run_override_${monthId}_${weekId}_s${sIdx}`;
+  const key = mkRunOverride(monthId, weekId, sIdx);
   const current = dbGet(key) === '1';
   dbSet(key, current ? '0' : '1');
   renderSessionContent();
 }
 
 function renderRunSession(monthId, weekId, sIdx, showToggle) {
-  const dataKey = `rundata_${monthId}_${weekId}_s${sIdx}`;
+  const dataKey = mkRun(monthId, weekId, sIdx);
   let data = JSON.parse(JSON.stringify(DEFAULT_RUN));
   const saved = dbGet(dataKey);
   if (saved) { try { data = JSON.parse(saved); } catch(e) {} }
@@ -422,8 +432,8 @@ function renderRunSession(monthId, weekId, sIdx, showToggle) {
       <button class="remove-lancio-btn" onclick="removeLancio('${monthId}','${weekId}',${sIdx},${i})">✕</button>
     </div>`).join('');
 
-  const doneKey = `${monthId}_${weekId}_s${sIdx}_meta_done`;
-  const dateKey = `${monthId}_${weekId}_s${sIdx}_meta_date`;
+  const doneKey = mk(monthId, weekId, sIdx, 'meta', 'done');
+  const dateKey = mk(monthId, weekId, sIdx, 'meta', 'date');
 
   return `<div class="card">
     <div class="card-header">
@@ -450,14 +460,14 @@ function renderRunSession(monthId, weekId, sIdx, showToggle) {
 }
 
 function getRunData(monthId, weekId, sIdx) {
-  const key = `rundata_${monthId}_${weekId}_s${sIdx}`;
+  const key = mkRun(monthId, weekId, sIdx);
   let data = JSON.parse(JSON.stringify(DEFAULT_RUN));
   const saved = dbGet(key);
   if (saved) { try { data = JSON.parse(saved); } catch(e) {} }
   return data;
 }
 function saveRunData(monthId, weekId, sIdx, data) {
-  dbSet(`rundata_${monthId}_${weekId}_s${sIdx}`, JSON.stringify(data));
+  dbSet(mkRun(monthId, weekId, sIdx), JSON.stringify(data));
 }
 function updateRun(monthId, weekId, sIdx, field, val) {
   const data = getRunData(monthId, weekId, sIdx);
@@ -483,7 +493,7 @@ function removeLancio(monthId, weekId, sIdx, i) {
 }
 
 function completeSession(monthId, weekId, sIdx) {
-  dbSet(`${monthId}_${weekId}_s${sIdx}_meta_done`, '1');
+  dbSet(mk(monthId, weekId, sIdx, 'meta', 'done'), '1');
   triggerCelebration();
   renderSessionContent();
 }
@@ -561,53 +571,54 @@ function launchConfetti() {
 // ---- PROGRESS ----
 function renderProgress() {
   const allGym = getAllGymSessions().filter(x => !x.runOnly);
-  const gymDone = allGym.filter(x => dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1').length;
-  const muscleLevel = Math.min(7, Math.floor(gymDone/3));
-  const gymDots = allGym.map((x, i) => {
-    const done = dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1';
-    return `<div class="session-dot ${done?'done':''}">${done?'✓':i+1}</div>`;
-  }).join('');
+  const gymDone = allGym.filter(x => dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1').length;
+  // Omino grows indefinitely: 1 level per 5 sessions, no cap
+  const muscleLevel = Math.min(20, Math.floor(gymDone / 5));
 
-  // Run sessions
-  const allRun = [];
-  MONTHS.forEach(m => m.weeks.forEach(w => {
-    for (let s = 0; s < w.sessions; s++) {
-      if (w.runOnly || dbGet(`run_override_${m.id}_${w.id}_s${s}`) === '1') {
-        allRun.push({ monthId: m.id, weekId: w.id, sIdx: s });
-      }
-    }
-  }));
-  const runDone = allRun.filter(x => dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1').length;
+  // Dots grouped by month
+  let dotsByMonth = '';
+  MONTHS.forEach(m => {
+    const gymSessions = m.weeks.filter(w => !w.runOnly).flatMap(w =>
+      Array.from({length: w.sessions}, (_, s) => ({ monthId: m.id, weekId: w.id, sIdx: s }))
+    );
+    if (!gymSessions.length) return;
+    const dots = gymSessions.map((x, i) => {
+      const done = dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1';
+      return `<div class="session-dot ${done?'done':''}">${done?'✓':''}</div>`;
+    }).join('');
+    dotsByMonth += `<div style="margin-bottom:.5rem;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;">${m.label}</div><div class="sessions-grid" style="margin-bottom:1rem;">${dots}</div>`;
+  });
 
   let strengthHtml = '<div class="card"><div class="card-title" style="margin-bottom:1rem;">Progressione pesi</div>';
   EXERCISES.forEach(ex => {
-    const weights = allGym.filter(x => dbGet(`${x.monthId}_${x.weekId}_s${x.sIdx}_meta_done`) === '1').map(x => getKgForSession(ex.id, x.monthId, x.weekId, x.sIdx));
+    const weights = allGym
+      .filter(x => dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1')
+      .map(x => getKgForSession(ex.id, x.monthId, x.weekId, x.sIdx));
     if (!weights.length) return;
     const gain = weights[weights.length-1] - weights[0];
-    strengthHtml += `<div style="margin-bottom:.75rem;"><div style="font-size:13px;font-weight:500;">${ex.name}</div><div style="font-size:12px;color:#888;">${weights[0]} → ${weights[weights.length-1]} kg ${gain>0?`<span style="color:#4caf50">+${gain}kg</span>`:''}</div></div>`;
+    strengthHtml += `<div style="margin-bottom:.75rem;">
+      <div style="font-size:13px;font-weight:500;">${ex.name}</div>
+      <div style="font-size:12px;color:#888;">${weights[0]} → ${weights[weights.length-1]} kg ${gain>0?`<span style="color:#4caf50">+${gain}kg</span>`:''}</div>
+    </div>`;
   });
   strengthHtml += '</div>';
 
   document.getElementById('page-progress').innerHTML = `
     <div class="card">
-      <div class="card-title" style="margin-bottom:.75rem;">💪 Palestra — ${gymDone}/${allGym.length} sessioni</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${allGym.length?Math.round(gymDone/allGym.length*100):0}%;"></div></div>
-      <div style="font-size:13px;color:#888;margin-bottom:1rem;">${allGym.length?Math.round(gymDone/allGym.length*100):0}% completato</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+        <div class="card-title">💪 ${gymDone} sessioni completate</div>
+      </div>
       <div class="stickman-wrap">${buildStickman(muscleLevel)}</div>
-      <div class="sessions-grid">${gymDots}</div>
+      ${dotsByMonth}
       <button class="add-month-btn" style="margin-top:.5rem;" onclick="addMonth();showPage('training')">+ Aggiungi mese</button>
     </div>
-    ${allRun.length ? `<div class="card">
-      <div class="card-title" style="margin-bottom:.75rem;">🏃 Corsa — ${runDone}/${allRun.length} sessioni</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${Math.round(runDone/allRun.length*100)}%;background:linear-gradient(90deg,#4d96ff,#4cc9f0);"></div></div>
-      <div style="font-size:13px;color:#888;">${Math.round(runDone/allRun.length*100)}% completato</div>
-    </div>` : ''}
     ${strengthHtml}
   `;
 }
 
 function buildStickman(level) {
-  const armW=4+level*1.5, legW=4+level*1.5, bodyW=8+level*2;
+  const capped = Math.min(level, 7);
+  const armW=4+capped*1.5, legW=4+capped*1.5, bodyW=8+capped*2;
   const color=level===0?'#aaa':level<3?'#888':level<6?'#555':'#1a1a1a';
   return `<svg width="120" height="210" viewBox="0 0 120 210" xmlns="http://www.w3.org/2000/svg">
     <circle cx="60" cy="30" r="20" fill="none" stroke="${color}" stroke-width="3"/>
@@ -615,14 +626,14 @@ function buildStickman(level) {
     <circle cx="67" cy="27" r="2.5" fill="${color}"/>
     <path d="M 52 35 Q 60 ${42+level} 68 35" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
     <line x1="60" y1="50" x2="60" y2="120" stroke="${color}" stroke-width="${bodyW}" stroke-linecap="round"/>
-    ${level>=4?`<line x1="55" y1="75" x2="65" y2="75" stroke="#fff" stroke-width="2"/><line x1="55" y1="90" x2="65" y2="90" stroke="#fff" stroke-width="2"/>`:''}
+    ${capped>=4?`<line x1="55" y1="75" x2="65" y2="75" stroke="#fff" stroke-width="2"/><line x1="55" y1="90" x2="65" y2="90" stroke="#fff" stroke-width="2"/>`:''}
     <line x1="60" y1="65" x2="25" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
-    ${level>=2?`<ellipse cx="40" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(-40 40 78)"/>`:''}
+    ${capped>=2?`<ellipse cx="40" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(-40 40 78)"/>`:''}
     <line x1="60" y1="65" x2="95" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
-    ${level>=2?`<ellipse cx="80" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(40 80 78)"/>`:''}
+    ${capped>=2?`<ellipse cx="80" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(40 80 78)"/>`:''}
     <line x1="60" y1="120" x2="35" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
     <line x1="60" y1="120" x2="85" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
-    <text x="60" y="200" text-anchor="middle" font-size="11" fill="#aaa">Livello ${level}/7</text>
+    <text x="60" y="200" text-anchor="middle" font-size="11" fill="#aaa">Sessioni: ${level*5}+</text>
   </svg>`;
 }
 
