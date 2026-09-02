@@ -11,13 +11,13 @@
   :root{
     --bg:#FFFFFF; --panel:#FFFFFF; --ink:#14141A; --ink-soft:#6B6B76; --ink-faint:#A8A8B3;
     --line:#ECECF2; --line-strong:#DDDDE6; --shadow:0 6px 18px rgba(20,20,26,.08);
-    --accent:#6C5CE7; --accent-soft:rgba(108,92,231,.1); --radius:20px; --radius-sm:12px;
+    --accent:#007BFF; --accent-soft:rgba(0,123,255,.1); --radius:20px; --radius-sm:12px;
     --danger:#EF4444; --ok:#10B981;
   }
   html[data-theme="dark"]{
     --bg:#0A0A0D; --panel:#17171D; --ink:#F3F3F7; --ink-soft:#9E9EAC; --ink-faint:#6A6A78;
     --line:#232329; --line-strong:#2E2E36; --shadow:0 6px 20px rgba(0,0,0,.45);
-    --accent-soft:rgba(108,92,231,.18);
+    --accent-soft:rgba(0,123,255,.18);
   }
   *{ box-sizing:border-box; }
   body{
@@ -26,7 +26,7 @@
     transition:background .2s,color .2s;
   }
   h1,h2,h3{ font-family:'Baloo 2',sans-serif; }
-  .wrap{ max-width:820px; margin:0 auto; }
+  .wrap{ max-width:1400px; margin:0 auto; }
 
   /* ---------- Header ---------- */
   .head{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:6px; flex-wrap:wrap; }
@@ -80,15 +80,41 @@
 
   .section-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin:26px 0 10px 4px; display:flex; align-items:center; gap:8px; }
   .section-label.today{ color:var(--accent); }
+
+  .task-board{ display:grid; grid-template-columns:2fr 1fr; gap:16px; align-items:start; margin-top:22px; }
+  .task-main{ display:grid; grid-template-columns:1fr 1fr; gap:16px; min-width:0; }
+  .task-sidebar{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+  .task-col{ min-width:0; background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:12px; box-shadow:var(--shadow); }
+  .task-col.compact{ padding:10px; }
+  .task-col.compact .col-title{ font-size:12px; }
+  .task-col.compact ul.tasks li.task{ padding:7px 6px 7px 8px; }
+  .task-col.compact .task-text{ font-size:13px; }
+  .col-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 2px; }
+  .col-title{ font-size:13px; font-weight:800; color:var(--ink-soft); font-family:'Baloo 2',sans-serif; }
+  .col-head.today .col-title{ color:var(--accent); }
+  .col-head.domani .col-title{ color:#F97316; }
+  .col-head.domani ~ .today-box, #domaniBox{ border-color:rgba(249,115,22,.25); }
+  /* tablet: la sidebar scende sotto, ma resta divisa in 2 (non impilata a caso) */
+  @media (max-width: 980px){
+    .task-board{ grid-template-columns:1fr; }
+    .task-sidebar{ flex-direction:row; }
+    .task-sidebar .task-col{ flex:1; }
+  }
+  /* mobile: stacking "furbo" — Oggi prima (priorità assoluta), poi Deposito,
+     poi Domani e Programmate più in basso e più compatte */
+  @media (max-width: 620px){
+    .task-main{ grid-template-columns:1fr; }
+    .task-sidebar{ flex-direction:column; }
+  }
   .count-pill{ background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:1px 9px; font-size:11px; font-weight:700; }
 
-  .today-box{ background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:8px; margin-bottom:6px; box-shadow:var(--shadow); }
-  .today-box .empty-mini{ color:var(--ink-faint); font-size:13px; padding:14px 12px; text-align:center; }
+  .today-box{ background:transparent; border:none; border-radius:0; padding:0; margin-bottom:0; box-shadow:none; }
+  .today-box .empty-mini{ color:var(--ink-faint); font-size:13px; padding:14px 4px; text-align:center; }
 
   ul.tasks{ list-style:none; margin:0; padding:0; }
   li.task{ display:flex; align-items:flex-start; gap:10px; padding:10px 8px 10px 12px; border-radius:var(--radius-sm);
-    margin-bottom:2px; border-left:3px solid transparent; transition:background .15s, opacity .15s; background:var(--panel); }
-  li.task:hover{ background:var(--bg); }
+    margin-bottom:6px; border-left:3px solid transparent; transition:background .15s, opacity .15s; background:var(--bg); }
+  li.task:hover{ background:var(--line); }
   li.task.dragging{ opacity:.35; }
   li.task.drop-target{ border-top:2px solid var(--accent); }
   li.task[data-level="1"]{ margin-left:26px; border-left-color:var(--line-strong); }
@@ -318,9 +344,7 @@
 <body>
   <div class="wrap">
     <div class="head">
-      <div>
-        <h1>Life OS</h1>
-      </div>
+      <div></div>
       <div style="display:flex; align-items:center; gap:8px;">
         <span id="syncstat">salvato in locale</span>
         <button class="iconbtn" id="themeBtn" title="Cambia tema">🌙</button>
@@ -349,19 +373,39 @@
         <kbd>Shift</kbd>+<kbd>Tab</kbd> rientra &nbsp;•&nbsp; trascina ⠿ per riordinare
       </div>
 
-      <div class="section-label today">1 · Oggi <span class="count-pill" id="todayCount">0</span></div>
-      <div class="today-box" id="todayBox">
-        <ul class="tasks" id="todayList"></ul>
-        <div class="empty-mini" id="todayEmpty">Niente in programma per oggi.</div>
+      <div class="task-board">
+        <div class="task-main">
+          <div class="task-col" id="colToday">
+            <div class="col-head today"><span class="col-title">Oggi</span><span class="count-pill" id="todayCount">0</span></div>
+            <div class="today-box" id="todayBox">
+              <ul class="tasks" id="todayList"></ul>
+              <div class="empty-mini" id="todayEmpty">Niente in programma per oggi.</div>
+            </div>
+          </div>
+
+          <div class="task-col" id="colDeposito">
+            <div class="col-head"><span class="col-title">Deposito</span><span class="count-pill" id="depositCount">0</span></div>
+            <ul class="tasks" id="depositList"></ul>
+            <div class="empty-state" id="emptyState" style="display:none;">Nessuna task. Scrivine una qui sopra.</div>
+          </div>
+        </div>
+
+        <div class="task-sidebar">
+          <div class="task-col compact" id="colDomani">
+            <div class="col-head domani"><span class="col-title">Domani</span><span class="count-pill" id="domaniCount">0</span></div>
+            <div class="today-box domani-box" id="domaniBox">
+              <ul class="tasks" id="domaniList"></ul>
+              <div class="empty-mini" id="domaniEmpty">Niente in programma per domani.</div>
+            </div>
+          </div>
+
+          <div class="task-col compact" id="colProgrammate">
+            <div class="col-head"><span class="col-title">Programmate</span><span class="count-pill" id="scheduledCount">0</span></div>
+            <ul class="tasks" id="scheduledList"></ul>
+            <div class="empty-mini" id="scheduledEmpty" style="display:none; color:var(--ink-faint); font-size:13px; padding:10px 4px;">Nessuna task con data futura.</div>
+          </div>
+        </div>
       </div>
-
-      <div class="section-label">2 · Deposito <span class="count-pill" id="depositCount">0</span></div>
-      <ul class="tasks" id="depositList"></ul>
-      <div class="empty-state" id="emptyState" style="display:none;">Nessuna task. Scrivine una qui sopra.</div>
-
-      <div class="section-label">3 · Programmate <span class="count-pill" id="scheduledCount">0</span></div>
-      <ul class="tasks" id="scheduledList"></ul>
-      <div class="empty-mini" id="scheduledEmpty" style="display:none; color:var(--ink-faint); font-size:13px; padding:10px 4px;">Nessuna task con data futura.</div>
     </section>
 
     <!-- ============ SPESE (placeholder) ============ -->
@@ -441,7 +485,7 @@
         <h3>Categorie e colori</h3>
         <div id="catList"></div>
         <div class="addcat">
-          <input type="color" id="newCatColor" value="#6C5CE7">
+          <input type="color" id="newCatColor" value="#007BFF">
           <input type="text" id="newCatLabel" placeholder="Nome nuova categoria">
           <button class="btn primary" id="addCatConfirm">Aggiungi</button>
         </div>
@@ -492,6 +536,10 @@
   const todayEmpty = document.getElementById("todayEmpty");
   const todayBox = document.getElementById("todayBox");
   const todayCount = document.getElementById("todayCount");
+  const domaniList = document.getElementById("domaniList");
+  const domaniEmpty = document.getElementById("domaniEmpty");
+  const domaniBox = document.getElementById("domaniBox");
+  const domaniCount = document.getElementById("domaniCount");
   const depositList = document.getElementById("depositList");
   const depositCount = document.getElementById("depositCount");
   const emptyState = document.getElementById("emptyState");
@@ -520,6 +568,21 @@
     }
     dragId = null;
   });
+  // Drop sull'area vuota della box "Domani": assegna la data di domani.
+  domaniBox.addEventListener("dragover", (e) => e.preventDefault());
+  domaniBox.addEventListener("drop", (e) => {
+    if (e.target !== domaniBox && e.target !== domaniEmpty) return;
+    e.preventDefault();
+    if (!dragId) return;
+    const moved = tasks.find(x => x.id === dragId);
+    if (moved) {
+      moved.pinnedToday = false;
+      moved.date = tomorrowISO();
+      save();
+      render();
+    }
+    dragId = null;
+  });
   // Drop sull'area vuota del Deposito: rimuove data/pin, la task torna "senza data".
   depositList.addEventListener("dragover", (e) => e.preventDefault());
   depositList.addEventListener("drop", (e) => {
@@ -538,6 +601,11 @@
 
   function todayISO() {
     const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function tomorrowISO() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
 
@@ -579,6 +647,8 @@
       const iso = todayISO();
       if (t.date === iso) {
         label = "oggi";
+      } else if (t.date < iso) {
+        label = "scaduta"; // promossa comunque a Oggi da isOggi(), ma lo segnaliamo nel chip
       } else {
         const d = new Date(t.date + "T00:00:00");
         label = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
@@ -589,10 +659,15 @@
   }
 
   function isOggi(t) {
-    return t.pinnedToday || t.date === todayISO();
+    // promozione automatica: una task programmata per una data passata (o per oggi)
+    // diventa una task di "Oggi" appena arriva/passa quella data, senza doverla toccare.
+    return t.pinnedToday || (!!t.date && t.date <= todayISO());
+  }
+  function isDomani(t) {
+    return !isOggi(t) && t.date === tomorrowISO();
   }
   function isScheduled(t) {
-    return !!t.date && !isOggi(t);
+    return !!t.date && !isOggi(t) && !isDomani(t);
   }
   function isDeposit(t) {
     return !t.date && !isOggi(t);
@@ -632,7 +707,7 @@
     const section = opts.section || "deposit";
     const flat = section !== "deposit";       // niente indentazione fuori dal Deposito
     const draggableRow = section !== "scheduled"; // le Programmate sono ordinate per data, non a mano
-    const showPriority = section === "today" || section === "deposit";
+    const showPriority = section === "today" || section === "domani" || section === "deposit";
 
     const li = document.createElement("li");
     li.className = "task";
@@ -763,7 +838,21 @@
       unpinBtn.title = "Togli da oggi";
       unpinBtn.style.fontSize = "10px";
       unpinBtn.addEventListener("mousedown", (e) => e.preventDefault());
-      unpinBtn.onclick = () => { t.pinnedToday = false; save(); render(); };
+      unpinBtn.onclick = () => {
+        // se qui c'è per via di una data passata/di oggi (promozione automatica),
+        // togliere solo il pin non basta: va tolta anche la data, altrimenti resta "oggi".
+        t.pinnedToday = false;
+        if (t.date && t.date <= todayISO()) t.date = null;
+        save(); render();
+      };
+      rowActions.appendChild(unpinBtn);
+    } else if (section === "domani") {
+      const unpinBtn = document.createElement("button");
+      unpinBtn.textContent = "✕ domani";
+      unpinBtn.title = "Togli da domani";
+      unpinBtn.style.fontSize = "10px";
+      unpinBtn.addEventListener("mousedown", (e) => e.preventDefault());
+      unpinBtn.onclick = () => { t.date = null; save(); render(); };
       rowActions.appendChild(unpinBtn);
     }
 
@@ -791,7 +880,8 @@
     if (!moved) return;
     // Se il drop avviene dentro "Oggi", la task va pinnata come oggi — altrimenti
     // sparisce dalla sezione appena si ridisegna.
-    if (targetSection === "today") moved.pinnedToday = true;
+    if (targetSection === "today") { moved.pinnedToday = true; }
+    if (targetSection === "domani") { moved.pinnedToday = false; moved.date = tomorrowISO(); }
     if (targetSection === "deposit") { moved.pinnedToday = false; moved.date = null; }
     const fromIdx = tasks.findIndex(x => x.id === sourceId);
     tasks.splice(fromIdx, 1);
@@ -812,6 +902,16 @@
     todayCount.textContent = todays.filter(t => !t.done).length;
     todayEmpty.style.display = todays.length === 0 ? "block" : "none";
     todays.forEach(t => todayList.appendChild(makeTaskRow(t, { section: "today" })));
+
+    // Domani (data = domani, escluse quelle già promosse a Oggi)
+    domaniList.innerHTML = "";
+    const domanis = tasks.filter(isDomani).sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return (a.time || "99:99").localeCompare(b.time || "99:99");
+    });
+    domaniCount.textContent = domanis.filter(t => !t.done).length;
+    domaniEmpty.style.display = domanis.length === 0 ? "block" : "none";
+    domanis.forEach(t => domaniList.appendChild(makeTaskRow(t, { section: "domani" })));
 
     // 2 · Deposito (nessuna data, non pinnate oggi) — ordine manuale, indentabile
     depositList.innerHTML = "";
@@ -834,27 +934,30 @@
 
   const MONTH_NAMES_IT = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
 
-  /* ---- campo orario unico "hh:mm" (sostituisce i due input separati) ---- */
+  /* ---- campo orario unico "hh mm" (sostituisce i due input separati) ----
+     Accetta sia lo spazio che i due punti come separatore: digitando
+     "22 23" o "22:23" ottieni lo stesso risultato — niente tasti scomodi. */
   function createTimeField(initial) {
     const inp = document.createElement("input");
     inp.type = "text";
     inp.className = "time-field";
-    inp.placeholder = "hh:mm";
+    inp.placeholder = "hh mm";
     inp.inputMode = "numeric";
     inp.maxLength = 5;
-    inp.value = initial || "";
+    inp.value = initial ? initial.replace(":", " ") : "";
     inp.addEventListener("keydown", (e) => {
       inp.dataset.deleting = (e.key === "Backspace" || e.key === "Delete") ? "1" : "";
     });
     inp.addEventListener("input", () => {
-      let v = inp.value.replace(/[^\d:]/g, "");
-      if (v.length === 2 && !v.includes(":") && inp.dataset.deleting !== "1") v += ":";
+      let v = inp.value.replace(/[^\d: ]/g, "").replace(":", " ");
+      const digitsOnly = v.replace(/\s/g, "");
+      if (digitsOnly.length === 2 && !v.includes(" ") && inp.dataset.deleting !== "1") v = digitsOnly + " ";
       inp.value = v.slice(0, 5);
     });
     return inp;
   }
   function readTimeField(inp) {
-    const m = inp.value.match(/^(\d{1,2}):(\d{2})$/);
+    const m = inp.value.trim().match(/^(\d{1,2})[: ](\d{2})$/);
     if (!m) return null;
     const hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
     if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
@@ -960,55 +1063,94 @@
   }
 
   /* ================= RICONOSCIMENTO LINGUAGGIO NATURALE =================
-     Riconosce nel testo della task espressioni come "venerdì alle 16" o
-     "domani alle 9:30" e propone data/ora, ripulendo il testo dalla frase
-     riconosciuta. Copre solo italiano semplice, di proposito: niente ambiguità
-     silenziose, l'utente vede sempre l'anteprima prima di premere invio. */
+     Riconosce nel testo della task espressioni come "venerdì alle 16",
+     "domani alle 9:30", "il 15 alle 10" o "15 settembre alle 10:30" e
+     propone data/ora, ripulendo il testo dalla frase riconosciuta.
+     Struttura a controlli espliciti in ordine di priorità (non un'unica
+     regex magica), così è facile capire ed estendere cosa viene riconosciuto. */
   const DAY_WORDS_IT = {
     "lunedi": 1, "martedi": 2, "mercoledi": 3, "giovedi": 4, "venerdi": 5, "sabato": 6, "domenica": 0
+  };
+  const MONTH_WORDS_IT = {
+    "gennaio":1,"febbraio":2,"marzo":3,"aprile":4,"maggio":5,"giugno":6,
+    "luglio":7,"agosto":8,"settembre":9,"ottobre":10,"novembre":11,"dicembre":12
   };
   function stripAccents(s) {
     return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
+  function isoFromParts(y, m, d) {
+    return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  }
+
   function parseNaturalWhen(rawText) {
     if (!rawText) return null;
     const norm = stripAccents(rawText.toLowerCase());
-    const dayRegex = /\b(lunedi|martedi|mercoledi|giovedi|venerdi|sabato|domenica|oggi|domani|dopodomani)\b/;
-    const timeRegex = /\balle\s+(\d{1,2})(?:[:.](\d{2}))?\b/;
-    const dm = norm.match(dayRegex);
-    const tm = norm.match(timeRegex);
-    if (!dm && !tm) return null;
+    const now = new Date();
+    let dateMatch = null;   // { index, length, iso }
+    let timeMatch = null;   // { index, length, hhmm }
+
+    // --- 1. data: oggi / domani / dopodomani -----------------------------
+    let m;
+    if ((m = norm.match(/\boggi\b/))) {
+      dateMatch = { index: m.index, length: m[0].length, iso: todayISO() };
+    } else if ((m = norm.match(/\bdopodomani\b/))) {
+      const d = new Date(now); d.setDate(d.getDate() + 2);
+      dateMatch = { index: m.index, length: m[0].length, iso: isoFromParts(d.getFullYear(), d.getMonth()+1, d.getDate()) };
+    } else if ((m = norm.match(/\bdomani\b/))) {
+      dateMatch = { index: m.index, length: m[0].length, iso: tomorrowISO() };
+    }
+    // --- 2. data: giorno della settimana (lunedì, martedì, ...) ----------
+    if (!dateMatch && (m = norm.match(/\b(lunedi|martedi|mercoledi|giovedi|venerdi|sabato|domenica)\b/))) {
+      const targetDow = DAY_WORDS_IT[m[1]];
+      const curDow = now.getDay();
+      let diff = (targetDow - curDow + 7) % 7;
+      if (diff === 0) diff = 7; // stesso giorno della settimana -> si intende la prossima occorrenza
+      const d = new Date(now); d.setDate(d.getDate() + diff);
+      dateMatch = { index: m.index, length: m[0].length, iso: isoFromParts(d.getFullYear(), d.getMonth()+1, d.getDate()) };
+    }
+    // --- 3. data: "15 settembre" (numero + nome mese) --------------------
+    if (!dateMatch && (m = norm.match(/\b(\d{1,2})\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\b/))) {
+      const day = parseInt(m[1], 10);
+      const month = MONTH_WORDS_IT[m[2]];
+      if (day >= 1 && day <= 31) {
+        let year = now.getFullYear();
+        // se la data così com'è è già passata quest'anno, si intende l'anno prossimo
+        const candidate = new Date(year, month - 1, day);
+        if (candidate < new Date(now.getFullYear(), now.getMonth(), now.getDate())) year += 1;
+        dateMatch = { index: m.index, length: m[0].length, iso: isoFromParts(year, month, day) };
+      }
+    }
+    // --- 4. data: "il 15" (solo numero, richiede "il" davanti per evitare falsi positivi) ---
+    if (!dateMatch && (m = norm.match(/\bil\s+(\d{1,2})\b/))) {
+      const day = parseInt(m[1], 10);
+      if (day >= 1 && day <= 31) {
+        const y = now.getFullYear(), mo = now.getMonth();
+        let candidate = new Date(y, mo, day);
+        if (candidate < new Date(y, mo, now.getDate())) candidate = new Date(y, mo + 1, day); // già passato questo mese -> mese prossimo
+        dateMatch = { index: m.index, length: m[0].length, iso: isoFromParts(candidate.getFullYear(), candidate.getMonth()+1, candidate.getDate()) };
+      }
+    }
+
+    // --- 5. ora: "alle hh" oppure "alle hh:mm" / "alle hh.mm" -------------
+    if ((m = norm.match(/\balle\s+(\d{1,2})(?:[:.](\d{2}))?\b/))) {
+      const hh = parseInt(m[1], 10);
+      const mm = m[2] ? parseInt(m[2], 10) : 0;
+      if (hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59) {
+        timeMatch = { index: m.index, length: m[0].length, hhmm: `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}` };
+      }
+    }
+
+    if (!dateMatch && !timeMatch) return null;
 
     const result = {};
-    if (dm) {
-      const word = dm[1];
-      const now = new Date();
-      let base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      if (word === "domani") base.setDate(base.getDate() + 1);
-      else if (word === "dopodomani") base.setDate(base.getDate() + 2);
-      else if (word !== "oggi") {
-        const targetDow = DAY_WORDS_IT[word];
-        const curDow = now.getDay();
-        let diff = (targetDow - curDow + 7) % 7;
-        if (diff === 0) diff = 7; // stesso giorno della settimana -> si intende la prossima occorrenza
-        base.setDate(base.getDate() + diff);
-      }
-      result.date = base.getFullYear() + "-" + String(base.getMonth() + 1).padStart(2, "0") + "-" + String(base.getDate()).padStart(2, "0");
-    }
-    if (tm) {
-      const hh = parseInt(tm[1], 10);
-      const mm = tm[2] ? parseInt(tm[2], 10) : 0;
-      if (hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59) {
-        result.time = String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
-      }
-    }
-    if (!result.date && !result.time) return null;
+    if (dateMatch) result.date = dateMatch.iso;
+    if (timeMatch) result.time = timeMatch.hhmm;
 
-    // rimuove dal testo originale le porzioni riconosciute (stessi indici: stripAccents
-    // preserva la lunghezza carattere per carattere per l'italiano)
+    // rimuove dal testo originale le porzioni riconosciute (gli indici combaciano:
+    // stripAccents preserva la lunghezza carattere per carattere per l'italiano)
     const spans = [];
-    if (dm) spans.push([dm.index, dm.index + dm[0].length]);
-    if (tm) spans.push([tm.index, tm.index + tm[0].length]);
+    if (dateMatch) spans.push([dateMatch.index, dateMatch.index + dateMatch.length]);
+    if (timeMatch) spans.push([timeMatch.index, timeMatch.index + timeMatch.length]);
     spans.sort((a, b) => b[0] - a[0]);
     let cleanText = rawText;
     spans.forEach(([s, e]) => { cleanText = cleanText.slice(0, s) + cleanText.slice(e); });
@@ -1239,7 +1381,7 @@ function defaultCategories(){
   return {
     neutro:   {label:'Pausa / buffer',        color:'#8E8E9A'},
     routine:  {label:'Routine mattutina',     color:'#10B981'},
-    studio:   {label:'Studio',                color:'#6C5CE7'},
+    studio:   {label:'Studio',                color:'#007BFF'},
     ricerca:  {label:'Ricerca / volontariato',color:'#F97316'},
     sport:    {label:'Sport',                 color:'#84CC16'},
     relazioni:{label:'Relazioni',             color:'#EC4899'},
@@ -2128,7 +2270,7 @@ function renderProgress() {
 function buildStickman(level) {
   const capped = Math.min(level, 7);
   const armW=4+capped*1.5, legW=4+capped*1.5, bodyW=8+capped*2;
-  const color=level===0?'#A8A8B3':level<3?'#8b8b9a':level<6?'#6B6B76':'#6C5CE7';
+  const color=level===0?'#A8A8B3':level<3?'#8b8b9a':level<6?'#6B6B76':'#007BFF';
   return `<svg width="120" height="210" viewBox="0 0 120 210" xmlns="http://www.w3.org/2000/svg">
     <circle cx="60" cy="30" r="20" fill="none" stroke="${color}" stroke-width="3"/>
     <circle cx="53" cy="27" r="2.5" fill="${color}"/>
