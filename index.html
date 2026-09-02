@@ -236,6 +236,16 @@
   .sync-status{ position:fixed; bottom:16px; right:16px; font-size:11px; color:var(--ink-faint); background:var(--panel);
     border:1.5px solid var(--line); padding:6px 12px; border-radius:999px; box-shadow:var(--shadow); }
 
+  /* ================= LOGIN GATE ================= */
+  .login-overlay{ position:fixed; inset:0; background:var(--bg); z-index:5000; display:none;
+    align-items:center; justify-content:center; }
+  .login-overlay.show{ display:flex; }
+  .login-card{ background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:32px; width:320px; max-width:90vw; }
+  .login-card h2{ font-family:'Baloo 2',sans-serif; margin:0 0 4px; }
+  .login-card input{ width:100%; padding:10px 12px; border-radius:var(--radius-sm); border:1.5px solid var(--line-strong);
+    background:var(--bg); color:var(--ink); font-family:inherit; font-size:14px; margin-bottom:8px; }
+
   /* ================= SETTIMANA IDEALE (planner) ================= */
   #panel-week .toolbar{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
   #panel-week .legend{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
@@ -396,11 +406,23 @@
 </style>
 </head>
 <body>
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <h2>Life OS</h2>
+      <p class="hint" style="margin-bottom:16px;">Accedi una volta per dispositivo — la sessione resta salvata.</p>
+      <input type="email" id="loginEmail" placeholder="Email" autocomplete="username">
+      <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+      <button class="btn primary" id="loginBtn" style="width:100%; margin-top:10px;">Accedi</button>
+      <p id="loginError" style="color:var(--danger); font-size:12px; margin-top:10px; display:none;"></p>
+    </div>
+  </div>
+
   <div class="wrap">
     <div class="head">
       <div></div>
       <div style="display:flex; align-items:center; gap:8px;">
         <span id="syncstat">salvato in locale</span>
+        <button class="iconbtn" id="logoutBtn" title="Esci" style="display:none;">🚪</button>
         <button class="iconbtn" id="themeBtn" title="Cambia tema">🌙</button>
       </div>
     </div>
@@ -587,6 +609,87 @@
 
   <div class="sync-status" id="syncStatusFloat">salvato in locale</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================= CLIENT SUPABASE CONDIVISO + LOGIN GATE =================
+   Un solo client per tutta l'app (planner, allenamenti, task) così sessione e
+   token restano coerenti. Finché non sei autenticato, l'app resta nascosta
+   dietro l'overlay di login — dopo il primo accesso su un dispositivo la
+   sessione resta salvata nel browser e non te lo richiede più. */
+(function(){
+  const SUPABASE_URL = "https://rmnvlhqfqjqcpqawodsb.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtbnZsaHFmcWpxY3BxYXdvZHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NTI1NDMsImV4cCI6MjA5ODIyODU0M30.ANBwMezQEnb7tYVMtN6os1yZv8wnNjEQLtKI48BreeM";
+
+  window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.sbAccessToken = null;
+  window.sbAnonKey = SUPABASE_ANON_KEY;
+
+  const readyQueue = [];
+  let isReady = false;
+  window.onAuthReady = function (fn) {
+    if (isReady) fn();
+    else readyQueue.push(fn);
+  };
+  function markReady() {
+    if (isReady) return;
+    isReady = true;
+    readyQueue.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
+    readyQueue.length = 0;
+  }
+
+  const overlay = document.getElementById("loginOverlay");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginEmail = document.getElementById("loginEmail");
+  const loginPassword = document.getElementById("loginPassword");
+  const loginError = document.getElementById("loginError");
+
+  function showApp() {
+    overlay.classList.remove("show");
+    logoutBtn.style.display = "";
+  }
+  function showLogin() {
+    overlay.classList.add("show");
+    logoutBtn.style.display = "none";
+  }
+
+  async function doLogin() {
+    loginError.style.display = "none";
+    const { error } = await window.sb.auth.signInWithPassword({
+      email: loginEmail.value.trim(),
+      password: loginPassword.value,
+    });
+    if (error) {
+      loginError.textContent = "Accesso fallito: " + error.message;
+      loginError.style.display = "block";
+    }
+    // il resto (showApp, markReady) parte da onAuthStateChange qui sotto
+  }
+  loginBtn.addEventListener("click", doLogin);
+  loginPassword.addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
+  loginEmail.addEventListener("keydown", (e) => { if (e.key === "Enter") loginPassword.focus(); });
+
+  logoutBtn.addEventListener("click", async () => {
+    await window.sb.auth.signOut();
+    location.reload();
+  });
+
+  window.sb.auth.onAuthStateChange((event, session) => {
+    window.sbAccessToken = session ? session.access_token : null;
+    if (session) {
+      showApp();
+      markReady();
+    } else {
+      showLogin();
+    }
+  });
+
+  // controllo iniziale (onAuthStateChange scatta comunque anche al primo load,
+  // ma partiamo già con l'overlay visibile finché non arriva la risposta)
+  showLogin();
+})();
+</script>
+
 <script>
 (function(){
   /* ================= THEME ================= */
@@ -700,13 +803,50 @@
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
 
+  const TASKS_ROW_ID = "federico";
+  let tasksSaveTimer = null;
+
   function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     const label = "salvato · " + new Date().toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"});
     syncStatus.textContent = label;
     syncStatusFloat.textContent = label;
-    // Placeholder per sync Supabase (fase 2, stessa tabella/pattern di planner.html):
-    // window.storage?.set('tasks', JSON.stringify(tasks), false);
+    scheduleTasksSync();
+  }
+
+  function scheduleTasksSync() {
+    if (!window.sb) return;
+    clearTimeout(tasksSaveTimer);
+    tasksSaveTimer = setTimeout(async () => {
+      try {
+        const { error } = await window.sb.from("tasks_state").upsert({
+          id: TASKS_ROW_ID, data: tasks, updated_at: new Date().toISOString()
+        });
+        if (error) throw error;
+        syncStatus.textContent = "sincronizzato · " + new Date().toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"});
+        syncStatusFloat.textContent = syncStatus.textContent;
+      } catch (e) {
+        console.warn("Sync task su Supabase fallita", e);
+        syncStatus.textContent = "errore sync (salvato in locale)";
+        syncStatusFloat.textContent = syncStatus.textContent;
+      }
+    }, 700);
+  }
+
+  async function loadTasksFromSupabase() {
+    if (!window.sb) return;
+    try {
+      const { data, error } = await window.sb.from("tasks_state").select("data").eq("id", TASKS_ROW_ID).maybeSingle();
+      if (error) throw error;
+      if (data && data.data) {
+        tasks = data.data;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        render();
+        renderProjects();
+      }
+    } catch (e) {
+      console.warn("Caricamento task da Supabase fallito, resto sui dati locali", e);
+    }
   }
 
   function uid() {
@@ -1842,23 +1982,15 @@
   renderProjects();
 
   render();
+  window.onAuthReady(loadTasksFromSupabase);
 })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ================= SETTIMANA IDEALE (planner) ================= */
 (function(){
-const SUPABASE_URL = 'https://rmnvlhqfqjqcpqawodsb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtbnZsaHFmcWpxY3BxYXdvZHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NTI1NDMsImV4cCI6MjA5ODIyODU0M30.ANBwMezQEnb7tYVMtN6os1yZv8wnNjEQLtKI48BreeM';
 const PLAN_ROW_ID = 'federico';
-
-let sb = null;
-try{
-  if(SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'INCOLLA_QUI_LA_TUA_ANON_KEY'){
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-}catch(e){ console.warn('Supabase non inizializzato', e); }
+const sb = window.sb; // client condiviso, autenticato dal login gate
 
 const DAY_NAMES = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
 const STORAGE_KEY = 'federico-planner-v2';
@@ -2271,7 +2403,7 @@ document.getElementById('wkExportBtn').addEventListener('click', exportJSON);
 document.getElementById('wkImportBtn').addEventListener('click', () => document.getElementById('importFile').click());
 document.getElementById('importFile').addEventListener('change', importJSON);
 
-init();
+window.onAuthReady(init);
 })();
 </script>
 
@@ -2356,7 +2488,7 @@ function mkKgOverride(monthId, weekId, sIdx, exId) { return `kg_override_${month
 
 async function apiFetch(method, body) {
   const url = `${SUPABASE_URL}/rest/v1/allenamento`;
-  const headers = { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", "Prefer": method === "POST" ? "resolution=merge-duplicates" : "" };
+  const headers = { "apikey": window.sbAnonKey, "Authorization": `Bearer ${window.sbAccessToken || window.sbAnonKey}`, "Content-Type": "application/json", "Prefer": method === "POST" ? "resolution=merge-duplicates" : "" };
   const res = await fetch(method === "GET" ? url + "?select=key,value" : url, { method, headers, body: body ? JSON.stringify(body) : undefined });
   if (method === "GET") return await res.json();
   return res.ok;
@@ -2793,7 +2925,7 @@ Object.assign(window, {
 document.getElementById('trTabTraining').addEventListener('click', () => showPage('training'));
 document.getElementById('trTabProgress').addEventListener('click', () => showPage('progress'));
 
-loadDB();
+window.onAuthReady(loadDB);
 })();
 </script>
 </body>
