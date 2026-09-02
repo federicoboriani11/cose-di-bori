@@ -988,41 +988,40 @@
   }
 
   function render() {
-    // 1 · Oggi
+    // 1 · Oggi (le completate spariscono subito dalla vista — restano comunque
+    // tracciate per il calendario "task passate")
     todayList.innerHTML = "";
-    const todays = tasks.filter(isOggi).sort((a, b) => {
-      if (a.done !== b.done) return a.done ? 1 : -1;
+    const todays = tasks.filter(t => isOggi(t) && !t.done).sort((a, b) => {
       return (a.time || "99:99").localeCompare(b.time || "99:99");
     });
-    todayCount.textContent = todays.filter(t => !t.done).length;
+    todayCount.textContent = todays.length;
     todayEmpty.style.display = todays.length === 0 ? "block" : "none";
     todays.forEach(t => todayList.appendChild(makeTaskRow(t, { section: "today" })));
 
     // Domani (data = domani, escluse quelle già promosse a Oggi)
     domaniList.innerHTML = "";
-    const domanis = tasks.filter(isDomani).sort((a, b) => {
-      if (a.done !== b.done) return a.done ? 1 : -1;
+    const domanis = tasks.filter(t => isDomani(t) && !t.done).sort((a, b) => {
       return (a.time || "99:99").localeCompare(b.time || "99:99");
     });
-    domaniCount.textContent = domanis.filter(t => !t.done).length;
+    domaniCount.textContent = domanis.length;
     domaniEmpty.style.display = domanis.length === 0 ? "block" : "none";
     domanis.forEach(t => domaniList.appendChild(makeTaskRow(t, { section: "domani" })));
 
     // 2 · Deposito (nessuna data, non pinnate oggi) — ordine manuale, indentabile
     depositList.innerHTML = "";
-    const deposits = tasks.filter(isDeposit);
+    const deposits = tasks.filter(t => isDeposit(t) && !t.done);
     emptyState.style.display = deposits.length === 0 ? "block" : "none";
-    depositCount.textContent = deposits.filter(t => !t.done).length;
+    depositCount.textContent = deposits.length;
     deposits.forEach((t) => depositList.appendChild(makeTaskRow(t, { section: "deposit" })));
 
     // 3 · Programmate (hanno una data, ma non è oggi) — ordinate per data/ora
     scheduledList.innerHTML = "";
-    const scheduled = tasks.filter(isScheduled).sort((a, b) => {
+    const scheduled = tasks.filter(t => isScheduled(t) && !t.done).sort((a, b) => {
       const da = a.date + " " + (a.time || "99:99");
       const db = b.date + " " + (b.time || "99:99");
       return da.localeCompare(db);
     });
-    scheduledCount.textContent = scheduled.filter(t => !t.done).length;
+    scheduledCount.textContent = scheduled.length;
     scheduledEmpty.style.display = scheduled.length === 0 ? "block" : "none";
     scheduled.forEach((t) => scheduledList.appendChild(makeTaskRow(t, { section: "scheduled" })));
   }
