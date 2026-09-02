@@ -77,6 +77,60 @@
 
   .hint{ color:var(--ink-faint); font-size:12px; margin:0 0 22px 2px; }
   .hint kbd{ background:var(--bg); border:1px solid var(--line-strong); border-radius:5px; padding:1px 6px; font-size:11px; font-family:inherit; }
+  .link-btn{ background:none; border:none; color:var(--accent); font-size:12px; font-weight:600; cursor:pointer; padding:0; font-family:inherit; }
+  .link-btn:hover{ text-decoration:underline; }
+
+  /* Modali/backdrop generici (riusati da import, calendario task passate, ecc.) */
+  .backdrop{ position:fixed; inset:0; background:rgba(10,10,13,.35); display:none; z-index:200; }
+  .backdrop.open{ display:block; }
+  .modal{ position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--panel); border-radius:var(--radius);
+    box-shadow:0 20px 50px rgba(0,0,0,.25); z-index:201; width:440px; max-width:90vw; max-height:82vh; overflow-y:auto;
+    padding:22px; display:none; }
+  .modal.open{ display:block; }
+  .modal h3{ margin:0 0 10px; font-size:18px; font-family:'Baloo 2',sans-serif; }
+  .modal .close-x{ position:absolute; top:18px; right:18px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-faint); }
+  .modal .row{ display:flex; gap:8px; }
+  #importTextarea{ width:100%; min-height:220px; font-family:inherit; font-size:13px; border:1.5px solid var(--line-strong);
+    border-radius:var(--radius-sm); padding:10px; background:var(--bg); color:var(--ink); resize:vertical; }
+  .past-cal-head{ display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:12px; }
+  .past-cal-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; margin-bottom:14px; }
+  .past-cal-cell{ aspect-ratio:1; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:11px; color:var(--ink-faint); background:var(--bg); cursor:default; gap:2px; }
+  .past-cal-cell.has-tasks{ cursor:pointer; color:var(--ink); background:var(--accent-soft); font-weight:700; }
+  .past-cal-cell.has-tasks:hover{ outline:2px solid var(--accent); }
+  .past-cal-cell .n{ font-size:9px; color:var(--accent); font-weight:800; }
+  .past-day-item{ font-size:13px; padding:6px 8px; border-radius:8px; background:var(--bg); margin-bottom:4px; }
+
+  /* ================= PROGETTI ================= */
+  #panel-projects .project-card{ background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  #panel-projects .project-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  #panel-projects .project-name{ font-size:16px; font-weight:800; font-family:'Baloo 2',sans-serif; outline:none; }
+  #panel-projects .project-actions{ display:flex; gap:6px; align-items:center; }
+  #panel-projects .project-actions button{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:13px; }
+  #panel-projects .project-actions button:hover{ color:var(--accent); }
+  #panel-projects .project-progress-wrap{ background:var(--line); border-radius:20px; height:10px; margin-bottom:4px; overflow:hidden; }
+  #panel-projects .project-progress-fill{ height:100%; border-radius:20px; background:var(--accent); transition:width .4s ease; }
+  #panel-projects .project-progress-label{ font-size:11px; color:var(--ink-faint); margin-bottom:12px; }
+  #panel-projects .project-add-row{ display:flex; gap:8px; margin-bottom:10px; }
+  #panel-projects .project-add-row input{ flex:1; font-size:13px; padding:8px 10px; border-radius:9px; border:1.5px solid var(--line-strong);
+    background:var(--bg); color:var(--ink); font-family:inherit; }
+  #panel-projects .project-add-row button{ background:var(--line-strong); color:var(--ink); border:none; border-radius:9px; padding:0 12px; cursor:pointer; font-size:13px; }
+  #panel-projects .project-import-btn{ font-size:11px; color:var(--ink-faint); background:none; border:1px dashed var(--line-strong);
+    border-radius:8px; padding:4px 9px; cursor:pointer; margin-bottom:10px; }
+  #panel-projects .ptask-row{ display:flex; align-items:flex-start; gap:8px; padding:6px 4px; border-radius:8px; }
+  #panel-projects .ptask-row:hover{ background:var(--bg); }
+  #panel-projects .ptask-row[data-level="1"]{ margin-left:22px; }
+  #panel-projects .ptask-row[data-level="2"]{ margin-left:44px; }
+  #panel-projects .ptask-row[data-level="3"]{ margin-left:66px; }
+  #panel-projects .ptask-text{ flex:1; font-size:13px; outline:none; }
+  #panel-projects .ptask-text.done{ color:var(--ink-faint); text-decoration:line-through; }
+  #panel-projects .push-select{ font-size:11px; padding:3px 6px; border-radius:7px; border:1.5px solid var(--line-strong);
+    background:var(--bg); color:var(--ink-soft); font-family:inherit; }
+  #panel-projects .push-select.active{ border-color:var(--accent); color:var(--accent); font-weight:700; }
+  #panel-projects .ptask-del{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:15px; opacity:0; }
+  #panel-projects .ptask-row:hover .ptask-del{ opacity:1; }
+  #panel-projects .ptask-del:hover{ color:var(--danger); }
 
   .section-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin:26px 0 10px 4px; display:flex; align-items:center; gap:8px; }
   .section-label.today{ color:var(--accent); }
@@ -371,6 +425,8 @@
       <div class="hint">
         <kbd>Ctrl</kbd>+<kbd>L</kbd> vai al testo &nbsp;•&nbsp; <kbd>Ctrl</kbd>+<kbd>D</kbd> vai alla data &nbsp;•&nbsp; <kbd>Tab</kbd> indenta &nbsp;•&nbsp;
         <kbd>Shift</kbd>+<kbd>Tab</kbd> rientra &nbsp;•&nbsp; trascina ⠿ per riordinare
+        &nbsp;•&nbsp; <button class="link-btn" id="openImportBtn" type="button">importa lista</button>
+        &nbsp;•&nbsp; <button class="link-btn" id="openPastBtn" type="button">task passate</button>
       </div>
 
       <div class="task-board">
@@ -406,9 +462,44 @@
           </div>
         </div>
       </div>
+
+      <!-- ============ PROGETTI (sotto-sezione di Task) ============ -->
+      <div class="section-label" style="margin-top:38px;">📁 Progetti</div>
+      <section id="panel-projects">
+        <div class="add-row">
+          <input type="text" id="newProjectInput" placeholder="Nome nuovo progetto e premi invio…">
+          <button id="addProjectBtn">+</button>
+        </div>
+        <div id="projectsContainer"></div>
+      </section>
     </section>
 
-    <!-- ============ SPESE (placeholder) ============ -->
+    <!-- Modale: importa lista di task (bulk paste) -->
+    <div class="backdrop" id="importBackdrop"></div>
+    <div class="modal import-modal" id="importModal">
+      <button class="close-x" id="closeImport">✕</button>
+      <h3>Importa lista</h3>
+      <p class="hint" style="margin-bottom:10px;">Incolla una riga per task. Una riga con solo un numero (1, 2, 3…) diventa una sotto-task della riga sopra. Se una riga contiene una data/ora riconoscibile ("il 3/09 alle 12", "domani alle 9") viene assegnata automaticamente.</p>
+      <textarea id="importTextarea" placeholder="prenota esami del sangue&#10;organizzare 5 cassetti&#10;1&#10;2&#10;..."></textarea>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn primary" id="importConfirm" style="flex:1;">Importa nel Deposito</button>
+      </div>
+    </div>
+
+    <!-- Modale: calendario task passate -->
+    <div class="backdrop" id="pastBackdrop"></div>
+    <div class="modal past-modal" id="pastModal">
+      <button class="close-x" id="closePast">✕</button>
+      <h3>Task completate</h3>
+      <div class="past-cal-head">
+        <button class="btn" id="pastPrevMonth">‹</button>
+        <span id="pastMonthLabel" style="font-weight:700; font-family:'Baloo 2',sans-serif;"></span>
+        <button class="btn" id="pastNextMonth">›</button>
+      </div>
+      <div class="past-cal-grid" id="pastCalGrid"></div>
+      <div id="pastDayDetail"></div>
+    </div>
+
     <section class="panel" id="panel-expenses">
       <div class="stub">
         <span class="ic">💶</span>
@@ -624,7 +715,7 @@
 
   function addTask(text, level = 0, when = null, priority = null) {
     if (!text.trim()) return;
-    const task = { id: uid(), text: text.trim(), done: false, level, date: null, time: null, pinnedToday: false, priority: null };
+    const task = { id: uid(), text: text.trim(), done: false, level, date: null, time: null, pinnedToday: false, priority: null, completedAt: null };
     if (when) {
       task.date = when.date || null;
       task.time = when.time || null;
@@ -747,7 +838,11 @@
     const check = document.createElement("button");
     check.className = "check" + (t.done ? " done" : "");
     check.addEventListener("mousedown", (e) => e.preventDefault());
-    check.onclick = () => { t.done = !t.done; save(); render(); };
+    check.onclick = () => {
+      t.done = !t.done;
+      t.completedAt = t.done ? todayISO() : null;
+      save(); render();
+    };
 
     const body = document.createElement("div");
     body.className = "task-body";
@@ -763,7 +858,7 @@
         e.preventDefault();
         textEl.blur();
         const idx = tasks.findIndex(x => x.id === t.id);
-        const newT = { id: uid(), text: "", done: false, level: t.level, date: null, time: null, pinnedToday: false, priority: null };
+        const newT = { id: uid(), text: "", done: false, level: t.level, date: null, time: null, pinnedToday: false, priority: null, completedAt: null };
         tasks.splice(idx + 1, 0, newT);
         save();
         render();
@@ -1108,13 +1203,23 @@
       const d = new Date(now); d.setDate(d.getDate() + diff);
       dateMatch = { index: m.index, length: m[0].length, iso: isoFromParts(d.getFullYear(), d.getMonth()+1, d.getDate()) };
     }
-    // --- 3. data: "15 settembre" (numero + nome mese) --------------------
-    if (!dateMatch && (m = norm.match(/\b(\d{1,2})\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\b/))) {
+    // --- 3. data: "15 settembre" o "il 15 di settembre" (numero + nome mese) --------
+    if (!dateMatch && (m = norm.match(/\b(?:il\s+)?(\d{1,2})\s+(?:di\s+)?(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\b/))) {
       const day = parseInt(m[1], 10);
       const month = MONTH_WORDS_IT[m[2]];
       if (day >= 1 && day <= 31) {
         let year = now.getFullYear();
         // se la data così com'è è già passata quest'anno, si intende l'anno prossimo
+        const candidate = new Date(year, month - 1, day);
+        if (candidate < new Date(now.getFullYear(), now.getMonth(), now.getDate())) year += 1;
+        dateMatch = { index: m.index, length: m[0].length, iso: isoFromParts(year, month, day) };
+      }
+    }
+    // --- 3b. data: "3/09" o "3-09" (numero/numero), con eventuale "il" davanti ---
+    if (!dateMatch && (m = norm.match(/\b(?:il\s+)?(\d{1,2})[\/\-](\d{1,2})\b/))) {
+      const day = parseInt(m[1], 10), month = parseInt(m[2], 10);
+      if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+        let year = now.getFullYear();
         const candidate = new Date(year, month - 1, day);
         if (candidate < new Date(now.getFullYear(), now.getMonth(), now.getDate())) year += 1;
         dateMatch = { index: m.index, length: m[0].length, iso: isoFromParts(year, month, day) };
@@ -1131,8 +1236,12 @@
       }
     }
 
-    // --- 5. ora: "alle hh" oppure "alle hh:mm" / "alle hh.mm" -------------
-    if ((m = norm.match(/\balle\s+(\d{1,2})(?:[:.](\d{2}))?\b/))) {
+    // --- 5. ora: mezzogiorno / mezzanotte, oppure "alle hh" / "alle hh:mm" ---
+    if ((m = norm.match(/\b(?:a\s+)?mezzogiorno\b/))) {
+      timeMatch = { index: m.index, length: m[0].length, hhmm: "12:00" };
+    } else if ((m = norm.match(/\b(?:a\s+)?mezzanotte\b/))) {
+      timeMatch = { index: m.index, length: m[0].length, hhmm: "00:00" };
+    } else if ((m = norm.match(/\balle\s+(\d{1,2})(?:[:.](\d{2}))?\b/))) {
       const hh = parseInt(m[1], 10);
       const mm = m[2] ? parseInt(m[2], 10) : 0;
       if (hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59) {
@@ -1351,6 +1460,387 @@
       if (day) day.focus();
     }
   });
+
+  /* ================= IMPORTA LISTA (bulk paste) =================
+     Una riga per task. Una riga che contiene SOLO un numero (es. "1", "2")
+     diventa una sotto-task (livello+1) della riga non numerica precedente —
+     comodo per liste tipo "organizzare 5 cassetti" seguita da 1..5. */
+  function parseBulkList(raw) {
+    const lines = raw.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+    const result = [];
+    let lastTopLevel = null;
+    lines.forEach(line => {
+      const isBareNumber = /^\d+\.?$/.test(line);
+      if (isBareNumber && lastTopLevel !== null) {
+        result.push({ text: line.replace(/\.$/, ""), level: 1, date: null, time: null });
+        return;
+      }
+      const parsed = parseNaturalWhen(line);
+      const entry = {
+        text: parsed ? parsed.cleanText : line,
+        level: 0,
+        date: parsed ? parsed.date || null : null,
+        time: parsed ? parsed.time || null : null,
+      };
+      result.push(entry);
+      lastTopLevel = entry;
+    });
+    return result;
+  }
+
+  const importBackdrop = document.getElementById("importBackdrop");
+  const importModal = document.getElementById("importModal");
+  const importTextarea = document.getElementById("importTextarea");
+  function openImportModal() {
+    importBackdrop.classList.add("open");
+    importModal.classList.add("open");
+    importTextarea.value = "";
+    setTimeout(() => importTextarea.focus(), 50);
+  }
+  function closeImportModal() {
+    importBackdrop.classList.remove("open");
+    importModal.classList.remove("open");
+  }
+  document.getElementById("openImportBtn").addEventListener("click", openImportModal);
+  document.getElementById("closeImport").addEventListener("click", closeImportModal);
+  importBackdrop.addEventListener("click", (e) => { if (e.target === importBackdrop) closeImportModal(); });
+  document.getElementById("importConfirm").addEventListener("click", () => {
+    const entries = parseBulkList(importTextarea.value);
+    entries.forEach(e => {
+      tasks.push({
+        id: uid(), text: e.text, done: false, level: e.level,
+        date: e.date, time: e.time, pinnedToday: false, priority: null, completedAt: null
+      });
+    });
+    save();
+    render();
+    closeImportModal();
+  });
+
+  /* ================= TASK PASSATE (calendario completamenti) ================= */
+  const pastBackdrop = document.getElementById("pastBackdrop");
+  const pastModal = document.getElementById("pastModal");
+  const pastCalGrid = document.getElementById("pastCalGrid");
+  const pastMonthLabel = document.getElementById("pastMonthLabel");
+  const pastDayDetail = document.getElementById("pastDayDetail");
+  let pastViewDate = new Date();
+
+  function openPastModal() {
+    pastViewDate = new Date();
+    pastBackdrop.classList.add("open");
+    pastModal.classList.add("open");
+    renderPastCalendar();
+  }
+  function closePastModal() {
+    pastBackdrop.classList.remove("open");
+    pastModal.classList.remove("open");
+  }
+  document.getElementById("openPastBtn").addEventListener("click", openPastModal);
+  document.getElementById("closePast").addEventListener("click", closePastModal);
+  pastBackdrop.addEventListener("click", (e) => { if (e.target === pastBackdrop) closePastModal(); });
+  document.getElementById("pastPrevMonth").addEventListener("click", () => {
+    pastViewDate.setMonth(pastViewDate.getMonth() - 1);
+    renderPastCalendar();
+  });
+  document.getElementById("pastNextMonth").addEventListener("click", () => {
+    pastViewDate.setMonth(pastViewDate.getMonth() + 1);
+    renderPastCalendar();
+  });
+
+  function renderPastCalendar() {
+    const y = pastViewDate.getFullYear(), m = pastViewDate.getMonth();
+    pastMonthLabel.textContent = pastViewDate.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
+    pastDayDetail.innerHTML = "";
+
+    const byDay = {};
+    tasks.forEach(t => {
+      if (t.done && t.completedAt) {
+        (byDay[t.completedAt] = byDay[t.completedAt] || []).push(t);
+      }
+    });
+
+    const firstOfMonth = new Date(y, m, 1);
+    const startOffset = (firstOfMonth.getDay() + 6) % 7; // lunedì=0
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+    pastCalGrid.innerHTML = "";
+    ["L","M","M","G","V","S","D"].forEach(d => {
+      const h = document.createElement("div");
+      h.style.cssText = "text-align:center;font-size:10px;color:var(--ink-faint);font-weight:700;";
+      h.textContent = d;
+      pastCalGrid.appendChild(h);
+    });
+    for (let i = 0; i < startOffset; i++) pastCalGrid.appendChild(document.createElement("div"));
+    for (let d = 1; d <= daysInMonth; d++) {
+      const iso = isoFromParts(y, m + 1, d);
+      const dayTasks = byDay[iso] || [];
+      const cell = document.createElement("div");
+      cell.className = "past-cal-cell" + (dayTasks.length ? " has-tasks" : "");
+      cell.innerHTML = `<span>${d}</span>` + (dayTasks.length ? `<span class="n">${dayTasks.length}</span>` : "");
+      if (dayTasks.length) {
+        cell.onclick = () => {
+          pastDayDetail.innerHTML = `<div class="section-label" style="margin-top:14px;">${new Date(iso+"T00:00:00").toLocaleDateString("it-IT",{weekday:"long", day:"numeric", month:"long"})}</div>` +
+            dayTasks.map(t => `<div class="past-day-item">✓ ${t.text}</div>`).join("");
+        };
+      }
+      pastCalGrid.appendChild(cell);
+    }
+  }
+
+  /* ================= PROGETTI =================
+     Progetti "di ampio respiro": liste importabili, checkbox, indentazione,
+     barra di progresso, e la possibilità di "spingere" una singola sotto-task
+     nel Task manager (Oggi/Domani) mantenendo il progetto come fonte del
+     progresso complessivo. */
+  const PROJECTS_KEY = "lifeos_projects_v1";
+  let projects = JSON.parse(localStorage.getItem(PROJECTS_KEY) || "[]");
+  const projectsContainer = document.getElementById("projectsContainer");
+  const newProjectInput = document.getElementById("newProjectInput");
+  const addProjectBtn = document.getElementById("addProjectBtn");
+
+  function saveProjects() { localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects)); }
+
+  function puid() { return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function addProject(name) {
+    if (!name.trim()) return;
+    projects.push({ id: puid(), name: name.trim(), tasks: [] });
+    saveProjects();
+    renderProjects();
+  }
+
+  // Le task "spinte" vivono per davvero in tasks[] (con projectId/projectTaskId),
+  // così appaiono in Oggi/Domani/Deposito/Programmate come task normali; qui
+  // sincronizziamo solo lo stato "done" verso l'oggetto del progetto per il calcolo del progresso.
+  function syncProjectDoneStates() {
+    let changed = false;
+    projects.forEach(p => {
+      p.tasks.forEach(pt => {
+        if (pt.pushedTaskId) {
+          const linked = tasks.find(x => x.id === pt.pushedTaskId);
+          if (linked && linked.done !== pt.done) { pt.done = linked.done; changed = true; }
+          if (!linked) { pt.pushedTaskId = null; } // la task è stata cancellata dal task manager
+        }
+      });
+    });
+    if (changed) saveProjects();
+  }
+
+  function projectProgress(p) {
+    const total = p.tasks.length;
+    const done = p.tasks.filter(t => t.done).length;
+    return { total, done, pct: total ? Math.round((done / total) * 100) : 0 };
+  }
+
+  function pushProjectTask(project, pt, target) {
+    // target: 'today' | 'domani' | null (null = ritira dal task manager)
+    if (pt.pushedTaskId) {
+      tasks = tasks.filter(x => x.id !== pt.pushedTaskId);
+      pt.pushedTaskId = null;
+    }
+    if (target) {
+      const newTask = {
+        id: uid(), text: `📁 ${pt.text}`, done: pt.done, level: 0,
+        date: target === "domani" ? tomorrowISO() : null,
+        time: null, pinnedToday: target === "today", priority: null, completedAt: pt.done ? todayISO() : null,
+        projectId: project.id, projectTaskId: pt.id
+      };
+      tasks.push(newTask);
+      pt.pushedTaskId = newTask.id;
+    }
+    save();
+    saveProjects();
+    render();
+    renderProjects();
+  }
+
+  function makeProjectTaskRow(project, pt) {
+    const row = document.createElement("div");
+    row.className = "ptask-row";
+    row.dataset.level = Math.min(pt.level || 0, 3);
+
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.checked = !!pt.done;
+    check.addEventListener("mousedown", (e) => e.preventDefault());
+    check.addEventListener("change", () => {
+      pt.done = check.checked;
+      if (pt.pushedTaskId) {
+        const linked = tasks.find(x => x.id === pt.pushedTaskId);
+        if (linked) { linked.done = pt.done; linked.completedAt = pt.done ? todayISO() : null; save(); render(); }
+      }
+      saveProjects();
+      renderProjects();
+    });
+
+    const textEl = document.createElement("div");
+    textEl.className = "ptask-text" + (pt.done ? " done" : "");
+    textEl.contentEditable = "true";
+    textEl.textContent = pt.text;
+    textEl.spellcheck = false;
+    textEl.addEventListener("mousedown", (e) => { if (document.activeElement === textEl) return; });
+    textEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        textEl.blur();
+        const idx = project.tasks.indexOf(pt);
+        const newPt = { id: puid(), text: "", done: false, level: pt.level || 0, pushedTaskId: null };
+        project.tasks.splice(idx + 1, 0, newPt);
+        saveProjects();
+        renderProjects();
+        setTimeout(() => {
+          const el = document.querySelector(`[data-ptask="${newPt.id}"] .ptask-text`);
+          if (el) el.focus();
+        }, 0);
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        if (e.shiftKey) pt.level = Math.max(0, (pt.level || 0) - 1);
+        else pt.level = Math.min(3, (pt.level || 0) + 1);
+        saveProjects();
+        renderProjects();
+      } else if (e.key === "Backspace" && textEl.textContent === "") {
+        e.preventDefault();
+        const idx = project.tasks.indexOf(pt);
+        if (idx > 0) {
+          if (pt.pushedTaskId) tasks = tasks.filter(x => x.id !== pt.pushedTaskId);
+          project.tasks.splice(idx, 1);
+          save(); saveProjects(); render(); renderProjects();
+        }
+      }
+    });
+    textEl.addEventListener("blur", () => {
+      pt.text = textEl.textContent;
+      if (pt.pushedTaskId) {
+        const linked = tasks.find(x => x.id === pt.pushedTaskId);
+        if (linked) { linked.text = `📁 ${pt.text}`; save(); render(); }
+      }
+      saveProjects();
+    });
+
+    const pushSelect = document.createElement("select");
+    pushSelect.className = "push-select" + (pt.pushedTaskId ? " active" : "");
+    [["", "—"], ["today", "→ Oggi"], ["domani", "→ Domani"]].forEach(([val, label]) => {
+      const opt = document.createElement("option");
+      opt.value = val; opt.textContent = label;
+      pushSelect.appendChild(opt);
+    });
+    if (pt.pushedTaskId) {
+      const linked = tasks.find(x => x.id === pt.pushedTaskId);
+      pushSelect.value = linked && linked.pinnedToday ? "today" : "domani";
+    }
+    pushSelect.addEventListener("mousedown", (e) => e.preventDefault());
+    pushSelect.addEventListener("change", () => {
+      pushProjectTask(project, pt, pushSelect.value || null);
+    });
+
+    const del = document.createElement("button");
+    del.className = "ptask-del";
+    del.textContent = "×";
+    del.addEventListener("mousedown", (e) => e.preventDefault());
+    del.onclick = () => {
+      if (pt.pushedTaskId) tasks = tasks.filter(x => x.id !== pt.pushedTaskId);
+      project.tasks = project.tasks.filter(x => x.id !== pt.id);
+      save(); saveProjects(); render(); renderProjects();
+    };
+
+    row.dataset.ptask = pt.id;
+    row.appendChild(check);
+    row.appendChild(textEl);
+    row.appendChild(pushSelect);
+    row.appendChild(del);
+    return row;
+  }
+
+  function renderProjects() {
+    syncProjectDoneStates();
+    projectsContainer.innerHTML = "";
+    projects.forEach(project => {
+      const card = document.createElement("div");
+      card.className = "project-card";
+
+      const head = document.createElement("div");
+      head.className = "project-head";
+      const nameEl = document.createElement("div");
+      nameEl.className = "project-name";
+      nameEl.contentEditable = "true";
+      nameEl.textContent = project.name;
+      nameEl.addEventListener("blur", () => { project.name = nameEl.textContent.trim() || "Senza nome"; saveProjects(); });
+      const actions = document.createElement("div");
+      actions.className = "project-actions";
+      const delProjectBtn = document.createElement("button");
+      delProjectBtn.textContent = "🗑";
+      delProjectBtn.title = "Elimina progetto";
+      delProjectBtn.addEventListener("mousedown", (e) => e.preventDefault());
+      delProjectBtn.onclick = () => {
+        if (!confirm(`Eliminare il progetto "${project.name}"? Le task già spinte in Oggi/Domani restano lì.`)) return;
+        projects = projects.filter(p => p.id !== project.id);
+        saveProjects();
+        renderProjects();
+      };
+      actions.appendChild(delProjectBtn);
+      head.appendChild(nameEl);
+      head.appendChild(actions);
+      card.appendChild(head);
+
+      const prog = projectProgress(project);
+      const progWrap = document.createElement("div");
+      progWrap.className = "project-progress-wrap";
+      const progFill = document.createElement("div");
+      progFill.className = "project-progress-fill";
+      progFill.style.width = prog.pct + "%";
+      progWrap.appendChild(progFill);
+      card.appendChild(progWrap);
+      const progLabel = document.createElement("div");
+      progLabel.className = "project-progress-label";
+      progLabel.textContent = `${prog.done}/${prog.total} completate · ${prog.pct}%`;
+      card.appendChild(progLabel);
+
+      const addRow = document.createElement("div");
+      addRow.className = "project-add-row";
+      const addInput = document.createElement("input");
+      addInput.type = "text";
+      addInput.placeholder = "Aggiungi voce al progetto…";
+      const addBtnP = document.createElement("button");
+      addBtnP.textContent = "+";
+      function addPTask() {
+        if (!addInput.value.trim()) return;
+        project.tasks.push({ id: puid(), text: addInput.value.trim(), done: false, level: 0, pushedTaskId: null });
+        addInput.value = "";
+        saveProjects();
+        renderProjects();
+      }
+      addInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addPTask(); });
+      addBtnP.addEventListener("click", addPTask);
+      addRow.appendChild(addInput);
+      addRow.appendChild(addBtnP);
+      card.appendChild(addRow);
+
+      const importPBtn = document.createElement("button");
+      importPBtn.className = "project-import-btn";
+      importPBtn.textContent = "importa lista in questo progetto";
+      importPBtn.addEventListener("click", () => {
+        const raw = prompt("Incolla una riga per voce (i numeri da soli diventano sotto-voci):");
+        if (!raw) return;
+        parseBulkList(raw).forEach(e => {
+          project.tasks.push({ id: puid(), text: e.text, done: false, level: e.level, pushedTaskId: null });
+        });
+        saveProjects();
+        renderProjects();
+      });
+      card.appendChild(importPBtn);
+
+      project.tasks.forEach(pt => card.appendChild(makeProjectTaskRow(project, pt)));
+
+      projectsContainer.appendChild(card);
+    });
+  }
+
+  newProjectInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { addProject(newProjectInput.value); newProjectInput.value = ""; }
+  });
+  addProjectBtn.addEventListener("click", () => { addProject(newProjectInput.value); newProjectInput.value = ""; });
+
+  renderProjects();
 
   render();
 })();
