@@ -403,6 +403,27 @@
     align-items:center; justify-content:center; font-size:10px; color:var(--ink-faint); }
   #panel-training .session-dot.done{ background:var(--accent); border-color:var(--accent); color:#fff; }
   #panel-training .stickman-wrap{ display:flex; justify-content:center; margin:1rem 0; }
+
+  /* ================= SPESE ================= */
+  #panel-expenses code{ background:var(--bg); border:1px solid var(--line-strong); border-radius:6px; padding:1px 5px; }
+  .exp-summary{ background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:16px; margin:16px 0 24px; box-shadow:var(--shadow); }
+  .exp-summary-head{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .exp-total{ margin-left:auto; font-size:16px; font-weight:800; color:var(--accent); font-family:'Baloo 2',sans-serif; }
+  .exp-breakdown{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:620px){ .exp-breakdown{ grid-template-columns:1fr; } }
+  .exp-bar-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; }
+  .exp-bar-label{ width:110px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink-soft); }
+  .exp-bar-track{ flex:1; background:var(--line); border-radius:20px; height:8px; overflow:hidden; }
+  .exp-bar-fill{ height:100%; background:var(--accent); border-radius:20px; }
+  .exp-bar-value{ width:60px; text-align:right; flex-shrink:0; font-weight:700; font-variant-numeric:tabular-nums; }
+  .exp-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; background:var(--panel); border:1px solid var(--line); margin-bottom:6px; }
+  .exp-cat-pill{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--accent-soft); color:var(--accent); flex-shrink:0; white-space:nowrap; }
+  .exp-what{ flex:1; min-width:0; font-size:14px; }
+  .exp-where{ color:var(--ink-faint); font-size:12px; flex-shrink:0; }
+  .exp-when{ color:var(--ink-faint); font-size:12px; width:50px; text-align:right; flex-shrink:0; }
+  .exp-amount{ font-weight:800; width:70px; text-align:right; flex-shrink:0; font-variant-numeric:tabular-nums; }
+  .exp-del{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:16px; flex-shrink:0; }
+  .exp-del:hover{ color:var(--danger); }
 </style>
 </head>
 <body>
@@ -522,11 +543,36 @@
     </div>
 
     <section class="panel" id="panel-expenses">
-      <div class="stub">
-        <span class="ic">💶</span>
-        <h2>Registro spese</h2>
-        <p>Prossimo pezzo da costruire.</p>
+      <div class="add-row">
+        <input type="text" id="newExpenseInput" placeholder="categoria  cosa  dove  quanto  quando (opzionale)">
+        <button id="addExpenseBtn">+</button>
       </div>
+      <p class="hint">Campi separati da <b>doppio spazio</b>: categoria · cosa · dove · quanto · quando. L'ultimo campo (quando) è opzionale — capisce "oggi", "ieri", "domani", "20/09", "20 settembre". Esempio:<br>
+      <code style="font-size:11px;">cura personale  taglio di capelli  little italy barbershop  26  ieri</code></p>
+      <p id="expenseError" style="color:var(--danger); font-size:12px; display:none; margin:6px 0 0;"></p>
+
+      <div class="exp-summary">
+        <div class="exp-summary-head">
+          <button class="btn" id="expPrevMonth">‹</button>
+          <span id="expMonthLabel" style="font-weight:700; font-family:'Baloo 2',sans-serif;"></span>
+          <button class="btn" id="expNextMonth">›</button>
+          <span id="expMonthTotal" class="exp-total"></span>
+        </div>
+        <div class="exp-breakdown">
+          <div>
+            <div class="section-label" style="margin-top:0;">Per categoria</div>
+            <div id="expByCategory"></div>
+          </div>
+          <div>
+            <div class="section-label" style="margin-top:0;">Per dove</div>
+            <div id="expByLuogo"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Movimenti</div>
+      <div id="expenseList"></div>
+      <div class="empty-mini" id="expenseEmpty" style="color:var(--ink-faint); font-size:13px; padding:10px 4px;">Nessuna spesa in questo mese.</div>
     </section>
 
     <!-- ============ ALLENAMENTI ============ -->
@@ -2939,6 +2985,191 @@ document.getElementById('trTabTraining').addEventListener('click', () => showPag
 document.getElementById('trTabProgress').addEventListener('click', () => showPage('progress'));
 
 window.onAuthReady(loadDB);
+})();
+</script>
+
+<script>
+/* ================= SPESE ================= */
+(function(){
+  const STORAGE_KEY = "lifeos_expenses_v1";
+  const EXP_ROW_ID = "federico";
+  let expenses = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  let viewDate = new Date();
+  let saveTimer = null;
+
+  const input = document.getElementById("newExpenseInput");
+  const addBtn = document.getElementById("addExpenseBtn");
+  const errorEl = document.getElementById("expenseError");
+  const monthLabel = document.getElementById("expMonthLabel");
+  const monthTotal = document.getElementById("expMonthTotal");
+  const byCategory = document.getElementById("expByCategory");
+  const byLuogo = document.getElementById("expByLuogo");
+  const listEl = document.getElementById("expenseList");
+  const emptyEl = document.getElementById("expenseEmpty");
+
+  function uid() { return "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function isoOf(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+
+  const MONTHS_IT = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+
+  function parseExpenseWhen(raw) {
+    const now = new Date();
+    if (!raw || !raw.trim()) return isoOf(now);
+    let s = raw.trim().toLowerCase();
+    s = s.replace(/^il\s+/, ""); // "il 10 settembre" -> "10 settembre"
+    if (s === "oggi") return isoOf(now);
+    if (s === "ieri") { const d = new Date(now); d.setDate(d.getDate() - 1); return isoOf(d); }
+    if (s === "domani") { const d = new Date(now); d.setDate(d.getDate() + 1); return isoOf(d); }
+    if (s === "dopodomani") { const d = new Date(now); d.setDate(d.getDate() + 2); return isoOf(d); }
+    let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/);
+    if (m) {
+      const day = +m[1], month = +m[2];
+      let year = m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : now.getFullYear();
+      if (!m[3]) {
+        const cand = new Date(year, month - 1, day);
+        if (cand < new Date(now.getFullYear(), now.getMonth(), now.getDate())) year += 1;
+      }
+      return isoOf(new Date(year, month - 1, day));
+    }
+    m = s.match(/^(\d{1,2})\s+(?:di\s+)?(\w+)$/);
+    if (m) {
+      const idx = MONTHS_IT.indexOf(m[2]);
+      if (idx >= 0) {
+        const day = +m[1], month = idx + 1;
+        let year = now.getFullYear();
+        const cand = new Date(year, month - 1, day);
+        if (cand < new Date(now.getFullYear(), now.getMonth(), now.getDate())) year += 1;
+        return isoOf(new Date(year, month - 1, day));
+      }
+    }
+    return null; // formato non riconosciuto: meglio avvisare che indovinare una data sbagliata
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+    if (!window.sb) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      try {
+        const { error } = await window.sb.from("expenses_state").upsert({
+          id: EXP_ROW_ID, data: expenses, updated_at: new Date().toISOString()
+        });
+        if (error) throw error;
+      } catch (e) { console.warn("Sync spese su Supabase fallita", e); }
+    }, 700);
+  }
+
+  async function loadFromSupabase() {
+    if (!window.sb) return;
+    try {
+      const { data, error } = await window.sb.from("expenses_state").select("data").eq("id", EXP_ROW_ID).maybeSingle();
+      if (error) throw error;
+      if (data && data.data) {
+        expenses = data.data;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+        render();
+      }
+    } catch (e) { console.warn("Caricamento spese da Supabase fallito, resto sui dati locali", e); }
+  }
+
+  function addExpense(raw) {
+    errorEl.style.display = "none";
+    const parts = raw.trim().split(/\s{2,}/).filter(p => p.length > 0);
+    if (parts.length < 4) {
+      errorEl.textContent = "Servono almeno 4 campi separati da doppio spazio: categoria  cosa  dove  quanto";
+      errorEl.style.display = "block";
+      return false;
+    }
+    const [categoria, cosa, dove, quantoRaw, quandoRaw] = parts;
+    const quanto = parseFloat(quantoRaw.replace(",", "."));
+    if (isNaN(quanto)) {
+      errorEl.textContent = `"${quantoRaw}" non è un importo valido`;
+      errorEl.style.display = "block";
+      return false;
+    }
+    const quando = parseExpenseWhen(quandoRaw);
+    if (quando === null) {
+      errorEl.textContent = `Non riconosco la data "${quandoRaw}" — prova con "oggi", "ieri", "domani", "20/09" o "20 settembre"`;
+      errorEl.style.display = "block";
+      return false;
+    }
+    expenses.push({
+      id: uid(), categoria: categoria.trim(), cosa: cosa.trim(), dove: dove.trim(),
+      quanto, quando
+    });
+    save();
+    render();
+    return true;
+  }
+
+  function monthKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+
+  function render() {
+    monthLabel.textContent = viewDate.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
+    const mk = monthKey(viewDate);
+    const monthExpenses = expenses.filter(e => e.quando && e.quando.startsWith(mk));
+
+    const total = monthExpenses.reduce((s, e) => s + e.quanto, 0);
+    monthTotal.textContent = "€ " + total.toFixed(2);
+
+    function renderGroup(container, keyFn) {
+      const groups = {};
+      monthExpenses.forEach(e => {
+        const key = keyFn(e).trim().toLowerCase();
+        if (!groups[key]) groups[key] = { label: keyFn(e).trim(), total: 0 };
+        groups[key].total += e.quanto;
+        groups[key].label = keyFn(e).trim(); // usa la grafia più recente per la label
+      });
+      const list = Object.values(groups).sort((a, b) => b.total - a.total);
+      const max = list.length ? list[0].total : 1;
+      container.innerHTML = list.length ? "" : `<p style="font-size:12px; color:var(--ink-faint);">Niente questo mese.</p>`;
+      list.forEach(g => {
+        const row = document.createElement("div");
+        row.className = "exp-bar-row";
+        row.innerHTML = `<span class="exp-bar-label" title="${g.label}">${g.label}</span>
+          <span class="exp-bar-track"><span class="exp-bar-fill" style="width:${Math.round(g.total / max * 100)}%"></span></span>
+          <span class="exp-bar-value">€ ${g.total.toFixed(2)}</span>`;
+        container.appendChild(row);
+      });
+    }
+    renderGroup(byCategory, e => e.categoria);
+    renderGroup(byLuogo, e => e.dove);
+
+    listEl.innerHTML = "";
+    emptyEl.style.display = monthExpenses.length === 0 ? "block" : "none";
+    monthExpenses
+      .sort((a, b) => b.quando.localeCompare(a.quando))
+      .forEach(e => {
+        const row = document.createElement("div");
+        row.className = "exp-row";
+        const d = new Date(e.quando + "T00:00:00");
+        const whenLabel = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+        row.innerHTML = `
+          <span class="exp-cat-pill">${e.categoria}</span>
+          <span class="exp-what">${e.cosa}</span>
+          <span class="exp-where">${e.dove}</span>
+          <span class="exp-when">${whenLabel}</span>
+          <span class="exp-amount">€ ${e.quanto.toFixed(2)}</span>
+          <button class="exp-del" title="Elimina">×</button>`;
+        row.querySelector(".exp-del").addEventListener("click", () => {
+          expenses = expenses.filter(x => x.id !== e.id);
+          save();
+          render();
+        });
+        listEl.appendChild(row);
+      });
+  }
+
+  function submit() {
+    if (addExpense(input.value)) input.value = "";
+  }
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+  addBtn.addEventListener("click", submit);
+  document.getElementById("expPrevMonth").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() - 1); render(); });
+  document.getElementById("expNextMonth").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() + 1); render(); });
+
+  render();
+  window.onAuthReady(loadFromSupabase);
 })();
 </script>
 </body>
