@@ -746,11 +746,14 @@
   const nlpHint = document.getElementById("nlpHint");
   const nlpHintText = document.getElementById("nlpHintText");
 
-  // Drop sull'area vuota/di sfondo della box "Oggi" (non su una riga specifica):
+  // Drop OVUNQUE dentro la card "Oggi" (non solo sull'area vuota interna):
   // pinna la task trascinata come oggi e la mette in fondo alla sezione.
-  todayBox.addEventListener("dragover", (e) => e.preventDefault());
-  todayBox.addEventListener("drop", (e) => {
-    if (e.target !== todayBox && e.target !== todayEmpty) return; // già gestito dalla riga
+  // Se il drop avviene su una riga specifica, quella gestisce già tutto e
+  // azzera dragId prima che l'evento risalga qui (bubbling), quindi niente
+  // doppia esecuzione.
+  const colToday = document.getElementById("colToday");
+  colToday.addEventListener("dragover", (e) => e.preventDefault());
+  colToday.addEventListener("drop", (e) => {
     e.preventDefault();
     if (!dragId) return;
     const moved = tasks.find(x => x.id === dragId);
@@ -761,10 +764,10 @@
     }
     dragId = null;
   });
-  // Drop sull'area vuota della box "Domani": assegna la data di domani.
-  domaniBox.addEventListener("dragover", (e) => e.preventDefault());
-  domaniBox.addEventListener("drop", (e) => {
-    if (e.target !== domaniBox && e.target !== domaniEmpty) return;
+  // Drop ovunque dentro la card "Domani": assegna la data di domani.
+  const colDomani = document.getElementById("colDomani");
+  colDomani.addEventListener("dragover", (e) => e.preventDefault());
+  colDomani.addEventListener("drop", (e) => {
     e.preventDefault();
     if (!dragId) return;
     const moved = tasks.find(x => x.id === dragId);
@@ -776,10 +779,10 @@
     }
     dragId = null;
   });
-  // Drop sull'area vuota del Deposito: rimuove data/pin, la task torna "senza data".
-  depositList.addEventListener("dragover", (e) => e.preventDefault());
-  depositList.addEventListener("drop", (e) => {
-    if (e.target !== depositList) return;
+  // Drop ovunque dentro la card "Deposito": rimuove data/pin, la task torna "senza data".
+  const colDeposito = document.getElementById("colDeposito");
+  colDeposito.addEventListener("dragover", (e) => e.preventDefault());
+  colDeposito.addEventListener("drop", (e) => {
     e.preventDefault();
     if (!dragId) return;
     const moved = tasks.find(x => x.id === dragId);
@@ -1035,6 +1038,17 @@
       t.text = textEl.textContent;
       if (t.text.trim() === "" && tasks.length > 1) {
         tasks = tasks.filter(x => x.id !== t.id);
+        save();
+        render();
+        return;
+      }
+      // riconoscimento automatico anche modificando una task già esistente
+      // (non solo quando la crei da zero nella barra in alto)
+      const parsed = parseNaturalWhen(t.text);
+      if (parsed) {
+        t.text = parsed.cleanText || t.text;
+        if (parsed.date) t.date = parsed.date;
+        if (parsed.time) t.time = parsed.time;
       }
       save();
       render();
