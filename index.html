@@ -728,10 +728,9 @@
       showLogin();
     }
   });
-
-  // controllo iniziale (onAuthStateChange scatta comunque anche al primo load,
-  // ma partiamo già con l'overlay visibile finché non arriva la risposta)
-  showLogin();
+  // Niente showLogin() qui: aspettiamo la risposta di onAuthStateChange (che
+  // arriva comunque quasi subito) invece di mostrare l'overlay a scatola chiusa
+  // — così se sei già loggato non vedi il flash del login prima che sparisca.
 })();
 </script>
 
@@ -797,49 +796,23 @@
   // Se il drop avviene su una riga specifica, quella gestisce già tutto e
   // azzera dragId prima che l'evento risalga qui (bubbling), quindi niente
   // doppia esecuzione.
+  // NB: il drag&drop qui sotto è implementato con Pointer Events (non il Drag&Drop
+  // nativo HTML5), perché quello nativo non funziona sui touch screen — con i
+  // Pointer Events lo stesso codice gestisce mouse, touch e penna allo stesso modo.
   const colToday = document.getElementById("colToday");
-  colToday.addEventListener("dragover", (e) => e.preventDefault());
-  colToday.addEventListener("drop", (e) => {
-    e.preventDefault();
-    if (!dragId) return;
-    const moved = tasks.find(x => x.id === dragId);
-    if (moved) {
-      moved.pinnedToday = true;
-      save();
-      render();
-    }
-    dragId = null;
-  });
-  // Drop ovunque dentro la card "Domani": assegna la data di domani.
   const colDomani = document.getElementById("colDomani");
-  colDomani.addEventListener("dragover", (e) => e.preventDefault());
-  colDomani.addEventListener("drop", (e) => {
-    e.preventDefault();
-    if (!dragId) return;
-    const moved = tasks.find(x => x.id === dragId);
-    if (moved) {
-      moved.pinnedToday = false;
-      moved.date = tomorrowISO();
-      save();
-      render();
-    }
-    dragId = null;
-  });
-  // Drop ovunque dentro la card "Deposito": rimuove data/pin, la task torna "senza data".
   const colDeposito = document.getElementById("colDeposito");
-  colDeposito.addEventListener("dragover", (e) => e.preventDefault());
-  colDeposito.addEventListener("drop", (e) => {
-    e.preventDefault();
-    if (!dragId) return;
-    const moved = tasks.find(x => x.id === dragId);
-    if (moved) {
-      moved.pinnedToday = false;
-      moved.date = null;
-      save();
-      render();
-    }
-    dragId = null;
-  });
+
+  function dropIntoSection(taskId, targetSection) {
+    const moved = tasks.find(x => x.id === taskId);
+    if (!moved) return;
+    if (targetSection === "today") { moved.pinnedToday = true; }
+    else if (targetSection === "domani") { moved.pinnedToday = false; moved.date = tomorrowISO(); }
+    else if (targetSection === "deposit") { moved.pinnedToday = false; moved.date = null; }
+    else return;
+    save();
+    render();
+  }
 
   function todayISO() {
     const d = new Date();
@@ -910,7 +883,7 @@
       task.pinnedToday = !!when.pinnedToday;
     }
     if (priority) task.priority = priority;
-    tasks.push(task);
+    tasks.unshift(task); // le nuove task vanno in cima al Deposito, non in fondo
     save();
     render();
   }
@@ -992,36 +965,63 @@
     li.className = "task";
     li.dataset.level = flat ? 0 : Math.min(t.level, 3);
     li.dataset.id = t.id;
-    li.draggable = draggableRow;
-
-    if (draggableRow) {
-      li.addEventListener("dragstart", (e) => {
-        dragId = t.id;
-        li.classList.add("dragging");
-        e.dataTransfer.effectAllowed = "move";
-      });
-      li.addEventListener("dragend", () => {
-        li.classList.remove("dragging");
-        document.querySelectorAll(".drop-target").forEach(el => el.classList.remove("drop-target"));
-      });
-      li.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        if (t.id !== dragId) li.classList.add("drop-target");
-      });
-      li.addEventListener("dragleave", () => li.classList.remove("drop-target"));
-      li.addEventListener("drop", (e) => {
-        e.preventDefault();
-        li.classList.remove("drop-target");
-        if (dragId && dragId !== t.id) {
-          reorderTask(dragId, t.id, section);
-        }
-        dragId = null;
-      });
-    }
 
     const handle = document.createElement("span");
     handle.className = "drag-handle";
     handle.textContent = draggableRow ? "⠿" : "";
+
+    if (draggableRow) {
+      handle.style.touchAction = "none"; // evita che il touch scrolli la pagina invece di trascinare
+      handle.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        e.preventDefault();
+        dragId = t.id;
+        let dragging = false;
+        const startX = e.clientX, startY = e.clientY;
+        let hoveredLi = null, hoveredCol = null;
+        try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+
+        function onMove(ev) {
+          if (!dragging) {
+            if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < 6) return;
+            dragging = true;
+            li.classList.add("dragging");
+          }
+          ev.preventDefault();
+          document.querySelectorAll(".drop-target").forEach(el => el.classList.remove("drop-target"));
+          const el = document.elementFromPoint(ev.clientX, ev.clientY);
+          hoveredLi = el && el.closest && el.closest("li.task[data-id]");
+          if (hoveredLi && hoveredLi.dataset.id === t.id) hoveredLi = null;
+          hoveredCol = el && el.closest && el.closest(".task-col");
+          if (hoveredLi) hoveredLi.classList.add("drop-target");
+        }
+        function onUp(ev) {
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          li.classList.remove("dragging");
+          document.querySelectorAll(".drop-target").forEach(el => el.classList.remove("drop-target"));
+          if (dragging) {
+            if (hoveredLi) {
+              const targetLi = hoveredLi.closest("[id$='List']") || hoveredLi.parentElement;
+              const targetSection =
+                targetLi && targetLi.id === "todayList" ? "today" :
+                targetLi && targetLi.id === "domaniList" ? "domani" :
+                targetLi && targetLi.id === "depositList" ? "deposit" : section;
+              reorderTask(dragId, hoveredLi.dataset.id, targetSection);
+            } else if (hoveredCol) {
+              const targetSection =
+                hoveredCol.id === "colToday" ? "today" :
+                hoveredCol.id === "colDomani" ? "domani" :
+                hoveredCol.id === "colDeposito" ? "deposit" : null;
+              if (targetSection) dropIntoSection(dragId, targetSection);
+            }
+          }
+          dragId = null;
+        }
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+      });
+    }
 
     const check = document.createElement("button");
     check.className = "check" + (t.done ? " done" : "");
@@ -1704,12 +1704,12 @@
   importBackdrop.addEventListener("click", (e) => { if (e.target === importBackdrop) closeImportModal(); });
   document.getElementById("importConfirm").addEventListener("click", () => {
     const entries = parseBulkList(importTextarea.value);
-    entries.forEach(e => {
-      tasks.push({
-        id: uid(), text: e.text, done: false, level: e.level,
-        date: e.date, time: e.time, pinnedToday: false, priority: null, completedAt: null
-      });
-    });
+    // in cima al Deposito, mantenendo l'ordine relativo tra loro (come nella lista incollata)
+    const newTasks = entries.map(e => ({
+      id: uid(), text: e.text, done: false, level: e.level,
+      date: e.date, time: e.time, pinnedToday: false, priority: null, completedAt: null
+    }));
+    tasks = [...newTasks, ...tasks];
     save();
     render();
     closeImportModal();
