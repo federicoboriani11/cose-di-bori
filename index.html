@@ -405,24 +405,42 @@
   #panel-training .stickman-wrap{ display:flex; justify-content:center; margin:1rem 0; }
 
   /* ================= SPESE ================= */
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; text-transform:uppercase; letter-spacing:.3px; }
+  .field input[type=text], .field input[type=number]{ width:100%; font-size:14px; padding:9px 12px; border-radius:10px; border:1.5px solid var(--line-strong);
+    background:var(--bg); color:var(--ink); font-family:inherit; }
   #panel-expenses code{ background:var(--bg); border:1px solid var(--line-strong); border-radius:6px; padding:1px 5px; }
+  .exp-form{ display:grid; grid-template-columns:1.3fr 1fr 1.4fr 2fr auto; gap:8px; margin-bottom:8px; }
+  @media (max-width:760px){ .exp-form{ grid-template-columns:1fr 1fr; } .exp-form button{ grid-column:span 2; } }
+  .exp-form input{ font-size:14px; padding:10px 12px; border-radius:var(--radius-sm); border:1.5px solid var(--line-strong);
+    background:var(--panel); color:var(--ink); font-family:inherit; min-width:0; }
+  .exp-form input:focus{ outline:none; border-color:var(--accent); }
+  .exp-form button{ background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); font-size:20px; font-weight:700; cursor:pointer; padding:0 16px; }
+  .exp-warning{ color:#F97316; font-size:12px; margin:6px 0 0; }
   .exp-summary{ background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius); padding:16px; margin:16px 0 24px; box-shadow:var(--shadow); }
   .exp-summary-head{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
   .exp-total{ margin-left:auto; font-size:16px; font-weight:800; color:var(--accent); font-family:'Baloo 2',sans-serif; }
-  .exp-breakdown{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  @media (max-width:620px){ .exp-breakdown{ grid-template-columns:1fr; } }
-  .exp-bar-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; }
-  .exp-bar-label{ width:110px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink-soft); }
-  .exp-bar-track{ flex:1; background:var(--line); border-radius:20px; height:8px; overflow:hidden; }
-  .exp-bar-fill{ height:100%; background:var(--accent); border-radius:20px; }
-  .exp-bar-value{ width:60px; text-align:right; flex-shrink:0; font-weight:700; font-variant-numeric:tabular-nums; }
+  .exp-pie-wrap{ display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+  .exp-pie{ width:140px; height:140px; border-radius:50%; flex-shrink:0; background:var(--line); }
+  .exp-legend{ flex:1; min-width:180px; }
+  .exp-legend-row{ display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:7px; }
+  .exp-legend-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .exp-legend-label{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink-soft); }
+  .exp-legend-value{ font-weight:700; font-variant-numeric:tabular-nums; }
   .exp-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; background:var(--panel); border:1px solid var(--line); margin-bottom:6px; }
   .exp-cat-pill{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--accent-soft); color:var(--accent); flex-shrink:0; white-space:nowrap; }
   .exp-what{ flex:1; min-width:0; font-size:14px; }
-  .exp-where{ color:var(--ink-faint); font-size:12px; flex-shrink:0; }
-  .exp-when{ color:var(--ink-faint); font-size:12px; width:50px; text-align:right; flex-shrink:0; }
-  .exp-amount{ font-weight:800; width:70px; text-align:right; flex-shrink:0; font-variant-numeric:tabular-nums; }
+  .exp-when{ color:var(--ink-faint); font-size:12px; width:56px; text-align:right; flex-shrink:0; cursor:pointer; border-radius:6px; padding:2px 4px; }
+  .exp-when:hover{ background:var(--bg); color:var(--ink); }
+  .exp-when-input{ width:100px; font-size:12px; padding:2px 5px; border-radius:6px; border:1.5px solid var(--accent); background:var(--panel); color:var(--ink); font-family:inherit; }
+  .exp-amount{ font-weight:800; width:70px; text-align:right; flex-shrink:0; font-variant-numeric:tabular-nums; cursor:pointer; border-radius:6px; padding:2px 4px; }
+  .exp-amount:hover{ background:var(--bg); }
+  .exp-amount-input{ width:64px; font-size:13px; text-align:right; padding:2px 5px; border-radius:6px; border:1.5px solid var(--accent); background:var(--panel); color:var(--ink); font-family:inherit; }
   .exp-del{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:16px; flex-shrink:0; }
+  .sub-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; background:var(--panel); border:1px solid var(--line); margin-bottom:6px; }
+  .sub-name{ flex:1; font-size:14px; font-weight:600; }
+  .sub-meta{ color:var(--ink-faint); font-size:12px; }
+  .sub-amount{ font-weight:800; width:70px; text-align:right; font-variant-numeric:tabular-nums; }
   .exp-del:hover{ color:var(--danger); }
 </style>
 </head>
@@ -543,12 +561,15 @@
     </div>
 
     <section class="panel" id="panel-expenses">
-      <div class="add-row">
-        <input type="text" id="newExpenseInput" placeholder="categoria  cosa  dove  quanto  quando (opzionale)">
+      <div class="exp-form" id="expenseForm">
+        <input type="text" id="expCategoria" placeholder="Categoria">
+        <input type="text" inputmode="decimal" id="expQuanto" placeholder="Quanto">
+        <input type="text" id="expQuando" placeholder="Quando (oggi, ieri, 20/09…)">
+        <input type="text" id="expCosa" placeholder="Cosa (opzionale)">
         <button id="addExpenseBtn">+</button>
       </div>
-      <p class="hint">Campi separati da <b>doppio spazio</b>: categoria · cosa · dove · quanto · quando. L'ultimo campo (quando) è opzionale — capisce "oggi", "ieri", "domani", "20/09", "20 settembre". Esempio:<br>
-      <code style="font-size:11px;">cura personale  taglio di capelli  little italy barbershop  26  ieri</code></p>
+      <p class="hint">Invio passa al campo successivo, invio sull'ultimo registra. Quando capisce: "oggi", "ieri", "l'altro ieri", "domani", "dopodomani", "3 giorni fa", "20/09", "20 settembre". Se non capisce la data, registra comunque usando oggi e te lo segnala.</p>
+      <p id="expenseWarning" class="exp-warning" style="display:none;"></p>
       <p id="expenseError" style="color:var(--danger); font-size:12px; display:none; margin:6px 0 0;"></p>
 
       <div class="exp-summary">
@@ -558,22 +579,45 @@
           <button class="btn" id="expNextMonth">›</button>
           <span id="expMonthTotal" class="exp-total"></span>
         </div>
-        <div class="exp-breakdown">
-          <div>
-            <div class="section-label" style="margin-top:0;">Per categoria</div>
-            <div id="expByCategory"></div>
-          </div>
-          <div>
-            <div class="section-label" style="margin-top:0;">Per dove</div>
-            <div id="expByLuogo"></div>
-          </div>
+        <div class="exp-pie-wrap">
+          <div class="exp-pie" id="expPie"></div>
+          <div class="exp-legend" id="expLegend"></div>
         </div>
       </div>
+
+      <div class="section-label">Abbonamenti ricorrenti <button class="link-btn" id="addSubBtn" style="margin-left:8px;">+ aggiungi</button></div>
+      <div id="subscriptionsList"></div>
+      <div class="empty-mini" id="subscriptionsEmpty" style="color:var(--ink-faint); font-size:13px; padding:6px 4px 18px;">Nessun abbonamento registrato.</div>
 
       <div class="section-label">Movimenti</div>
       <div id="expenseList"></div>
       <div class="empty-mini" id="expenseEmpty" style="color:var(--ink-faint); font-size:13px; padding:10px 4px;">Nessuna spesa in questo mese.</div>
     </section>
+
+    <!-- Modale: nuovo abbonamento -->
+    <div class="backdrop" id="subBackdrop"></div>
+    <div class="modal" id="subModal">
+      <button class="close-x" id="closeSub">✕</button>
+      <h3>Nuovo abbonamento</h3>
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="subName" placeholder="es. Netflix">
+      </div>
+      <div class="field">
+        <label>Quanto al mese</label>
+        <input type="text" inputmode="decimal" id="subAmount" placeholder="es. 12,99">
+      </div>
+      <div class="field">
+        <label>Durata</label>
+        <div class="row" style="align-items:center;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px;"><input type="checkbox" id="subForever" checked> per sempre</label>
+        </div>
+        <input type="number" id="subMonths" placeholder="numero di mesi" min="1" style="display:none; margin-top:8px;">
+      </div>
+      <div class="row" style="margin-top:16px;">
+        <button class="btn primary" id="subConfirm" style="flex:1;">Aggiungi</button>
+      </div>
+    </div>
 
     <!-- ============ ALLENAMENTI ============ -->
     <section class="panel" id="panel-training">
@@ -2992,36 +3036,55 @@ window.onAuthReady(loadDB);
 /* ================= SPESE ================= */
 (function(){
   const STORAGE_KEY = "lifeos_expenses_v1";
+  const SUB_STORAGE_KEY = "lifeos_subscriptions_v1";
   const EXP_ROW_ID = "federico";
+  const SUB_ROW_ID = "federico";
   let expenses = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  let subscriptions = JSON.parse(localStorage.getItem(SUB_STORAGE_KEY) || "[]");
   let viewDate = new Date();
-  let saveTimer = null;
+  let saveTimer = null, saveSubTimer = null;
 
-  const input = document.getElementById("newExpenseInput");
+  const catEl = document.getElementById("expCategoria");
+  const quantoEl = document.getElementById("expQuanto");
+  const quandoEl = document.getElementById("expQuando");
+  const cosaEl = document.getElementById("expCosa");
   const addBtn = document.getElementById("addExpenseBtn");
   const errorEl = document.getElementById("expenseError");
+  const warningEl = document.getElementById("expenseWarning");
   const monthLabel = document.getElementById("expMonthLabel");
   const monthTotal = document.getElementById("expMonthTotal");
-  const byCategory = document.getElementById("expByCategory");
-  const byLuogo = document.getElementById("expByLuogo");
+  const pieEl = document.getElementById("expPie");
+  const legendEl = document.getElementById("expLegend");
   const listEl = document.getElementById("expenseList");
   const emptyEl = document.getElementById("expenseEmpty");
+  const subsListEl = document.getElementById("subscriptionsList");
+  const subsEmptyEl = document.getElementById("subscriptionsEmpty");
 
   function uid() { return "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function isoOf(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 
   const MONTHS_IT = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
 
+  /* ---- parser date esteso: oggi, ieri, l'altro ieri, domani, dopodomani,
+     "N giorni fa" (qualsiasi N), gg/mm(/aaaa), gg mese, il gg mese ---- */
   function parseExpenseWhen(raw) {
     const now = new Date();
     if (!raw || !raw.trim()) return isoOf(now);
     let s = raw.trim().toLowerCase();
-    s = s.replace(/^il\s+/, ""); // "il 10 settembre" -> "10 settembre"
-    if (s === "oggi") return isoOf(now);
-    if (s === "ieri") { const d = new Date(now); d.setDate(d.getDate() - 1); return isoOf(d); }
-    if (s === "domani") { const d = new Date(now); d.setDate(d.getDate() + 1); return isoOf(d); }
-    if (s === "dopodomani") { const d = new Date(now); d.setDate(d.getDate() + 2); return isoOf(d); }
-    let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/);
+    s = s.replace(/^il\s+/, "");
+
+    const shiftDays = (n) => { const d = new Date(now); d.setDate(d.getDate() + n); return isoOf(d); };
+
+    if (s === "oggi") return shiftDays(0);
+    if (s === "ieri") return shiftDays(-1);
+    if (s === "l'altro ieri" || s === "laltro ieri" || s === "ieri l'altro" || s === "ieri laltro") return shiftDays(-2);
+    if (s === "domani") return shiftDays(1);
+    if (s === "dopodomani") return shiftDays(2);
+
+    let m = s.match(/^(\d+)\s+giorni?\s+fa$/);
+    if (m) return shiftDays(-parseInt(m[1], 10));
+
+    m = s.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/);
     if (m) {
       const day = +m[1], month = +m[2];
       let year = m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : now.getFullYear();
@@ -3031,18 +3094,20 @@ window.onAuthReady(loadDB);
       }
       return isoOf(new Date(year, month - 1, day));
     }
+
     m = s.match(/^(\d{1,2})\s+(?:di\s+)?(\w+)$/);
     if (m) {
-      const idx = MONTHS_IT.indexOf(m[2]);
-      if (idx >= 0) {
-        const day = +m[1], month = idx + 1;
-        let year = now.getFullYear();
-        const cand = new Date(year, month - 1, day);
-        if (cand < new Date(now.getFullYear(), now.getMonth(), now.getDate())) year += 1;
-        return isoOf(new Date(year, month - 1, day));
+      for (let i = 0; i < MONTHS_IT.length; i++) {
+        if (MONTHS_IT[i] === m[2]) {
+          const day = +m[1], month = i + 1;
+          let year = now.getFullYear();
+          const cand = new Date(year, month - 1, day);
+          if (cand < new Date(now.getFullYear(), now.getMonth(), now.getDate())) year += 1;
+          return isoOf(new Date(year, month - 1, day));
+        }
       }
     }
-    return null; // formato non riconosciuto: meglio avvisare che indovinare una data sbagliata
+    return null; // non riconosciuto
   }
 
   function save() {
@@ -3058,6 +3123,19 @@ window.onAuthReady(loadDB);
       } catch (e) { console.warn("Sync spese su Supabase fallita", e); }
     }, 700);
   }
+  function saveSubs() {
+    localStorage.setItem(SUB_STORAGE_KEY, JSON.stringify(subscriptions));
+    if (!window.sb) return;
+    clearTimeout(saveSubTimer);
+    saveSubTimer = setTimeout(async () => {
+      try {
+        const { error } = await window.sb.from("subscriptions_state").upsert({
+          id: SUB_ROW_ID, data: subscriptions, updated_at: new Date().toISOString()
+        });
+        if (error) throw error;
+      } catch (e) { console.warn("Sync abbonamenti su Supabase fallita", e); }
+    }, 700);
+  }
 
   async function loadFromSupabase() {
     if (!window.sb) return;
@@ -3067,74 +3145,216 @@ window.onAuthReady(loadDB);
       if (data && data.data) {
         expenses = data.data;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
-        render();
       }
     } catch (e) { console.warn("Caricamento spese da Supabase fallito, resto sui dati locali", e); }
+    try {
+      const { data, error } = await window.sb.from("subscriptions_state").select("data").eq("id", SUB_ROW_ID).maybeSingle();
+      if (error) throw error;
+      if (data && data.data) {
+        subscriptions = data.data;
+        localStorage.setItem(SUB_STORAGE_KEY, JSON.stringify(subscriptions));
+      }
+    } catch (e) { console.warn("Caricamento abbonamenti da Supabase fallito, resto sui dati locali", e); }
+    render();
   }
 
-  function addExpense(raw) {
+  /* ---- inserimento nuova spesa: 4 campi, invio passa al successivo ---- */
+  function addExpense() {
     errorEl.style.display = "none";
-    const parts = raw.trim().split(/\s{2,}/).filter(p => p.length > 0);
-    if (parts.length < 4) {
-      errorEl.textContent = "Servono almeno 4 campi separati da doppio spazio: categoria  cosa  dove  quanto";
-      errorEl.style.display = "block";
-      return false;
-    }
-    const [categoria, cosa, dove, quantoRaw, quandoRaw] = parts;
+    warningEl.style.display = "none";
+
+    const categoria = catEl.value.trim();
+    const quantoRaw = quantoEl.value.trim();
+    const quandoRaw = quandoEl.value.trim();
+    const cosa = cosaEl.value.trim();
+
+    if (!categoria) { errorEl.textContent = "Manca la categoria"; errorEl.style.display = "block"; catEl.focus(); return false; }
     const quanto = parseFloat(quantoRaw.replace(",", "."));
-    if (isNaN(quanto)) {
-      errorEl.textContent = `"${quantoRaw}" non è un importo valido`;
-      errorEl.style.display = "block";
-      return false;
-    }
-    const quando = parseExpenseWhen(quandoRaw);
-    if (quando === null) {
-      errorEl.textContent = `Non riconosco la data "${quandoRaw}" — prova con "oggi", "ieri", "domani", "20/09" o "20 settembre"`;
-      errorEl.style.display = "block";
-      return false;
-    }
-    expenses.push({
-      id: uid(), categoria: categoria.trim(), cosa: cosa.trim(), dove: dove.trim(),
-      quanto, quando
-    });
+    if (!quantoRaw || isNaN(quanto)) { errorEl.textContent = `"${quantoRaw}" non è un importo valido`; errorEl.style.display = "block"; quantoEl.focus(); return false; }
+
+    let quando = parseExpenseWhen(quandoRaw);
+    let usedFallback = false;
+    if (quando === null) { quando = isoOf(new Date()); usedFallback = true; }
+
+    expenses.push({ id: uid(), categoria, quanto, quando, cosa });
     save();
     render();
+
+    catEl.value = ""; quantoEl.value = ""; quandoEl.value = ""; cosaEl.value = "";
+    catEl.focus();
+
+    if (usedFallback) {
+      warningEl.textContent = `Data "${quandoRaw}" non riconosciuta — registrata con la data di oggi, correggila a mano se serve.`;
+      warningEl.style.display = "block";
+    }
     return true;
   }
 
+  // invio passa al campo successivo (funziona anche da tastiera mobile: i campi
+  // sono tutti type="text", non type="number"/"date", perché su iOS quei tipi
+  // a volte non mostrano proprio il tasto Invio/Vai)
+  const fieldOrder = [catEl, quantoEl, quandoEl, cosaEl];
+  fieldOrder.forEach((el, i) => {
+    el.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (i < fieldOrder.length - 1) fieldOrder[i + 1].focus();
+      else addExpense();
+    });
+  });
+  addBtn.addEventListener("click", addExpense);
+
+  /* ---- abbonamenti ricorrenti ---- */
+  const subBackdrop = document.getElementById("subBackdrop");
+  const subModal = document.getElementById("subModal");
+  const subName = document.getElementById("subName");
+  const subAmount = document.getElementById("subAmount");
+  const subForever = document.getElementById("subForever");
+  const subMonths = document.getElementById("subMonths");
+
+  function openSubModal() {
+    subName.value = ""; subAmount.value = ""; subForever.checked = true; subMonths.value = ""; subMonths.style.display = "none";
+    subBackdrop.classList.add("open"); subModal.classList.add("open");
+    setTimeout(() => subName.focus(), 50);
+  }
+  function closeSubModal() { subBackdrop.classList.remove("open"); subModal.classList.remove("open"); }
+  document.getElementById("addSubBtn").addEventListener("click", openSubModal);
+  document.getElementById("closeSub").addEventListener("click", closeSubModal);
+  subBackdrop.addEventListener("click", (e) => { if (e.target === subBackdrop) closeSubModal(); });
+  subForever.addEventListener("change", () => { subMonths.style.display = subForever.checked ? "none" : "block"; });
+
+  document.getElementById("subConfirm").addEventListener("click", () => {
+    const name = subName.value.trim();
+    const amount = parseFloat(subAmount.value.replace(",", "."));
+    if (!name || isNaN(amount)) return;
+    const months = subForever.checked ? null : (parseInt(subMonths.value, 10) || 1);
+    const now = new Date();
+    subscriptions.push({
+      id: uid(), nome: name, quanto: amount,
+      startYear: now.getFullYear(), startMonth: now.getMonth() + 1, // 1-12
+      months
+    });
+    saveSubs();
+    render();
+    closeSubModal();
+  });
+
+  function subscriptionActiveIn(sub, year, month) {
+    const diff = (year - sub.startYear) * 12 + (month - sub.startMonth);
+    return diff >= 0 && (sub.months === null || diff < sub.months);
+  }
+
+  function renderSubscriptionsList() {
+    subsListEl.innerHTML = "";
+    subsEmptyEl.style.display = subscriptions.length === 0 ? "block" : "none";
+    subscriptions.forEach(sub => {
+      const row = document.createElement("div");
+      row.className = "sub-row";
+      const durLabel = sub.months === null ? "per sempre" : `${sub.months} mesi`;
+      row.innerHTML = `
+        <span class="sub-name">${sub.nome}</span>
+        <span class="sub-meta">dal ${String(sub.startMonth).padStart(2,"0")}/${sub.startYear} · ${durLabel}</span>
+        <span class="sub-amount">€ ${sub.quanto.toFixed(2)}/mese</span>
+        <button class="exp-del" title="Elimina abbonamento">×</button>`;
+      row.querySelector(".exp-del").addEventListener("click", () => {
+        subscriptions = subscriptions.filter(x => x.id !== sub.id);
+        saveSubs();
+        render();
+      });
+      subsListEl.appendChild(row);
+    });
+  }
+
+  /* ---- modifica inline di quanto/quando su una spesa già inserita ---- */
+  function editableAmount(e, span) {
+    span.addEventListener("mousedown", (ev) => ev.preventDefault());
+    span.addEventListener("click", () => {
+      const inp = document.createElement("input");
+      inp.type = "text"; inp.inputMode = "decimal"; inp.className = "exp-amount-input";
+      inp.value = e.quanto;
+      span.replaceWith(inp);
+      inp.focus(); inp.select();
+      function commit() {
+        const v = parseFloat(inp.value.replace(",", "."));
+        if (!isNaN(v)) { e.quanto = v; save(); }
+        render();
+      }
+      inp.addEventListener("blur", commit);
+      inp.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); commit(); } });
+    });
+  }
+  function editableWhen(e, span) {
+    span.addEventListener("mousedown", (ev) => ev.preventDefault());
+    span.addEventListener("click", () => {
+      const inp = document.createElement("input");
+      inp.type = "text"; inp.className = "exp-when-input"; inp.placeholder = "oggi, ieri, 20/09…";
+      span.replaceWith(inp);
+      inp.focus(); inp.select();
+      function commit() {
+        const parsed = parseExpenseWhen(inp.value);
+        if (parsed !== null) { e.quando = parsed; save(); }
+        // se non riconosciuto in modifica, non tocchiamo la data esistente (a differenza della creazione)
+        render();
+      }
+      inp.addEventListener("blur", commit);
+      inp.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); commit(); } });
+    });
+  }
+
   function monthKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+  const PIE_COLORS = ["#007BFF","#F97316","#10B981","#EC4899","#8B5CF6","#EAB308","#EF4444","#14B8A6","#6366F1","#84CC16"];
 
   function render() {
     monthLabel.textContent = viewDate.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
     const mk = monthKey(viewDate);
-    const monthExpenses = expenses.filter(e => e.quando && e.quando.startsWith(mk));
+    const year = viewDate.getFullYear(), month = viewDate.getMonth() + 1;
+
+    const realExpenses = expenses.filter(e => e.quando && e.quando.startsWith(mk));
+    const activeSubs = subscriptions.filter(s => subscriptionActiveIn(s, year, month));
+    const subVirtualExpenses = activeSubs.map(s => ({
+      id: "sub_" + s.id, categoria: "Abbonamenti", quanto: s.quanto, quando: mk + "-01",
+      cosa: s.nome, isSubscription: true
+    }));
+    const monthExpenses = [...realExpenses, ...subVirtualExpenses];
 
     const total = monthExpenses.reduce((s, e) => s + e.quanto, 0);
     monthTotal.textContent = "€ " + total.toFixed(2);
 
-    function renderGroup(container, keyFn) {
-      const groups = {};
-      monthExpenses.forEach(e => {
-        const key = keyFn(e).trim().toLowerCase();
-        if (!groups[key]) groups[key] = { label: keyFn(e).trim(), total: 0 };
-        groups[key].total += e.quanto;
-        groups[key].label = keyFn(e).trim(); // usa la grafia più recente per la label
+    // --- grafico a torta per categoria ---
+    const groups = {};
+    monthExpenses.forEach(e => {
+      const key = e.categoria.trim().toLowerCase();
+      if (!groups[key]) groups[key] = { label: e.categoria.trim(), total: 0 };
+      groups[key].total += e.quanto;
+      if (!e.isSubscription) groups[key].label = e.categoria.trim();
+    });
+    const list = Object.values(groups).sort((a, b) => b.total - a.total);
+
+    if (list.length === 0) {
+      pieEl.style.background = "var(--line)";
+      legendEl.innerHTML = `<p style="font-size:12px; color:var(--ink-faint);">Niente questo mese.</p>`;
+    } else {
+      let acc = 0;
+      const stops = list.map((g, i) => {
+        const pct = total > 0 ? (g.total / total * 100) : 0;
+        const from = acc, to = acc + pct;
+        acc = to;
+        return `${PIE_COLORS[i % PIE_COLORS.length]} ${from.toFixed(2)}% ${to.toFixed(2)}%`;
       });
-      const list = Object.values(groups).sort((a, b) => b.total - a.total);
-      const max = list.length ? list[0].total : 1;
-      container.innerHTML = list.length ? "" : `<p style="font-size:12px; color:var(--ink-faint);">Niente questo mese.</p>`;
-      list.forEach(g => {
+      pieEl.style.background = `conic-gradient(${stops.join(", ")})`;
+      legendEl.innerHTML = "";
+      list.forEach((g, i) => {
+        const pct = total > 0 ? Math.round(g.total / total * 100) : 0;
         const row = document.createElement("div");
-        row.className = "exp-bar-row";
-        row.innerHTML = `<span class="exp-bar-label" title="${g.label}">${g.label}</span>
-          <span class="exp-bar-track"><span class="exp-bar-fill" style="width:${Math.round(g.total / max * 100)}%"></span></span>
-          <span class="exp-bar-value">€ ${g.total.toFixed(2)}</span>`;
-        container.appendChild(row);
+        row.className = "exp-legend-row";
+        row.innerHTML = `<span class="exp-legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>
+          <span class="exp-legend-label" title="${g.label}">${g.label}</span>
+          <span class="exp-legend-value">€ ${g.total.toFixed(2)} · ${pct}%</span>`;
+        legendEl.appendChild(row);
       });
     }
-    renderGroup(byCategory, e => e.categoria);
-    renderGroup(byLuogo, e => e.dove);
 
+    // --- lista movimenti (le voci da abbonamento non sono modificabili/cancellabili qui) ---
     listEl.innerHTML = "";
     emptyEl.style.display = monthExpenses.length === 0 ? "block" : "none";
     monthExpenses
@@ -3144,27 +3364,54 @@ window.onAuthReady(loadDB);
         row.className = "exp-row";
         const d = new Date(e.quando + "T00:00:00");
         const whenLabel = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
-        row.innerHTML = `
-          <span class="exp-cat-pill">${e.categoria}</span>
-          <span class="exp-what">${e.cosa}</span>
-          <span class="exp-where">${e.dove}</span>
-          <span class="exp-when">${whenLabel}</span>
-          <span class="exp-amount">€ ${e.quanto.toFixed(2)}</span>
-          <button class="exp-del" title="Elimina">×</button>`;
-        row.querySelector(".exp-del").addEventListener("click", () => {
-          expenses = expenses.filter(x => x.id !== e.id);
-          save();
-          render();
-        });
+
+        const catPill = document.createElement("span");
+        catPill.className = "exp-cat-pill";
+        catPill.textContent = e.categoria;
+
+        const what = document.createElement("span");
+        what.className = "exp-what";
+        what.textContent = e.cosa || "—";
+
+        const whenSpan = document.createElement("span");
+        whenSpan.className = "exp-when";
+        whenSpan.textContent = whenLabel;
+
+        const amountSpan = document.createElement("span");
+        amountSpan.className = "exp-amount";
+        amountSpan.textContent = "€ " + e.quanto.toFixed(2);
+
+        row.appendChild(catPill);
+        row.appendChild(what);
+        row.appendChild(whenSpan);
+        row.appendChild(amountSpan);
+
+        if (e.isSubscription) {
+          const tag = document.createElement("span");
+          tag.className = "sub-meta";
+          tag.textContent = "abbonamento";
+          row.appendChild(tag);
+        } else {
+          editableWhen(e, whenSpan);
+          editableAmount(e, amountSpan);
+          const delBtn = document.createElement("button");
+          delBtn.className = "exp-del";
+          delBtn.title = "Elimina";
+          delBtn.textContent = "×";
+          delBtn.addEventListener("mousedown", (ev) => ev.preventDefault());
+          delBtn.addEventListener("click", () => {
+            expenses = expenses.filter(x => x.id !== e.id);
+            save();
+            render();
+          });
+          row.appendChild(delBtn);
+        }
         listEl.appendChild(row);
       });
+
+    renderSubscriptionsList();
   }
 
-  function submit() {
-    if (addExpense(input.value)) input.value = "";
-  }
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
-  addBtn.addEventListener("click", submit);
   document.getElementById("expPrevMonth").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() - 1); render(); });
   document.getElementById("expNextMonth").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() + 1); render(); });
 
