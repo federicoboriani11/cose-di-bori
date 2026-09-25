@@ -422,6 +422,7 @@
   .exp-total{ margin-left:auto; font-size:16px; font-weight:800; color:var(--accent); font-family:'Baloo 2',sans-serif; }
   .exp-pie-wrap{ display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
   .exp-pie{ width:140px; height:140px; border-radius:50%; flex-shrink:0; background:var(--line); }
+  .exp-pie.hidden-privacy{ background:repeating-conic-gradient(var(--line) 0deg 30deg, var(--bg) 30deg 60deg) !important; }
   .exp-legend{ flex:1; min-width:180px; }
   .exp-legend-row{ display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:7px; }
   .exp-legend-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
@@ -577,6 +578,7 @@
           <button class="btn" id="expPrevMonth">‹</button>
           <span id="expMonthLabel" style="font-weight:700; font-family:'Baloo 2',sans-serif;"></span>
           <button class="btn" id="expNextMonth">›</button>
+          <button class="iconbtn exp-privacy-btn" id="expPrivacyBtn" title="Mostra/nascondi importi">👁️</button>
           <span id="expMonthTotal" class="exp-total"></span>
         </div>
         <div class="exp-pie-wrap">
@@ -3268,7 +3270,7 @@ window.onAuthReady(loadDB);
       row.innerHTML = `
         <span class="sub-name">${sub.nome}</span>
         <span class="sub-meta">dal ${String(sub.startMonth).padStart(2,"0")}/${sub.startYear} · ${durLabel}</span>
-        <span class="sub-amount">€ ${sub.quanto.toFixed(2)}/mese</span>
+        <span class="sub-amount">${amountsVisible ? "€ " + sub.quanto.toFixed(2) + "/mese" : "€ •••/mese"}</span>
         <button class="exp-del" title="Elimina abbonamento">×</button>`;
       row.querySelector(".exp-del").addEventListener("click", () => {
         subscriptions = subscriptions.filter(x => x.id !== sub.id);
@@ -3318,7 +3320,14 @@ window.onAuthReady(loadDB);
   function monthKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
   const PIE_COLORS = ["#007BFF","#F97316","#10B981","#EC4899","#8B5CF6","#EAB308","#EF4444","#14B8A6","#6366F1","#84CC16"];
 
+  // Modalità privacy: di default gli importi sono nascosti (utile se apri l'app
+  // in giro con altri intorno). Non persiste tra ricariche: riparte sempre nascosto.
+  let amountsVisible = false;
+  const privacyBtn = document.getElementById("expPrivacyBtn");
+  privacyBtn.addEventListener("click", () => { amountsVisible = !amountsVisible; render(); });
+
   function render() {
+    privacyBtn.textContent = amountsVisible ? "🙈" : "👁️";
     monthLabel.textContent = viewDate.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
     const mk = monthKey(viewDate);
     const year = viewDate.getFullYear(), month = viewDate.getMonth() + 1;
@@ -3332,7 +3341,7 @@ window.onAuthReady(loadDB);
     const monthExpenses = [...realExpenses, ...subVirtualExpenses];
 
     const total = monthExpenses.reduce((s, e) => s + e.quanto, 0);
-    monthTotal.textContent = "€ " + total.toFixed(2);
+    monthTotal.textContent = amountsVisible ? "€ " + total.toFixed(2) : "€ •••";
 
     // --- grafico a torta per categoria ---
     const groups = {};
@@ -3346,8 +3355,23 @@ window.onAuthReady(loadDB);
 
     if (list.length === 0) {
       pieEl.style.background = "var(--line)";
+      pieEl.classList.remove("hidden-privacy");
       legendEl.innerHTML = `<p style="font-size:12px; color:var(--ink-faint);">Niente questo mese.</p>`;
+    } else if (!amountsVisible) {
+      // niente proporzioni reali visibili: una torta neutra a spicchi uguali
+      pieEl.classList.add("hidden-privacy");
+      pieEl.style.background = "";
+      legendEl.innerHTML = "";
+      list.forEach((g, i) => {
+        const row = document.createElement("div");
+        row.className = "exp-legend-row";
+        row.innerHTML = `<span class="exp-legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>
+          <span class="exp-legend-label" title="${g.label}">${g.label}</span>
+          <span class="exp-legend-value">€ ••• · ••%</span>`;
+        legendEl.appendChild(row);
+      });
     } else {
+      pieEl.classList.remove("hidden-privacy");
       let acc = 0;
       const stops = list.map((g, i) => {
         const pct = total > 0 ? (g.total / total * 100) : 0;
@@ -3393,7 +3417,7 @@ window.onAuthReady(loadDB);
 
         const amountSpan = document.createElement("span");
         amountSpan.className = "exp-amount";
-        amountSpan.textContent = "€ " + e.quanto.toFixed(2);
+        amountSpan.textContent = amountsVisible ? "€ " + e.quanto.toFixed(2) : "€ •••";
 
         row.appendChild(catPill);
         row.appendChild(what);
@@ -3407,7 +3431,7 @@ window.onAuthReady(loadDB);
           row.appendChild(tag);
         } else {
           editableWhen(e, whenSpan);
-          editableAmount(e, amountSpan);
+          if (amountsVisible) editableAmount(e, amountSpan); // evita di modificare un importo che non vedi
           const delBtn = document.createElement("button");
           delBtn.className = "exp-del";
           delBtn.title = "Elimina";
