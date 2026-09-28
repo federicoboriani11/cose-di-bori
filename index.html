@@ -3413,7 +3413,7 @@ window.onAuthReady(loadDB);
         row.className = "exp-legend-row";
         row.innerHTML = `<span class="exp-legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>
           <span class="exp-legend-label" title="${g.label}">${g.label}</span>
-          <span class="exp-legend-value">€ ${g.total.toFixed(2)} · ${pct}%</span>`;
+          <span class="exp-legend-value">${amountsVisible ? "€ " + g.total.toFixed(2) + " · " : ""}${pct}%</span>`;
         legendEl.appendChild(row);
       });
     }
