@@ -404,6 +404,41 @@
     align-items:center; justify-content:center; font-size:10px; color:var(--ink-faint); }
   #panel-training .session-dot.done{ background:var(--accent); border-color:var(--accent); color:#fff; }
   #panel-training .stickman-wrap{ display:flex; justify-content:center; margin:1rem 0; }
+  /* --- sezioni/periodi + sessioni libere (scheda nuova) --- */
+  #panel-training .sec-group{ margin-bottom:12px; }
+  #panel-training .sec-head{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px;
+    border:1.5px solid var(--line-strong); border-radius:var(--radius-sm); background:var(--panel); color:var(--ink); cursor:pointer;
+    font-family:'Baloo 2',sans-serif; font-size:15px; font-weight:700; text-align:left; }
+  #panel-training .sec-head:hover{ border-color:var(--accent); }
+  #panel-training .sec-head.open{ border-color:var(--accent); }
+  #panel-training .sec-meta{ font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:var(--ink-faint); margin-left:8px; }
+  #panel-training .sec-body{ padding:14px 0 6px; }
+  #panel-training .sess-head{ cursor:pointer; margin-bottom:0; }
+  #panel-training .sess-head.open{ margin-bottom:1rem; }
+  #panel-training .sess-sub{ font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:var(--ink-faint); margin-left:8px; }
+  #panel-training .sess-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  #panel-training .pill-btn{ padding:8px 16px; font-size:13px; font-weight:700; border:1.5px solid var(--accent); border-radius:999px;
+    background:var(--panel); color:var(--accent); cursor:pointer; font-family:inherit; }
+  #panel-training .pill-btn.fill{ background:var(--accent); color:#fff; }
+  #panel-training .pill-btn.run{ border-color:#4d96ff; color:#4d96ff; }
+  #panel-training .pill-btn.ghost{ border-color:var(--line-strong); color:var(--ink-soft); }
+  #panel-training .pill-btn.danger{ border-color:var(--danger); color:var(--danger); }
+  #panel-training .ex-head{ display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+  #panel-training .ex-head .ex-name{ margin-bottom:0; }
+  #panel-training .ex-del{ margin-left:auto; background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:15px; padding:2px 6px; }
+  #panel-training .ex-del:hover{ color:var(--danger); }
+  #panel-training .kgnote{ font-size:12px; color:var(--ink-soft); }
+  #panel-training .auto-note{ font-size:11px; color:var(--ok); font-weight:600; }
+  #panel-training .set-btn{ width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line-strong); background:var(--bg); color:var(--ink-soft);
+    cursor:pointer; font-size:16px; line-height:1; padding:0; }
+  #panel-training .set-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  #panel-training .addex, #panel-training .newperiod{ display:flex; flex-direction:column; gap:8px; padding:12px; margin:10px 0 14px;
+    border:1.5px dashed var(--line-strong); border-radius:var(--radius-sm); }
+  #panel-training .addex input.run-editable, #panel-training .newperiod input.run-editable{ width:100%; flex:none; height:36px; }
+  #panel-training .addex-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  #panel-training .addex-row label{ font-size:12px; color:var(--ink-soft); }
+  #panel-training .empty-hint{ font-size:13px; color:var(--ink-faint); padding:8px 2px 14px; }
+  #panel-training .omino-next{ text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:1rem; }
 
   /* ================= SPESE ================= */
   .field{ margin-bottom:16px; }
@@ -2612,7 +2647,7 @@ const DEFAULT_RUN = {
 let DB = {};
 let MONTHS = JSON.parse(JSON.stringify(DEFAULT_MONTHS));
 let currentPage = 'training';
-let sel = { monthIdx: 0, weekIdx: 0 };
+let sel = null;
 let saveTimer = null;
 
 function dbGet(key) { return DB[key] || ""; }
@@ -2642,8 +2677,11 @@ async function loadDB() {
     for (const row of rows) DB[row.key] = row.value;
     const saved = dbGet("__months_config__");
     if (saved) MONTHS = JSON.parse(saved);
+    dbLoaded = true; // solo dopo un caricamento riuscito scriviamo config di default (mai sovrascrivere dati altrui da offline)
     setStatus("✓ connesso"); setTimeout(() => setStatus(""), 2000);
   } catch(e) { setStatus("⚠ offline"); }
+  rebuildSessCache();
+  loadSections();
   renderPage();
   schedulePing();
 }
@@ -2722,23 +2760,442 @@ function setKgOverride(monthId, weekId, sIdx, exId, val) {
   saveDB(); renderPage();
 }
 
-function renderTraining() {
+/* ================= SCHEDA NUOVA + PERIODI A SESSIONI LIBERE ================= */
+const NEW_WARMUP = ["Ballerinas 2×20", "Dead hang 3×20 sec"];
+const NEW_SHEET = [
+  { id: "plank", name: "Plank", mode: "time", posture: ["Corpo rigido", "bacino neutro", "non alzare il sedere", "respira"] },
+  { id: "rdl", name: "Romanian deadlift", start: 20, inc: 5, target: 8, hint: "2×10 kg manubri",
+    posture: ["Schiena dritta", "ginocchia leggermente flesse e fisse", "scendi piegando i fianchi, non la schiena", "senti lo stretch dei femorali"] },
+  { id: "chestflat", name: "Chest press orizzontale", start: 20, inc: 5, target: 8, hint: "20 kg totali (10+10)",
+    posture: ["Schiena incollata", "gomiti a 45°", "non inarcare"] },
+  { id: "chestrow", name: "Chest supported row", start: 20, inc: 5, target: 8, hint: "2×10 kg manubri",
+    posture: ["Petto appoggiato alla panca inclinata", "tira i gomiti indietro", "stringi le scapole alla fine"] },
+  { id: "shoulder", name: "Shoulder press", start: 40, inc: 5, target: 8, hint: "40 kg",
+    posture: ["Schiena dritta", "core attivo", "non inarcare la lombare"] },
+  { id: "legext", name: "Leg extension", start: 40, inc: 5, target: 8, hint: "40 kg",
+    posture: ["Movimento lento e controllato", "non strappare", "contrai il quadricipite in cima"] },
+  { id: "calf", name: "Calf raises", start: 0, inc: 5, target: 12, hint: "peso corporeo o +10 kg (0 = corpo libero)",
+    posture: ["Movimento completo", "scendi sotto il tallone se su gradino", "salita lenta"] },
+];
+
+// livelli dell'omino: sessioni di palestra completate (vecchie + nuove) per ogni livello.
+// La crescita è continua (interpolata), quindi ogni sessione lo ingrossa un po', senza fermarsi a 35.
+const OMINO_STEPS = [0, 5, 10, 15, 20, 28, 40, 60];
+
+let SECTIONS = [];
+let dbLoaded = false;
+let openSections = null;
+let initOpenDone = false;
+let newPeriodOpen = false;
+const openSess = new Set();
+const addExOpen = new Set();
+let sessCache = new Map();
+
+const escH = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function isoToday() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function fmtDate(iso) { return iso && iso.length >= 10 ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : ''; }
+function dayLabel(iso) {
+  if (!iso) return 'Senza data';
+  const t = new Date(iso + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+function slug(name) {
+  return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || newId();
+}
+
+/* ---- sezioni (raggruppamenti di mesi vecchi + periodi a sessioni libere) ---- */
+function defaultSections() {
+  return [
+    { id: 'p1015', label: 'Autunno 🍂', kind: 'sessions', from: '2026-10-15', to: '2026-12-15' },
+    { id: 'estate', label: 'Estate ☀️', kind: 'old', months: ['', 'aug'] }, // luglio + le settimane di sola corsa
+  ];
+}
+function loadSections() {
+  const raw = dbGet('__sections_v2__');
+  let parsed = null;
+  if (raw) { try { parsed = JSON.parse(raw); } catch (e) {} }
+  if (Array.isArray(parsed) && parsed.length) {
+    SECTIONS = parsed;
+    let changed = false;
+    const p = SECTIONS.find(x => x.id === 'p1015');
+    if (p && p.label === '15.10 – 25.10') { p.label = 'Autunno 🍂'; p.to = '2026-12-15'; changed = true; }
+    if (SECTIONS.some(x => x.id === 'sep')) { SECTIONS = SECTIONS.filter(x => x.id !== 'sep'); changed = true; }
+    if (changed && dbLoaded) saveSections();
+  } else {
+    SECTIONS = defaultSections();
+    if (dbLoaded) saveSections();
+  }
+}
+function saveSections() { dbSet('__sections_v2__', JSON.stringify(SECTIONS)); }
+// sezioni + eventuali mesi vecchi non assegnati a nessuna sezione (non si perde mai niente)
+function viewSections() {
+  const out = SECTIONS.slice();
+  const assigned = new Set(SECTIONS.filter(x => x.kind === 'old').flatMap(x => x.months));
+  const hasData = m => m.weeks.some(w => { for (let x = 0; x < w.sessions; x++) { if (dbGet(mk(m.id, w.id, x, 'meta', 'done')) === '1' || dbGet(mk(m.id, w.id, x, 'meta', 'date'))) return true; } return false; });
+  const rest = MONTHS.filter(m => !assigned.has(m.id) && hasData(m)).map(m => m.id);
+  if (rest.length) out.push({ id: 'altro', label: 'Altri mesi', kind: 'old', months: rest });
+  return out;
+}
+
+/* ---- sessioni nuove: un JSON per sessione (chiave sess_<periodo>_<id>) ---- */
+function rebuildSessCache() {
+  sessCache = new Map();
+  for (const [k, v] of Object.entries(DB)) {
+    if (!k.startsWith('sess_')) continue;
+    try { const s = JSON.parse(v); if (s && s.id) sessCache.set(k, s); } catch (e) {}
+  }
+}
+function sessKey(s) { return `sess_${s.period}_${s.id}`; }
+function saveSess(s) { sessCache.set(sessKey(s), s); dbSet(sessKey(s), JSON.stringify(s)); }
+function getSess(id) { for (const s of sessCache.values()) if (s.id === id) return s; return null; }
+function liveSessions() { return [...sessCache.values()].filter(s => !s.deleted); }
+function cmpSess(a, b) { return (a.date || '').localeCompare(b.date || '') || (a.createdAt || 0) - (b.createdAt || 0); }
+function sessionsOf(periodId) { return liveSessions().filter(s => s.period === periodId).sort(cmpSess).reverse(); }
+
+// ultima volta di un esercizio della scheda vecchia (serve per la spalla/shoulder press, comune alle due schede)
+function oldPrev(exId) {
+  if (BASE_KG[exId] === undefined) return null;
+  const all = getAllGymSessions().filter(x => !x.runOnly);
+  for (let i = all.length - 1; i >= 0; i--) {
+    const x = all[i];
+    const reps = [0, 1, 2].map(sn => dbGet(mk(x.monthId, x.weekId, x.sIdx, exId, sn)));
+    if (reps.some(r => parseInt(r) > 0)) {
+      return { date: dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'date')), kg: getKgForSession(exId, x.monthId, x.weekId, x.sIdx), sets: reps, mode: 'reps' };
+    }
+  }
+  return null;
+}
+// ultima volta (sessione precedente per data) in cui hai registrato delle serie per quell'esercizio
+function findPrevious(s, exId) {
+  const cands = liveSessions().filter(x => x.type === 'gym' && x.id !== s.id && cmpSess(x, s) < 0).sort(cmpSess).reverse();
+  for (const x of cands) {
+    const ex = (x.exercises || []).find(e => e.id === exId);
+    if (ex && ex.sets.some(v => v !== '' && v != null)) return { date: x.date, kg: ex.kg, sets: ex.sets, mode: ex.mode };
+  }
+  return oldPrev(exId);
+}
+function prevText(prev, mode) {
+  if (!prev) return 'nessuna sessione precedente';
+  const sets = prev.sets.filter(v => v !== '' && v != null).map(v => mode === 'time' ? v + 's' : v);
+  const kg = prev.kg !== '' && prev.kg != null && mode !== 'time' ? prev.kg + ' kg' : '';
+  return [fmtDate(prev.date), kg, sets.join(' · ')].filter(Boolean).join(' · ') || 'nessun dato';
+}
+
+function makeExercise(t, s) {
+  const mode = t.mode || 'reps';
+  const ex = { id: t.id, name: t.name, mode, inc: t.inc || 0, target: t.target || 8, hint: t.hint || '', posture: t.posture || [],
+    sets: ['', '', ''], kg: mode === 'time' ? null : (t.start ?? ''), auto: '' };
+  const prev = findPrevious(s, t.id);
+  if (prev) {
+    if (mode === 'reps' && prev.kg !== '' && prev.kg != null) {
+      let kg = Number(prev.kg);
+      const filled = prev.sets.filter(v => v !== '' && v != null).map(Number);
+      if (ex.inc && filled.length >= 3 && filled.every(r => r >= ex.target)) { kg += ex.inc; ex.auto = `↑ +${ex.inc} kg: avevi chiuso 3×${ex.target}`; }
+      ex.kg = kg;
+    }
+    if (prev.sets.length > 3) ex.sets = prev.sets.map(() => '');
+  }
+  return ex;
+}
+function createSession(periodId, type) {
+  const s = { id: newId(), period: periodId, type, date: isoToday(), createdAt: Date.now(), notes: '', done: false };
+  if (type === 'gym') { s.warmup = NEW_WARMUP.map(() => false); s.time = ''; s.exercises = NEW_SHEET.map(t => makeExercise(t, s)); }
+  else s.run = JSON.parse(JSON.stringify(DEFAULT_RUN));
+  saveSess(s);
+  openSess.add(s.id);
+  renderTraining();
+}
+
+/* ---- azioni (esposte a window con prefisso tr) ---- */
+function trToggleSection(id) { openSections.has(id) ? openSections.delete(id) : openSections.add(id); renderTraining(); }
+function trToggleSess(id) { openSess.has(id) ? openSess.delete(id) : openSess.add(id); renderTraining(); }
+function trNewSession(periodId, type) { createSession(periodId, type); }
+function trDeleteSession(id) {
+  if (!confirm('Eliminare questa sessione?')) return;
+  const s = getSess(id); if (!s) return;
+  s.deleted = true; saveSess(s); renderTraining();
+}
+function trSessDate(id, val) { const s = getSess(id); if (!s) return; s.date = val; saveSess(s); renderTraining(); }
+function trSessField(id, field, val) { const s = getSess(id); if (!s) return; s[field] = val; saveSess(s); }
+function trWarmup(id, i, checked) { const s = getSess(id); if (!s) return; s.warmup[i] = !!checked; saveSess(s); }
+function trExKg(id, i, val) {
+  const s = getSess(id); if (!s) return;
+  s.exercises[i].kg = val === '' ? '' : parseFloat(val); s.exercises[i].auto = '';
+  saveSess(s); refreshDot(id, i);
+}
+function trExSet(id, i, j, val) { const s = getSess(id); if (!s) return; s.exercises[i].sets[j] = val; saveSess(s); refreshDot(id, i); }
+function trAddSet(id, i) { const s = getSess(id); if (!s) return; s.exercises[i].sets.push(''); saveSess(s); renderTraining(); }
+function trDelSet(id, i) {
+  const s = getSess(id); if (!s) return;
+  const ex = s.exercises[i]; if (ex.sets.length <= 1) return;
+  ex.sets.pop(); saveSess(s); renderTraining();
+}
+function trRemoveEx(id, i) {
+  const s = getSess(id); if (!s) return;
+  if (!confirm(`Rimuovere "${s.exercises[i].name}" da questa sessione?`)) return;
+  s.exercises.splice(i, 1); saveSess(s); renderTraining();
+}
+function trToggleAddEx(id) { addExOpen.has(id) ? addExOpen.delete(id) : addExOpen.add(id); renderTraining(); }
+function trPrefillEx(id) {
+  const s = getSess(id); if (!s) return;
+  const name = document.getElementById('aex_name_' + id).value.trim(); if (!name) return;
+  const tmpl = NEW_SHEET.find(t => t.name.toLowerCase() === name.toLowerCase());
+  const exId = tmpl ? tmpl.id : slug(name);
+  const known = liveSessions().flatMap(x => x.exercises || []).find(e => e.id === exId);
+  const modeEl = document.getElementById('aex_mode_' + id), kgEl = document.getElementById('aex_kg_' + id);
+  const mode = tmpl ? (tmpl.mode || 'reps') : (known ? known.mode : null);
+  if (mode) modeEl.value = mode;
+  const prev = findPrevious(s, exId);
+  if (prev && prev.kg !== '' && prev.kg != null && mode !== 'time') kgEl.value = prev.kg;
+  else if (tmpl && tmpl.start != null && !prev) kgEl.value = tmpl.start;
+}
+function trAddEx(id) {
+  const s = getSess(id); if (!s) return;
+  const name = document.getElementById('aex_name_' + id).value.trim();
+  if (!name) { document.getElementById('aex_name_' + id).focus(); return; }
+  const kgRaw = document.getElementById('aex_kg_' + id).value.trim();
+  const mode = document.getElementById('aex_mode_' + id).value;
+  const note = document.getElementById('aex_note_' + id).value.trim();
+  const tmpl = NEW_SHEET.find(t => t.name.toLowerCase() === name.toLowerCase());
+  const exId = tmpl ? tmpl.id : slug(name);
+  if (s.exercises.some(e => e.id === exId)) { setStatus('Esercizio già presente in questa sessione'); setTimeout(() => setStatus(''), 2500); return; }
+  const known = liveSessions().flatMap(x => x.exercises || []).find(e => e.id === exId);
+  const base = tmpl || { id: exId, name, mode, posture: note ? [note] : (known ? known.posture : []), inc: known ? known.inc : 0, target: known ? known.target : 8, hint: known ? known.hint : '' };
+  const ex = makeExercise(base, s);
+  if (kgRaw !== '' && ex.mode !== 'time') ex.kg = parseFloat(kgRaw);
+  s.exercises.push(ex);
+  saveSess(s);
+  addExOpen.delete(id);
+  renderTraining();
+}
+function trComplete(id) { const s = getSess(id); if (!s) return; s.done = true; saveSess(s); triggerCelebration(); renderTraining(); }
+function trReopen(id) { const s = getSess(id); if (!s) return; s.done = false; saveSess(s); renderTraining(); }
+function trRun(id, field, val) {
+  const s = getSess(id); if (!s) return;
+  s.run[field] = ['fartlek_min', 'scatti_n', 'scatti_m'].includes(field) ? parseFloat(val) || 0 : val;
+  saveSess(s);
+}
+function trLancio(id, i, field, val) { const s = getSess(id); if (!s) return; s.run.lanci[i][field] = val; saveSess(s); }
+function trAddLancio(id) { const s = getSess(id); if (!s) return; s.run.lanci.push({ tipo: '', messe: '', sbagliate: '' }); saveSess(s); renderTraining(); }
+function trDelLancio(id, i) { const s = getSess(id); if (!s) return; s.run.lanci.splice(i, 1); saveSess(s); renderTraining(); }
+function trToggleNewPeriod() { newPeriodOpen = !newPeriodOpen; renderTraining(); }
+function trCreatePeriod() {
+  const name = document.getElementById('np_name').value.trim();
+  const from = document.getElementById('np_from').value, to = document.getElementById('np_to').value;
+  const dot = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7);
+  const dates = from && to ? `${dot(from)} – ${dot(to)}` : from ? `dal ${dot(from)}` : '';
+  const label = name || dates;
+  if (!label) { document.getElementById('np_name').focus(); return; }
+  const id = 'p' + Date.now().toString(36);
+  SECTIONS.unshift({ id, label, kind: 'sessions', from, to });
+  saveSections();
+  openSections.add(id);
+  newPeriodOpen = false;
+  renderTraining();
+}
+
+// pallino verde/rosso come nella scheda vecchia: verde se kg su o serie >= della volta scorsa
+function dotColor(s, i) {
+  const ex = s.exercises[i];
+  const prev = findPrevious(s, ex.id);
+  if (!prev) return null;
+  const cur = ex.sets.filter(v => v !== '' && v != null).map(Number);
+  if (!cur.length) return null;
+  const prevSets = prev.sets.filter(v => v !== '' && v != null).map(Number);
+  const sum = a => a.reduce((x, y) => x + y, 0);
+  const kgUp = ex.mode !== 'time' && ex.kg !== '' && prev.kg !== '' && prev.kg != null && Number(ex.kg) > Number(prev.kg);
+  return (kgUp || sum(cur) >= sum(prevSets.slice(0, cur.length))) ? 'var(--ok)' : 'var(--danger)';
+}
+function dotHtml(s, i) {
+  const c = dotColor(s, i);
+  return `<span id="dot_${s.id}_${i}" style="width:9px;height:9px;border-radius:50%;background:${c || 'transparent'};display:${c ? 'inline-block' : 'none'};"></span>`;
+}
+function refreshDot(id, i) {
+  const s = getSess(id); const el = document.getElementById(`dot_${id}_${i}`); if (!s || !el) return;
+  const c = dotColor(s, i);
+  el.style.display = c ? 'inline-block' : 'none'; el.style.background = c || 'transparent';
+}
+
+/* ---- rendering ---- */
+function renderNewEx(s, ex, i) {
+  const sid = s.id;
+  const pid = `np_${sid}_${i}`, lid = `nl_${sid}_${i}`, tid = `nt_${sid}_${i}`;
+  const postureItems = (ex.hint ? [`<b>Partenza:</b> ${escH(ex.hint)}`] : []).concat((ex.posture || []).map(escH)).map(p => `<li>${p}</li>`).join('');
+  const postureBtn = postureItems ? `<button class="posture-toggle" onclick="togglePosture('${pid}')"><span id="arr_${pid}">▸</span> postura</button>` : '';
+  const prev = findPrevious(s, ex.id);
+  const isTime = ex.mode === 'time';
+  const kgRow = isTime
+    ? `<span class="kgnote">secondi per serie</span>`
+    : `<input class="kg-input" type="number" step="2.5" inputmode="decimal" value="${ex.kg ?? ''}" onchange="trExKg('${sid}',${i},this.value)">
+       <span class="kgnote">kg · target ×${ex.target}</span>${ex.auto ? `<span class="auto-note">${escH(ex.auto)}</span>` : ''}`;
+  const sets = ex.sets.map((v, j) =>
+    `<input class="rep-input" type="number" min="0" max="${isTime ? 900 : 99}" inputmode="numeric" placeholder="${isTime ? 'sec' : '—'}" value="${escH(v)}" oninput="trExSet('${sid}',${i},${j},this.value)">`).join('');
+  return `<div class="ex-row">
+    <div class="ex-head"><span class="ex-name">${escH(ex.name)}</span>${dotHtml(s, i)}<button class="ex-del" title="Rimuovi dalla sessione" onclick="trRemoveEx('${sid}',${i})">✕</button></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">${kgRow}</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">${postureBtn}
+      <button class="posture-toggle" onclick="togglePosture('${lid}')"><span id="arr_${lid}">▸</span> ↺ volta scorsa</button></div>
+    <div class="posture-content" id="${pid}"><ul>${postureItems}</ul></div>
+    <div class="posture-content" id="${lid}">${escH(prevText(prev, ex.mode))}</div>
+    <div class="series-row">${sets}
+      <button class="timer-btn" id="${tid}" onclick="startTimer('${tid}')">1:30</button>
+      <button class="set-btn" title="Togli una serie" onclick="trDelSet('${sid}',${i})">−</button>
+      <button class="set-btn" title="Aggiungi una serie" onclick="trAddSet('${sid}',${i})">+</button>
+    </div>
+  </div>`;
+}
+function renderAddEx(s) {
+  const sid = s.id;
+  const names = [...new Set([...NEW_SHEET.map(t => t.name), ...liveSessions().flatMap(x => (x.exercises || []).map(e => e.name))])];
+  return `<div class="addex">
+    <input class="run-editable" id="aex_name_${sid}" list="aex_list_${sid}" placeholder="Nome esercizio" onchange="trPrefillEx('${sid}')">
+    <datalist id="aex_list_${sid}">${names.map(n => `<option value="${escH(n)}">`).join('')}</datalist>
+    <div class="addex-row">
+      <input class="kg-input" id="aex_kg_${sid}" type="number" step="2.5" inputmode="decimal" placeholder="kg">
+      <select class="lancio-tipo" id="aex_mode_${sid}"><option value="reps">ripetizioni</option><option value="time">secondi (es. plank)</option></select>
+    </div>
+    <input class="run-editable" id="aex_note_${sid}" placeholder="Nota / postura (opzionale)">
+    <div class="addex-row">
+      <button class="pill-btn fill" onclick="trAddEx('${sid}')">Aggiungi</button>
+      <button class="pill-btn ghost" onclick="trToggleAddEx('${sid}')">Annulla</button>
+    </div>
+  </div>`;
+}
+function renderSessTop(s) {
+  return `<div class="meta-row">
+    <label>Giorno:</label><input class="date-input" type="date" value="${escH(s.date)}" onchange="trSessDate('${s.id}',this.value)">
+    <button class="toggle-run-btn" style="margin-left:auto;border-color:var(--danger);color:var(--danger);" onclick="trDeleteSession('${s.id}')">🗑 Elimina</button>
+  </div>`;
+}
+function renderSessEnd(s) {
+  return s.done
+    ? `<div style="text-align:center;margin-top:1rem;font-size:14px;color:var(--ok);">✓ Completata · <button class="link-btn" style="font-size:12px;" onclick="trReopen('${s.id}')">riapri</button></div>`
+    : `<button class="complete-btn" onclick="trComplete('${s.id}')">🎉 Sessione completata!</button>`;
+}
+function renderNewGymBody(s) {
+  const sid = s.id;
+  const warm = NEW_WARMUP.map((w, i) => {
+    const wid = `nw_${sid}_${i}`;
+    return `<div class="warmup-item"><input type="checkbox" id="${wid}" ${s.warmup && s.warmup[i] ? 'checked' : ''} onchange="trWarmup('${sid}',${i},this.checked)"><label for="${wid}">${w}</label></div>`;
+  }).join('');
+  const exs = (s.exercises || []).map((ex, i) => renderNewEx(s, ex, i)).join('');
+  return `${renderSessTop(s)}
+    <p class="section-label">Riscaldamento (se lo fai)</p>
+    <div class="warmup-grid">${warm}</div>
+    <p class="section-label">Esercizi — rec 90 sec</p>
+    ${exs}
+    <button class="add-lancio-btn" style="margin-top:10px;" onclick="trToggleAddEx('${sid}')">+ Aggiungi esercizio</button>
+    ${addExOpen.has(sid) ? renderAddEx(s) : ''}<br><br>
+    <div class="meta-row"><label>Durata:</label><input class="time-input" type="text" placeholder="1h05" value="${escH(s.time)}" oninput="trSessField('${sid}','time',this.value)"></div>
+    <p class="section-label">Note</p>
+    <textarea class="notes-area" oninput="trSessField('${sid}','notes',this.value)">${escH(s.notes)}</textarea>
+    ${renderSessEnd(s)}`;
+}
+function renderNewRunBody(s) {
+  const sid = s.id, d = s.run;
+  const lanci = d.lanci.map((l, i) => `
+    <div class="lancio-row">
+      <input class="lancio-tipo" type="text" placeholder="Tipo lancio" value="${escH(l.tipo)}" oninput="trLancio('${sid}',${i},'tipo',this.value)">
+      <span class="lancio-label">✅</span>
+      <input class="lancio-num" type="number" inputmode="numeric" min="0" placeholder="0" value="${escH(l.messe)}" oninput="trLancio('${sid}',${i},'messe',this.value)">
+      <span class="lancio-label">❌</span>
+      <input class="lancio-num" type="number" inputmode="numeric" min="0" placeholder="0" value="${escH(l.sbagliate)}" oninput="trLancio('${sid}',${i},'sbagliate',this.value)">
+      <button class="remove-lancio-btn" onclick="trDelLancio('${sid}',${i})">✕</button>
+    </div>`).join('');
+  return `${renderSessTop(s)}
+    <p class="section-label">Corsa</p>
+    <div class="run-field"><label>Fartlek (min):</label><input class="run-input" type="number" inputmode="numeric" value="${d.fartlek_min}" oninput="trRun('${sid}','fartlek_min',this.value)"></div>
+    <div class="run-field"><label>Tipo:</label><input class="run-editable" type="text" value="${escH(d.fartlek_desc)}" oninput="trRun('${sid}','fartlek_desc',this.value)"></div>
+    <div class="run-field"><label>Scatti (n):</label><input class="run-input" type="number" inputmode="numeric" value="${d.scatti_n}" oninput="trRun('${sid}','scatti_n',this.value)"></div>
+    <div class="run-field"><label>Distanza (m):</label><input class="run-input" type="number" inputmode="numeric" value="${d.scatti_m}" oninput="trRun('${sid}','scatti_m',this.value)"></div>
+    <div class="run-field"><label>Recupero:</label><input class="run-editable" type="text" value="${escH(d.scatti_rec)}" oninput="trRun('${sid}','scatti_rec',this.value)"></div>
+    <p class="section-label" style="margin-top:10px;">🥏 Lanci</p>
+    ${lanci}
+    <button class="add-lancio-btn" onclick="trAddLancio('${sid}')">+ Aggiungi tipo lancio</button>
+    <div class="run-field" style="margin-top:8px;"><label>Note:</label><input class="run-editable" type="text" value="${escH(d.note)}" oninput="trRun('${sid}','note',this.value)"></div>
+    ${renderSessEnd(s)}`;
+}
+function renderNewSession(s) {
+  const open = openSess.has(s.id), isRun = s.type === 'run';
+  const sub = isRun ? (s.done ? '✓ completata' : 'corsa') : `${(s.exercises || []).length} esercizi${s.done ? ' · ✓ completata' : ''}`;
+  return `<div class="card">
+    <div class="card-header sess-head ${open ? 'open' : ''}" onclick="trToggleSess('${s.id}')">
+      <div class="card-title">${isRun ? '🏃' : '🏋️'} ${dayLabel(s.date)}<span class="sess-sub">${sub}</span></div>
+      <span style="color:var(--ink-faint);">${open ? '▾' : '▸'}</span>
+    </div>
+    ${open ? (isRun ? renderNewRunBody(s) : renderNewGymBody(s)) : ''}
+  </div>`;
+}
+
+function sectionStats(sec) {
+  if (sec.kind === 'sessions') {
+    const l = sessionsOf(sec.id);
+    const dot = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7);
+    const range = sec.from && sec.to ? `${dot(sec.from)} – ${dot(sec.to)} · ` : sec.from ? `dal ${dot(sec.from)} · ` : '';
+    return `${range}${l.length} sessioni · ${l.filter(x => x.done).length} ✓`;
+  }
+  let tot = 0, done = 0;
+  MONTHS.filter(m => sec.months.includes(m.id)).forEach(m => m.weeks.forEach(w => {
+    for (let x = 0; x < w.sessions; x++) { tot++; if (dbGet(mk(m.id, w.id, x, 'meta', 'done')) === '1') done++; }
+  }));
+  return `${done}/${tot} sessioni`;
+}
+function renderOldSectionBody(sec) {
   let html = '';
   MONTHS.forEach((month, mIdx) => {
-    html += `<div class="month-group">
-      <div class="month-header">
-        <span class="month-label">${month.label}</span>
-      </div>
-      <div class="week-selector" style="margin-bottom:0.5rem;">`;
+    if (!sec.months.includes(month.id)) return;
+    html += `<div class="month-group"><div class="month-header"><span class="month-label">${month.label}</span></div><div class="week-selector" style="margin-bottom:0.5rem;">`;
     month.weeks.forEach((week, wIdx) => {
-      const isActive = sel.monthIdx === mIdx && sel.weekIdx === wIdx;
-      const runClass = week.runOnly ? 'run-only' : '';
-      html += `<button class="week-btn ${runClass} ${isActive ? 'active' : ''}" onclick="selectWeek(${mIdx},${wIdx})">${week.label}${week.runOnly ? ' 🏃' : ''}</button>`;
+      const isActive = sel && sel.monthIdx === mIdx && sel.weekIdx === wIdx;
+      html += `<button class="week-btn ${week.runOnly ? 'run-only' : ''} ${isActive ? 'active' : ''}" onclick="selectWeek(${mIdx},${wIdx})">${week.label}${week.runOnly ? ' 🏃' : ''}</button>`;
     });
     html += `</div></div>`;
   });
-  html += `<button class="add-month-btn" onclick="addMonth()">+ Aggiungi mese</button>`;
-  html += `<div id="sessionContent" style="margin-top:1.5rem;"></div>`;
+  if (sel && sec.months.includes(MONTHS[sel.monthIdx]?.id)) html += `<div id="sessionContent" style="margin-top:1rem;"></div>`;
+  return html;
+}
+function renderSessionsBody(sec) {
+  const list = sessionsOf(sec.id);
+  return `<div class="sess-actions">
+      <button class="pill-btn fill" onclick="trNewSession('${sec.id}','gym')">+ Palestra</button>
+      <button class="pill-btn run" onclick="trNewSession('${sec.id}','run')">+ Corsa</button>
+    </div>
+    ${list.length ? list.map(renderNewSession).join('') : '<p class="empty-hint">Nessuna sessione ancora: aggiungine una ogni volta che vai.</p>'}`;
+}
+
+function renderTraining() {
+  if (!SECTIONS.length) SECTIONS = defaultSections();
+  const secs = viewSections();
+  if (!openSections) {
+    openSections = new Set();
+    const first = secs.find(x => x.kind === 'sessions');
+    if (first) openSections.add(first.id);
+  }
+  if (!initOpenDone && SECTIONS.length) { // al primo giro apri l'ultima sessione del periodo aperto
+    initOpenDone = true;
+    const first = secs.find(x => x.kind === 'sessions');
+    const l = first ? sessionsOf(first.id) : [];
+    if (l.length) openSess.add(l[0].id);
+  }
+  let html = `<div class="sess-actions"><button class="pill-btn ghost" onclick="trToggleNewPeriod()">+ Nuovo blocco</button></div>`;
+  if (newPeriodOpen) {
+    html += `<div class="newperiod">
+      <div class="addex-row">${['Inverno ❄️', 'Primavera 🌸', 'Estate ☀️', 'Autunno 🍂'].map(n => `<button class="pill-btn ghost" onclick="document.getElementById('np_name').value='${n}'">${n}</button>`).join('')}</div>
+      <input class="run-editable" id="np_name" placeholder="Nome del blocco (es. Inverno ❄️)">
+      <div class="addex-row"><label>dal</label><input class="date-input" id="np_from" type="date" value="${isoToday()}"><label>al</label><input class="date-input" id="np_to" type="date"></div>
+      <div class="addex-row"><button class="pill-btn fill" onclick="trCreatePeriod()">Crea blocco</button><button class="pill-btn ghost" onclick="trToggleNewPeriod()">Annulla</button></div>
+    </div>`;
+  }
+  secs.forEach(sec => {
+    const open = openSections.has(sec.id);
+    html += `<div class="sec-group">
+      <button class="sec-head ${open ? 'open' : ''}" onclick="trToggleSection('${sec.id}')">
+        <span>${escH(sec.label)}<span class="sec-meta">${sectionStats(sec)}</span></span><span>${open ? '▾' : '▸'}</span>
+      </button>
+      ${open ? `<div class="sec-body">${sec.kind === 'sessions' ? renderSessionsBody(sec) : renderOldSectionBody(sec)}</div>` : ''}
+    </div>`;
+  });
   document.getElementById('page-training').innerHTML = html;
   renderSessionContent();
 }
@@ -2749,6 +3206,7 @@ function selectWeek(mIdx, wIdx) {
 }
 
 function renderSessionContent() {
+  if (!sel) return;
   const month = MONTHS[sel.monthIdx];
   const week = month?.weeks[sel.weekIdx];
   if (!week) return;
@@ -2776,6 +3234,14 @@ function renderGymSession(monthId, weekId, sIdx) {
     const tid = `t_${monthId}_${weekId}_${sIdx}_${ex.id}`;
     const postureItems = ex.posture.map(p => `<li>${p}</li>`).join("");
     const g = getGymSessionIndex(monthId, weekId, sIdx);
+    const lid = 'l' + pid;
+    let ltTxt = 'nessuna sessione precedente';
+    if (g > 0) {
+      const pOld = getAllGymSessions().filter(x => !x.runOnly)[g-1];
+      const reps = [0,1,2].map(s => dbGet(mk(pOld.monthId, pOld.weekId, pOld.sIdx, ex.id, s))).filter(r => r !== '');
+      const d = fmtDate(dbGet(mk(pOld.monthId, pOld.weekId, pOld.sIdx, 'meta', 'date')));
+      ltTxt = [d, getKgForSession(ex.id, pOld.monthId, pOld.weekId, pOld.sIdx) + ' kg', reps.length ? reps.join(' · ') : 'nessuna serie registrata'].filter(Boolean).join(' · ');
+    }
     let progDot = '';
     if (g > 0) {
       const all = getAllGymSessions().filter(x => !x.runOnly);
@@ -2800,8 +3266,12 @@ function renderGymSession(monthId, weekId, sIdx) {
         <input class="kg-input" type="number" step="2.5" inputmode="decimal" value="${kg}" onchange="setKgOverride('${monthId}','${weekId}',${sIdx},'${ex.id}',this.value)">
         <span style="font-size:12px;color:var(--ink-soft);">kg · target ×8</span>
       </div>
-      <button class="posture-toggle" onclick="togglePosture('${pid}')"><span id="arr_${pid}">▸</span> postura</button>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <button class="posture-toggle" onclick="togglePosture('${pid}')"><span id="arr_${pid}">▸</span> postura</button>
+        <button class="posture-toggle" onclick="togglePosture('${lid}')"><span id="arr_${lid}">▸</span> ↺ volta scorsa</button>
+      </div>
       <div class="posture-content" id="${pid}"><ul>${postureItems}</ul></div>
+      <div class="posture-content" id="${lid}">${ltTxt}</div>
       <div class="series-row">${seriesInputs}<button class="timer-btn" id="${tid}" onclick="startTimer('${tid}')">1:30</button></div>
     </div>`;
   }).join("");
@@ -2921,26 +3391,6 @@ function completeSession(monthId, weekId, sIdx) {
   renderSessionContent();
 }
 
-function addMonth() {
-  const names = ["Ottobre","Novembre","Dicembre","Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno"];
-  const existing = MONTHS.map(m => m.label.split(" ")[0]);
-  const next = names.find(n => !existing.includes(n)) || `Mese ${MONTHS.length + 1}`;
-  const id = next.toLowerCase().substring(0,3) + Date.now();
-  MONTHS.push({
-    id,
-    label: next,
-    weeks: [
-      { id: "w0", label: "Sett. 1", sessions: 3, runOnly: false },
-      { id: "w1", label: "Sett. 2", sessions: 3, runOnly: false },
-      { id: "w2", label: "Sett. 3", sessions: 3, runOnly: false },
-      { id: "w3", label: "Sett. 4", sessions: 3, runOnly: false },
-    ]
-  });
-  saveMonths();
-  sel = { monthIdx: MONTHS.length - 1, weekIdx: 0 };
-  renderTraining();
-}
-
 let timerInterval = null, timerEl = null;
 function startTimer(btnId) {
   const btn = document.getElementById(btnId);
@@ -2988,36 +3438,86 @@ function launchConfetti() {
   draw();
 }
 
+function ominoLevel(n) {
+  const last = OMINO_STEPS.length - 1;
+  for (let i = last; i >= 0; i--) {
+    if (n >= OMINO_STEPS[i]) {
+      if (i === last) return last;
+      return i + (n - OMINO_STEPS[i]) / (OMINO_STEPS[i + 1] - OMINO_STEPS[i]);
+    }
+  }
+  return 0;
+}
+
 function renderProgress() {
   const allGym = getAllGymSessions().filter(x => !x.runOnly);
-  const gymDone = allGym.filter(x => dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1').length;
-  const muscleLevel = Math.min(20, Math.floor(gymDone / 5));
+  const gymDoneOld = allGym.filter(x => dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1').length;
+  const newGym = liveSessions().filter(x => x.type === 'gym').sort(cmpSess);
+  const gymDone = gymDoneOld + newGym.filter(x => x.done).length;
+  const nextStep = OMINO_STEPS.find(v => v > gymDone);
 
   let dotsByMonth = '';
-  MONTHS.forEach(m => {
-    const gymSessions = m.weeks.filter(w => !w.runOnly).flatMap(w =>
-      Array.from({length: w.sessions}, (_, s) => ({ monthId: m.id, weekId: w.id, sIdx: s }))
-    );
-    if (!gymSessions.length) return;
-    const dots = gymSessions.map((x, i) => {
-      const done = dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1';
-      return `<div class="session-dot ${done?'done':''}">${done?'✓':''}</div>`;
-    }).join('');
-    dotsByMonth += `<div style="margin-bottom:.5rem;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;">${m.label}</div><div class="sessions-grid" style="margin-bottom:1rem;">${dots}</div>`;
+  const dotsLabel = t => `<div style="margin-bottom:.5rem;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;">${t}</div>`;
+  viewSections().forEach(sec => {
+    if (sec.kind === 'sessions') {
+      const list = newGym.filter(x => x.period === sec.id);
+      if (!list.length) return;
+      const dots = list.map(x => `<div class="session-dot ${x.done ? 'done' : ''}" title="${fmtDate(x.date)}">${x.done ? '✓' : ''}</div>`).join('');
+      dotsByMonth += dotsLabel(escH(sec.label)) + `<div class="sessions-grid" style="margin-bottom:1rem;">${dots}</div>`;
+      return;
+    }
+    MONTHS.filter(m => sec.months.includes(m.id)).forEach(m => {
+      const gymSessions = m.weeks.filter(w => !w.runOnly).flatMap(w =>
+        Array.from({length: w.sessions}, (_, s) => ({ monthId: m.id, weekId: w.id, sIdx: s }))
+      );
+      if (!gymSessions.length) return;
+      const dots = gymSessions.map(x => {
+        const done = dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1';
+        return `<div class="session-dot ${done?'done':''}">${done?'✓':''}</div>`;
+      }).join('');
+      dotsByMonth += dotsLabel(`${escH(sec.label)} · ${m.label}`) + `<div class="sessions-grid" style="margin-bottom:1rem;">${dots}</div>`;
+    });
   });
 
   let strengthHtml = '<div class="card"><div class="card-title" style="margin-bottom:1rem;">Progressione pesi</div>';
+  let any = false;
   EXERCISES.forEach(ex => {
     const weights = allGym
       .filter(x => dbGet(mk(x.monthId, x.weekId, x.sIdx, 'meta', 'done')) === '1')
       .map(x => getKgForSession(ex.id, x.monthId, x.weekId, x.sIdx));
     if (!weights.length) return;
+    any = true;
     const gain = weights[weights.length-1] - weights[0];
     strengthHtml += `<div style="margin-bottom:.75rem;">
       <div style="font-size:13px;font-weight:600;">${ex.name}</div>
       <div style="font-size:12px;color:var(--ink-soft);">${weights[0]} → ${weights[weights.length-1]} kg ${gain>0?`<span style="color:var(--ok)">+${gain}kg</span>`:''}</div>
     </div>`;
   });
+  // scheda nuova: per esercizio, dalla prima all'ultima sessione completata in cui è stato fatto
+  const byEx = new Map();
+  newGym.filter(x => x.done).forEach(x => (x.exercises || []).forEach(ex => {
+    const nums = ex.sets.filter(v => v !== '' && v != null).map(Number);
+    if (!nums.length) return;
+    if (!byEx.has(ex.id)) byEx.set(ex.id, { name: ex.name, mode: ex.mode, pts: [] });
+    byEx.get(ex.id).pts.push({ kg: ex.kg, top: Math.max(...nums) });
+  }));
+  if (byEx.size) {
+    strengthHtml += `<div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin:${any ? '1rem' : '0'} 0 .6rem;">Scheda nuova</div>`;
+    byEx.forEach(e => {
+      const a = e.pts[0], b = e.pts[e.pts.length - 1];
+      const hasKg = e.mode !== 'time' && a.kg !== '' && a.kg != null && b.kg !== '' && b.kg != null;
+      const txt = e.mode === 'time' ? `${a.top}s → ${b.top}s (serie migliore)`
+        : hasKg ? `${a.kg} → ${b.kg} kg` : `${a.top} → ${b.top} rip. (serie migliore)`;
+      const gain = hasKg ? b.kg - a.kg : b.top - a.top;
+      const unit = e.mode === 'time' ? 's' : hasKg ? 'kg' : 'rip.';
+      strengthHtml += `<div style="margin-bottom:.75rem;">
+        <div style="font-size:13px;font-weight:600;">${escH(e.name)}</div>
+        <div style="font-size:12px;color:var(--ink-soft);">${txt} ${gain>0?`<span style="color:var(--ok)">+${gain}${unit}</span>`:''}</div>
+      </div>`;
+    });
+    any = true;
+  }
+  if (!any) strengthHtml += '<p class="empty-hint">Completa qualche sessione per vedere i progressi.</p>';
   strengthHtml += '</div>';
 
   document.getElementById('page-progress').innerHTML = `
@@ -3025,32 +3525,32 @@ function renderProgress() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
         <div class="card-title">💪 ${gymDone} sessioni completate</div>
       </div>
-      <div class="stickman-wrap">${buildStickman(muscleLevel)}</div>
+      <div class="stickman-wrap">${buildStickman(ominoLevel(gymDone), gymDone)}</div>
+      <div class="omino-next">${nextStep !== undefined ? `ancora ${nextStep - gymDone} ${nextStep - gymDone === 1 ? 'sessione' : 'sessioni'} e l'omino ingrossa ancora` : 'livello massimo raggiunto 💪'}</div>
       ${dotsByMonth}
-      <button class="add-month-btn" style="margin-top:.5rem;" onclick="addMonth();showPage('training')">+ Aggiungi mese</button>
     </div>
     ${strengthHtml}
   `;
 }
 
-function buildStickman(level) {
+function buildStickman(level, n) {
   const capped = Math.min(level, 7);
   const armW=4+capped*1.5, legW=4+capped*1.5, bodyW=8+capped*2;
-  const color=level===0?'#A8A8B3':level<3?'#8b8b9a':level<6?'#6B6B76':'#007BFF';
+  const color=level<0.05?'#A8A8B3':level<3?'#8b8b9a':level<6?'#6B6B76':'#007BFF';
   return `<svg width="120" height="210" viewBox="0 0 120 210" xmlns="http://www.w3.org/2000/svg">
     <circle cx="60" cy="30" r="20" fill="none" stroke="${color}" stroke-width="3"/>
     <circle cx="53" cy="27" r="2.5" fill="${color}"/>
     <circle cx="67" cy="27" r="2.5" fill="${color}"/>
-    <path d="M 52 35 Q 60 ${42+level} 68 35" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
-    <line x1="60" y1="50" x2="60" y2="120" stroke="${color}" stroke-width="${bodyW}" stroke-linecap="round"/>
+    <path d="M 52 35 Q 60 ${(42+capped).toFixed(1)} 68 35" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+    <line x1="60" y1="50" x2="60" y2="120" stroke="${color}" stroke-width="${bodyW.toFixed(1)}" stroke-linecap="round"/>
     ${capped>=4?`<line x1="55" y1="75" x2="65" y2="75" stroke="#fff" stroke-width="2"/><line x1="55" y1="90" x2="65" y2="90" stroke="#fff" stroke-width="2"/>`:''}
-    <line x1="60" y1="65" x2="25" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
+    <line x1="60" y1="65" x2="25" y2="95" stroke="${color}" stroke-width="${armW.toFixed(1)}" stroke-linecap="round"/>
     ${capped>=2?`<ellipse cx="40" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(-40 40 78)"/>`:''}
-    <line x1="60" y1="65" x2="95" y2="95" stroke="${color}" stroke-width="${armW}" stroke-linecap="round"/>
+    <line x1="60" y1="65" x2="95" y2="95" stroke="${color}" stroke-width="${armW.toFixed(1)}" stroke-linecap="round"/>
     ${capped>=2?`<ellipse cx="80" cy="78" rx="8" ry="5" fill="${color}" transform="rotate(40 80 78)"/>`:''}
-    <line x1="60" y1="120" x2="35" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
-    <line x1="60" y1="120" x2="85" y2="170" stroke="${color}" stroke-width="${legW}" stroke-linecap="round"/>
-    <text x="60" y="200" text-anchor="middle" font-size="11" fill="#A8A8B3">Sessioni: ${level*5}+</text>
+    <line x1="60" y1="120" x2="35" y2="170" stroke="${color}" stroke-width="${legW.toFixed(1)}" stroke-linecap="round"/>
+    <line x1="60" y1="120" x2="85" y2="170" stroke="${color}" stroke-width="${legW.toFixed(1)}" stroke-linecap="round"/>
+    <text x="60" y="200" text-anchor="middle" font-size="11" fill="#A8A8B3">Sessioni: ${n}</text>
   </svg>`;
 }
 
@@ -3064,7 +3564,10 @@ function togglePosture(id) {
 /* espone al window le funzioni richiamate dagli onclick generati dinamicamente */
 Object.assign(window, {
   dbSet, setKgOverride, togglePosture, startTimer, toggleRunOverride, completeSession,
-  updateLancio, addLancio, removeLancio, updateRun, selectWeek, addMonth, showPage
+  updateLancio, addLancio, removeLancio, updateRun, selectWeek, showPage,
+  trToggleSection, trToggleSess, trNewSession, trDeleteSession, trSessDate, trSessField, trWarmup,
+  trExKg, trExSet, trAddSet, trDelSet, trRemoveEx, trToggleAddEx, trPrefillEx, trAddEx,
+  trComplete, trReopen, trRun, trLancio, trAddLancio, trDelLancio, trToggleNewPeriod, trCreatePeriod
 });
 
 document.getElementById('trTabTraining').addEventListener('click', () => showPage('training'));
