@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#FFFFFF; --panel:#FFFFFF; --ink:#14141A; --ink-soft:#6B6B76; --ink-faint:#A8A8B3;
@@ -501,6 +502,271 @@
   .sub-meta{ color:var(--ink-faint); font-size:12px; }
   .sub-amount{ font-weight:800; width:70px; text-align:right; font-variant-numeric:tabular-nums; }
   .exp-del:hover{ color:var(--danger); }
+
+  /* ================= CALENDARIO ================= */
+#panel-cal .mono{font-family:var(--c-mono);font-variant-numeric:tabular-nums}
+#panel-cal header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:14px}
+#panel-cal header.top h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
+#panel-cal header.top .c-sub{color:var(--c-muted);font-size:13px;margin-top:2px}
+#panel-cal .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--c-muted);align-items:center}
+#panel-cal .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+#panel-cal .status{font-size:12px;color:var(--c-muted)}
+#panel-cal .buddy{display:flex;gap:14px;align-items:center;background:var(--c-surface);border:1px solid var(--c-line);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+#panel-cal .lemur-btn{border:none;background:none;padding:0;flex:none;width:104px;height:104px}
+#panel-cal .lemur-btn svg{width:100%;height:100%;overflow:visible}
+#panel-cal .bcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+#panel-cal .bubble{position:relative;background:var(--c-bubble);color:var(--c-bubble-ink);border-radius:12px;padding:9px 12px;font-size:14px;font-weight:500;max-width:62ch}
+#panel-cal .bubble::before{content:"";position:absolute;left:-8px;top:18px;border:8px solid transparent;border-left:0;border-right-color:var(--c-bubble)}
+#panel-cal .bstats{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--c-muted)}
+#panel-cal .bstats b{color:var(--c-ink);font-variant-numeric:tabular-nums}
+#panel-cal .todaychips{display:flex;flex-wrap:wrap;gap:6px}
+#panel-cal .tdc{border:1px solid hsl(var(--h) var(--c-sat) var(--c-l-edge) / .5);background:hsl(var(--h) var(--c-sat) var(--c-l-fill));color:hsl(var(--h) 45% var(--c-l-ink));border-radius:99px;padding:5px 11px;font-size:12.5px;display:flex;gap:6px;align-items:center}
+#panel-cal .tdc .bx{width:16px;height:16px;border-radius:4px;border:1.5px solid currentColor;display:inline-grid;place-items:center;font-size:11px;line-height:1}
+#panel-cal .tdc[aria-pressed="true"]{opacity:.7}
+#panel-cal .tdc[aria-pressed="true"] .bx{background:currentColor}
+#panel-cal .tdc[aria-pressed="true"] .bx::after{content:"✓";color:hsl(var(--h) var(--c-sat) var(--c-l-fill));font-weight:700}
+@keyframes cal-hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes cal-jump{0%{transform:translateY(0) rotate(0)}40%{transform:translateY(-22px) rotate(-8deg)}70%{transform:translateY(-6px) rotate(6deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes cal-sway{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+@keyframes cal-blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes cal-zz{0%{opacity:0;transform:translate(0,0)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
+@keyframes cal-conf{0%{transform:translateY(-6px);opacity:1}100%{transform:translateY(34px) rotate(200deg);opacity:0}}
+#panel-cal .lemur{transform-box:view-box;transform-origin:55px 110px}
+#panel-cal .mood-happy .lemur{animation:cal-hop 1.1s ease-in-out infinite}
+#panel-cal .mood-party .lemur{animation:cal-hop .45s ease-in-out infinite}
+#panel-cal .jump .lemur{animation:cal-jump .6s ease-out}
+#panel-cal .tail{transform-box:view-box;transform-origin:72px 98px;animation:cal-sway 2.6s ease-in-out infinite}
+#panel-cal .mood-party .tail{animation-duration:.6s}
+#panel-cal .eyes{transform-box:view-box;transform-origin:55px 47px;animation:cal-blink 4.2s infinite}
+#panel-cal .zzz text{animation:cal-zz 2.4s ease-out infinite}
+#panel-cal .zzz text:nth-child(2){animation-delay:1.2s}
+#panel-cal .confetti rect{animation:cal-conf 1.4s linear infinite}
+#panel-cal .strip-wrap{overflow-x:auto;margin-bottom:14px;padding:8px 0 4px}
+#panel-cal .strip{display:flex;gap:4px;min-width:max-content}
+#panel-cal .wk{background:var(--c-surface);border:1px solid var(--c-line);border-radius:6px;padding:6px 8px 7px;min-width:66px;text-align:left;position:relative}
+#panel-cal .wk[aria-current="true"]{border-color:var(--c-accent);box-shadow:0 0 0 1px var(--c-accent)}
+#panel-cal .wk .d{font-size:12px;font-weight:600}
+#panel-cal .wk .r{height:3px;border-radius:2px;margin:4px 0 5px}
+#panel-cal .wk .fill{height:4px;background:var(--c-line);border-radius:2px;overflow:hidden}
+#panel-cal .wk .fill b{display:block;height:100%;background:var(--c-accent)}
+#panel-cal .wk .ex{position:absolute;top:-6px;right:-4px;display:flex;gap:2px}
+#panel-cal .wk .ex span{width:12px;height:12px;border-radius:50%;border:2px solid var(--c-surface)}
+#panel-cal .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:1000px){
+#panel-cal .layout{grid-template-columns:minmax(0,1fr)}
+}
+#panel-cal .board{background:var(--c-surface);border:1px solid var(--c-line);border-radius:10px;padding:12px;min-width:0}
+#panel-cal .board-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+#panel-cal .board-head h2{font-size:18px}
+#panel-cal .nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#panel-cal .c-btn{border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:6px;padding:5px 10px;font-size:13px}
+#panel-cal .c-btn:hover{border-color:var(--c-muted)}
+#panel-cal .c-btn.c-primary{background:var(--c-accent);color:var(--c-accent-ink);border-color:var(--c-accent);font-weight:600}
+#panel-cal .c-btn.danger{color:var(--c-bad)}
+#panel-cal .chip{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;color:#fff}
+#panel-cal .chip.basso{background:var(--c-basso)}
+#panel-cal .chip.medio{background:var(--c-medio)}
+#panel-cal .chip.alto{background:var(--c-alto)}
+#panel-cal label.tog{font-size:12px;color:var(--c-muted);display:flex;gap:5px;align-items:center}
+#panel-cal .grid-scroll{overflow-x:auto}
+#panel-cal .grid{display:grid;grid-template-columns:44px repeat(var(--cols),minmax(118px,1fr));gap:6px;min-width:max-content}
+#panel-cal .ruler{position:relative;margin-top:46px}
+#panel-cal .ruler span{position:absolute;right:4px;font-size:11px;color:var(--c-muted);transform:translateY(-50%)}
+#panel-cal .day{min-width:0}
+#panel-cal .dh{height:40px;margin-bottom:6px;display:flex;align-items:flex-start;justify-content:space-between;gap:4px;border-bottom:3px solid var(--c-line);padding-bottom:4px}
+#panel-cal .dh.basso{border-color:var(--c-basso)}
+#panel-cal .dh.medio{border-color:var(--c-medio)}
+#panel-cal .dh.alto{border-color:var(--c-alto)}
+#panel-cal .dh .nm{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--c-muted)}
+#panel-cal .dh .num{font-family:var(--c-display);font-size:17px;font-weight:600;line-height:1}
+#panel-cal .dh.c-today .num{color:var(--c-accent)}
+#panel-cal .dh .add{border:none;background:none;color:var(--c-muted);font-size:18px;line-height:1;padding:0 2px}
+#panel-cal .dh .add:hover{color:var(--c-ink)}
+#panel-cal .dbody{position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 39px,var(--c-line) 39px,var(--c-line) 40px);background-color:var(--c-surface-2);border-radius:6px;cursor:crosshair;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#panel-cal .exam{position:absolute;left:0;right:0;top:0;z-index:2;font-size:11px;font-weight:600;padding:4px 6px;border-radius:6px 6px 0 0;color:#fff;background:hsl(var(--h) 60% 42%);pointer-events:none}
+#panel-cal .offday{position:absolute;inset:0;display:grid;place-items:center;color:var(--c-muted);font-size:12px;pointer-events:none}
+#panel-cal .c-ghost{position:absolute;left:3px;right:3px;border-radius:6px;border:2px solid var(--c-accent);background:color-mix(in srgb, var(--c-accent) 22%, transparent);font-family:var(--c-mono);font-size:11px;padding:3px 6px;z-index:4;pointer-events:none;color:var(--c-ink)}
+#panel-cal .blk{position:absolute;left:3px;right:3px;border-radius:6px;padding:4px 24px 4px 6px;font-size:12px;overflow:hidden;text-align:left;border:1px solid transparent;display:flex;flex-direction:column;gap:1px;background:var(--c-surface);cursor:pointer;z-index:1}
+#panel-cal .blk .t{font-family:var(--c-mono);font-size:10.5px;opacity:.8}
+#panel-cal .blk .s{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#panel-cal .blk .k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#panel-cal .blk.studio.c-empty{border:1.5px dashed var(--c-line);background:var(--c-surface);color:var(--c-muted)}
+#panel-cal .blk.studio.c-empty:hover,#panel-cal .blk.drop{border-color:var(--c-accent);color:var(--c-ink)}
+#panel-cal .blk.subj{background:hsl(var(--h) var(--c-sat) var(--c-l-fill));border-color:hsl(var(--h) var(--c-sat) var(--c-l-edge) / .55);color:hsl(var(--h) 45% var(--c-l-ink))}
+#panel-cal .blk.lezione{background:repeating-linear-gradient(-45deg,var(--c-lesson) 0 7px,var(--c-surface-2) 7px 14px);color:var(--c-muted);border-color:var(--c-line)}
+#panel-cal .blk.tesi{background:var(--c-lab);color:var(--c-lab-ink);border-color:var(--c-line)}
+#panel-cal .blk.progetto{border-style:dashed;border-width:1.5px}
+#panel-cal .blk.altro{background:var(--c-surface);border-color:var(--c-line);color:var(--c-muted)}
+#panel-cal .blk.c-done{opacity:.62}
+#panel-cal .blk{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y}
+#panel-cal .blk.c-dragging{pointer-events:none;z-index:6;box-shadow:0 8px 22px rgb(0 0 0 / .28);opacity:.92;transform:scale(1.02)}
+#panel-cal .rsz{position:absolute;left:0;right:0;bottom:0;height:10px;cursor:ns-resize;display:flex;justify-content:center;align-items:flex-end;padding-bottom:2px;touch-action:none}
+#panel-cal .rsz::after{content:"";width:22px;height:3px;border-radius:2px;background:currentColor;opacity:0;transition:opacity .15s}
+#panel-cal .blk:hover .rsz::after{opacity:.45}
+@media (pointer:coarse){
+#panel-cal .rsz{height:18px}
+#panel-cal .rsz::after{opacity:.4;width:28px}
+}
+#panel-cal .blk{cursor:grab}
+#panel-cal .tb{display:flex;flex-wrap:wrap;gap:8px}
+#panel-cal .tbg{display:flex;align-items:center;gap:4px;border:1px solid var(--c-line);border-radius:10px;padding:4px 4px 4px 10px;font-size:12px;color:var(--c-muted)}
+#panel-cal .tbg span{margin-right:2px}
+#panel-cal .sb{width:36px;height:36px;border:none;background:var(--c-surface-2);border-radius:8px;font-size:17px;color:var(--c-ink)}
+#panel-cal .sb:active{background:var(--c-line)}
+#panel-cal .blk .bdel{position:absolute;top:1px;right:1px;width:24px;height:24px;border:none;background:none;color:inherit;opacity:.5;font-size:15px;line-height:1;border-radius:4px}
+#panel-cal .blk .bdel:hover{opacity:1;background:color-mix(in srgb, currentColor 12%, transparent)}
+#panel-cal aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+#panel-cal .c-panel{background:var(--c-surface);border:1px solid var(--c-line);border-radius:10px;padding:12px}
+#panel-cal .c-panel h2{font-size:16px;margin-bottom:8px}
+#panel-cal .totals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#panel-cal .totals div{display:flex;flex-direction:column}
+#panel-cal .totals b{font-family:var(--c-display);font-size:20px;font-variant-numeric:tabular-nums}
+#panel-cal .totals small{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.05em}
+#panel-cal .note{font-size:12px;color:var(--c-muted);margin:8px 0 0}
+#panel-cal .subj-card{border-top:1px solid var(--c-line);padding-top:10px;margin-top:10px}
+#panel-cal .subj-card:first-of-type{border-top:none;margin-top:0;padding-top:0}
+#panel-cal .sh{display:flex;align-items:center;gap:8px}
+#panel-cal .sw{width:12px;height:12px;border-radius:3px;background:hsl(var(--h) 60% 50%);flex:none}
+#panel-cal .sh h3{font-size:15px;flex:1;min-width:0}
+#panel-cal .sm{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--c-muted);margin:4px 0 6px 20px;align-items:center}
+#panel-cal .sm input[type=date]{border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:5px;padding:1px 4px;font-size:12px}
+#panel-cal .cd{font-weight:600}
+#panel-cal .cd.soon{color:var(--c-bad)}
+#panel-cal .c-tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+#panel-cal .c-task{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:6px 8px;border-radius:6px;background:var(--c-surface-2);cursor:pointer;border:1px solid transparent}
+#panel-cal .c-task:hover{border-color:var(--c-line)}
+#panel-cal .c-task .c-n{font-size:13px;overflow-wrap:anywhere}
+#panel-cal .c-task .nums{font-size:11.5px;color:var(--c-muted);display:flex;gap:6px;align-items:center;white-space:nowrap}
+#panel-cal .c-task .nums input{width:42px;border:1px solid var(--c-line);background:var(--c-surface);border-radius:4px;padding:0 3px;font-family:var(--c-mono);font-size:11.5px;text-align:right}
+#panel-cal .c-task .bar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--c-line);position:relative;overflow:hidden}
+#panel-cal .c-task .bar i{position:absolute;inset:0 auto 0 0;background:hsl(var(--h) 55% 55% / .45)}
+#panel-cal .c-task .bar u{position:absolute;inset:0 auto 0 0;background:hsl(var(--h) 60% 42%);text-decoration:none}
+#panel-cal .c-task.armed{border-color:hsl(var(--h) 60% 45%);box-shadow:0 0 0 1px hsl(var(--h) 60% 45%)}
+#panel-cal .del{border:none;background:none;color:var(--c-muted);padding:0 4px;font-size:15px}
+#panel-cal .del:hover{color:var(--c-bad)}
+#panel-cal .over{color:var(--c-warn);font-weight:600}
+#panel-cal .addrow{display:flex;gap:6px;margin-top:6px}
+#panel-cal .addrow input{flex:1;min-width:0;border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:6px;padding:4px 8px;font-size:13px}
+#panel-cal .addrow input.h{flex:0 0 52px}
+#panel-cal .addrow input[type=date]{flex:0 0 auto;width:auto;font-size:12px;padding:3px 4px}
+#panel-cal .subj-del{border:none;background:none;color:var(--c-muted);font-size:12px}
+#panel-cal .subj-del:hover,#panel-cal .subj-del.arm{color:var(--c-bad)}
+#panel-cal .tgrp{border-top:1px solid var(--c-line);padding-top:8px;margin-top:8px}
+#panel-cal .tgrp:first-child{border-top:none;margin-top:0;padding-top:0}
+#panel-cal .tgrp summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;font-family:var(--c-display);font-weight:600;font-size:14px}
+#panel-cal .tgrp summary::-webkit-details-marker{display:none}
+#panel-cal .tgrp summary::after{content:"▾";margin-left:auto;color:var(--c-muted);font-size:12px}
+#panel-cal .tgrp:not([open]) summary::after{content:"▸"}
+#panel-cal .tgrp summary .cnt{font-family:var(--c-mono);font-size:11.5px;color:var(--c-muted);font-weight:400}
+#panel-cal .todos{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+#panel-cal .todo{display:flex;align-items:flex-start;gap:8px;padding:5px 4px;border-radius:6px}
+#panel-cal .todo:hover{background:var(--c-surface-2)}
+#panel-cal .todo label{display:flex;gap:8px;align-items:flex-start;flex:1;min-width:0;cursor:pointer;font-size:13px}
+#panel-cal .todo input{margin:2px 0 0;width:16px;height:16px;flex:none;accent-color:hsl(var(--h) 55% 45%)}
+#panel-cal .todo span.tx{overflow-wrap:anywhere}
+#panel-cal .todo.c-done span.tx{text-decoration:line-through;color:var(--c-muted)}
+#panel-cal .due{font-size:11px;font-family:var(--c-mono);color:var(--c-muted);white-space:nowrap;padding-top:2px}
+#panel-cal .due.soon{color:var(--c-bad);font-weight:600}
+#panel-cal .ov{position:fixed;inset:0;background:rgb(10 15 20 / .45);display:grid;place-items:center;z-index:20;padding:16px}
+#panel-cal .c-modal{background:var(--c-surface);border:1px solid var(--c-line);border-radius:12px;width:min(420px,100%);padding:16px;display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow:auto}
+#panel-cal .c-modal h3{font-size:17px}
+#panel-cal .f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--c-muted)}
+#panel-cal .f input,#panel-cal .f select{border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:6px;padding:6px 8px;font-size:14px;color:var(--c-ink)}
+#panel-cal .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#panel-cal .mact{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-top:4px}
+#panel-cal .mact div{display:flex;gap:8px}
+#panel-cal .c-err{color:var(--c-bad);font-size:12px;min-height:1em}
+#panel-cal .ov.sheet-mode{place-items:end center;padding:0}
+#panel-cal .sheet{background:var(--c-surface);border:1px solid var(--c-line);border-radius:14px 14px 0 0;width:min(560px,100%);max-height:85vh;overflow:auto;padding:14px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));display:flex;flex-direction:column;gap:12px}
+@media (min-width:641px){
+#panel-cal .ov.sheet-mode{place-items:center;padding:16px}
+#panel-cal .sheet{border-radius:14px}
+}
+#panel-cal .sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+#panel-cal .sheet-head h3{font-size:17px}
+#panel-cal .sheet-head .cur{font-size:13px;color:var(--c-muted);margin-top:2px}
+#panel-cal .x{border:none;background:var(--c-surface-2);border-radius:50%;width:32px;height:32px;font-size:18px;flex:none}
+#panel-cal .qa{display:flex;gap:8px;flex-wrap:wrap}
+#panel-cal .qa .c-btn{padding:8px 12px;font-size:14px}
+#panel-cal .grp{display:flex;flex-direction:column;gap:6px}
+#panel-cal .gname{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:hsl(var(--h) 50% var(--c-l-edge))}
+#panel-cal .chips{display:flex;flex-wrap:wrap;gap:6px}
+#panel-cal .tchip{border:1px solid hsl(var(--h) var(--c-sat) var(--c-l-edge) / .5);background:hsl(var(--h) var(--c-sat) var(--c-l-fill));color:hsl(var(--h) 45% var(--c-l-ink));border-radius:99px;padding:8px 13px;font-size:14px}
+#panel-cal .tchip[aria-pressed="true"]{outline:2px solid hsl(var(--h) 60% var(--c-l-edge));outline-offset:1px;font-weight:600}
+#panel-cal .tchip small{opacity:.7;margin-left:4px;font-family:var(--c-mono);font-size:11px}
+#panel-cal .brush,#panel-cal .toast{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--c-ink);color:var(--c-bg);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));font-size:14px}
+#panel-cal .toast{z-index:16}
+#panel-cal .brush button,#panel-cal .toast button{background:var(--c-bg);color:var(--c-ink);border:none;border-radius:6px;padding:6px 12px;font-weight:600}
+#panel-cal .daytabs{display:none}
+@media (max-width:640px){
+#panel-cal .daytabs{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:4px;margin-bottom:10px}
+#panel-cal .daytabs button{border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:8px;padding:5px 0;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--c-muted);position:relative}
+#panel-cal .daytabs button b{font-family:var(--c-display);font-size:16px;color:var(--c-ink)}
+#panel-cal .daytabs button[aria-pressed="true"]{background:var(--c-accent);border-color:var(--c-accent);color:var(--c-accent-ink)}
+#panel-cal .daytabs button[aria-pressed="true"] b{color:var(--c-accent-ink)}
+#panel-cal .daytabs .exdot{position:absolute;top:3px;right:4px;width:7px;height:7px;border-radius:50%}
+#panel-cal .grid{min-width:0;grid-template-columns:40px minmax(0,1fr)!important}
+#panel-cal .grid-scroll{overflow:visible}
+#panel-cal .totals b{font-size:18px}
+#panel-cal .buddy{align-items:flex-start;padding:10px}
+#panel-cal .lemur-btn{width:80px;height:80px}
+#panel-cal header.top h1{font-size:24px}
+}
+/* ================= CALENDARIO (stile del planner della sessione, isolato in #panel-cal) ================= */
+#panel-cal{
+  --c-bg:#eef1f4; --c-surface:#ffffff; --c-surface-2:#f6f8fa; --c-ink:#17202a; --c-muted:#5b6876; --c-line:#d6dde4;
+  --c-accent:#2b5b87; --c-accent-ink:#ffffff;
+  --c-sat:64%; --c-l-fill:92%; --c-l-edge:46%; --c-l-ink:26%;
+  --c-lesson:#dfe4ea; --c-lab:#e7e3d6; --c-lab-ink:#5c5230;
+  --c-basso:#7aa6c9; --c-medio:#d9a441; --c-alto:#c8553d;
+  --c-ok:#2e7d4f; --c-warn:#b26a00; --c-bad:#b3362a;
+  --c-bubble:#fff6dc; --c-bubble-ink:#3d3214;
+  --c-display:"Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --c-body:"IBM Plex Sans", "Segoe UI", Roboto, sans-serif;
+  --c-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  background:var(--c-bg); color:var(--c-ink); font-family:var(--c-body); font-size:14px; line-height:1.4;
+  border-radius:16px; padding:16px;
+}
+html[data-theme="dark"] #panel-cal{
+  --c-bg:#0f141a; --c-surface:#161d25; --c-surface-2:#1b242e; --c-ink:#e4e9ee; --c-muted:#93a0ad; --c-line:#2a3541;
+  --c-accent:#86b4de; --c-accent-ink:#0f141a;
+  --c-sat:45%; --c-l-fill:24%; --c-l-edge:60%; --c-l-ink:86%;
+  --c-lesson:#232c36; --c-lab:#2b2a22; --c-lab-ink:#d8cd9f;
+  --c-basso:#6c9cc2; --c-medio:#d4a24a; --c-alto:#e07a62;
+  --c-ok:#6cc08f; --c-warn:#e3a54a; --c-bad:#ef7d70;
+  --c-bubble:#2e2a1c; --c-bubble-ink:#f1e4bb;
+}
+#panel-cal *{box-sizing:border-box}
+#panel-cal [hidden]{display:none!important}
+#panel-cal button,#panel-cal input,#panel-cal select{font:inherit;color:inherit}
+#panel-cal button{cursor:pointer}
+#panel-cal :focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
+#panel-cal h1,#panel-cal h2,#panel-cal h3{font-family:var(--c-display);margin:0;text-wrap:balance;letter-spacing:normal}
+#panel-cal .cal-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+#panel-cal .c-btn[aria-pressed="true"]{background:var(--c-accent);color:var(--c-accent-ink);border-color:var(--c-accent)}
+/* tipi nuovi: palestra e impegni, colorati con la stessa tinta dei blocchi materia */
+#panel-cal .blk.palestra,#panel-cal .blk.impegno{background:hsl(var(--h) var(--c-sat) var(--c-l-fill));border-color:hsl(var(--h) var(--c-sat) var(--c-l-edge) / .55);color:hsl(var(--h) 45% var(--c-l-ink))}
+#panel-cal .blk .rep{font-size:10px;opacity:.65;margin-left:3px}
+#panel-cal .grid-scroll{padding-bottom:14px}
+#panel-cal .nowline{position:absolute;left:0;right:0;height:2px;background:var(--c-bad);z-index:3;pointer-events:none}
+#panel-cal .nowline::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--c-bad)}
+#panel-cal .ov{z-index:1000}
+#panel-cal .brush,#panel-cal .toast{z-index:990}
+#panel-cal .sheet.reg{width:min(820px,100%)}
+#panel-cal .reg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:760px){#panel-cal .reg-grid{grid-template-columns:minmax(0,1fr)}}
+#panel-cal .reg-grid .c-panel{display:flex;flex-direction:column;gap:6px}
+#panel-cal .typechips{display:flex;flex-wrap:wrap;gap:6px}
+#panel-cal .typechips button{border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:99px;padding:6px 12px;font-size:13px}
+#panel-cal .typechips button[aria-pressed="true"]{background:var(--c-accent);color:var(--c-accent-ink);border-color:var(--c-accent);font-weight:600}
+#panel-cal .dows{display:flex;gap:4px;flex-wrap:wrap}
+#panel-cal .dows button{width:38px;height:32px;border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:6px;font-size:12px}
+#panel-cal .dows button[aria-pressed="true"]{background:var(--c-accent);color:var(--c-accent-ink);border-color:var(--c-accent);font-weight:600}
+#panel-cal .scope{display:flex;flex-direction:column;gap:8px}
+#panel-cal .scope .c-btn{padding:10px 12px;font-size:14px;text-align:left}
+#panel-cal .rephint{font-size:12px;color:var(--c-muted)}
+@media (prefers-reduced-motion:reduce){#panel-cal *,#panel-cal .lemur,#panel-cal .tail,#panel-cal .eyes,#panel-cal .zzz text,#panel-cal .confetti rect{animation:none!important;transition:none!important}}
+@media (max-width:640px){#panel-cal{padding:12px 10px;border-radius:12px}}
 </style>
 </head>
 <body>
@@ -526,14 +792,72 @@
     <p class="sub" id="dateLabel"></p>
 
     <nav class="tabs">
-      <button class="tab-btn active" data-tab="tasks"><span class="ic">✓</span>Task</button>
+      <button class="tab-btn active" data-tab="cal"><span class="ic">🗓️</span>Calendario</button>
+      <button class="tab-btn" data-tab="tasks"><span class="ic">✓</span>Task</button>
       <button class="tab-btn" data-tab="expenses"><span class="ic">💶</span>Spese</button>
       <button class="tab-btn" data-tab="training"><span class="ic">🏋️</span>Allenamenti</button>
       <button class="tab-btn" data-tab="week"><span class="ic">📅</span>Settimana</button>
     </nav>
 
+    <!-- ============ CALENDARIO ============ -->
+    <section class="panel active" id="panel-cal">
+      <header class="top">
+        <div>
+          <h1>Calendario</h1>
+          <div class="c-sub" id="cal-sub"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          <div class="cal-acts">
+            <button class="c-btn" id="cal-reg" type="button">📒 Registro studio</button>
+            <button class="c-btn" id="cal-lemurTog" type="button" aria-pressed="false" title="Mostra o nascondi il lemure">🐒 Lemure</button>
+          </div>
+          <div class="legend">
+            <span><i style="border:1.5px dashed var(--c-muted)"></i>Studio libero</span>
+            <span><i style="background:var(--c-lesson);border:1px solid var(--c-line)"></i>Lezione</span>
+            <span><i style="background:var(--c-lab);border:1px solid var(--c-line)"></i>Tesi</span>
+            <span><i style="background:hsl(145 64% 46%)"></i>Palestra</span>
+            <span><i style="background:hsl(285 64% 46%)"></i>Impegno</span>
+            <span>↻ si ripete</span>
+          </div>
+          <div class="status" id="cal-status">Caricamento…</div>
+        </div>
+      </header>
+
+      <section class="buddy" id="cal-buddy" aria-live="polite" hidden>
+        <button class="lemur-btn" id="cal-lemurBtn" type="button" aria-label="Il lemure. Toccalo."></button>
+        <div class="bcol">
+          <div class="bubble" id="cal-bubble"></div>
+          <div class="todaychips" id="cal-todayChips"></div>
+          <div class="bstats" id="cal-bstats"></div>
+        </div>
+      </section>
+
+      <div class="strip-wrap"><div class="strip" id="cal-strip"></div></div>
+
+      <section class="board">
+        <div class="board-head">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <h2 id="cal-wkTitle"></h2><span id="cal-wkChip"></span>
+          </div>
+          <div class="nav">
+            <label class="tog"><input type="checkbox" id="cal-showWe"> Weekend</label>
+            <button class="c-btn" id="cal-prev" type="button" aria-label="Settimana precedente">←</button>
+            <button class="c-btn" id="cal-now" type="button">Oggi</button>
+            <button class="c-btn" id="cal-next" type="button" aria-label="Settimana successiva">→</button>
+          </div>
+        </div>
+        <div class="daytabs" id="cal-daytabs"></div>
+        <div class="grid-scroll"><div class="grid" id="cal-grid"></div></div>
+        <p class="note"><b>Creare:</b> tocca uno spazio vuoto (da computer puoi anche trascinare per scegliere la durata). <b>Spostare:</b> trascina il blocco (dal telefono tienilo premuto un attimo). <b>Durata:</b> tira la linguetta in fondo al blocco. Gli eventi ripetuti (↻) si impostano da "Altro (tipo, ripeti, nota)"; se ne trascini uno, cambia solo quel giorno.</p>
+      </section>
+
+      <div class="ov" id="cal-ov" hidden></div>
+      <div class="brush" id="cal-brush" hidden><span id="cal-brushTxt"></span><button id="cal-brushStop" type="button">Fine</button></div>
+      <div class="toast" id="cal-toast" hidden><span id="cal-toastTxt"></span><button id="cal-toastUndo" type="button">Annulla</button></div>
+    </section>
+
     <!-- ============ TASK MANAGER ============ -->
-    <section class="panel active" id="panel-tasks">
+    <section class="panel" id="panel-tasks">
       <div class="add-row">
         <input type="text" id="newTaskInput" placeholder="Aggiungi una task e premi invio…">
         <button class="btn" id="addWhenBtn" type="button">+ quando</button>
@@ -4134,5 +4458,886 @@ window.onAuthReady(loadDB);
   window.onAuthReady(loadFromSupabase);
 })();
 </script>
+<script>
+/* ================= CALENDARIO =================
+   Calendario a settimana (7:00 → 1:00) nato dal planner della sessione invernale.
+   - blocchi singoli: state.days["AAAA-MM-GG"] = [blocco, …]
+   - eventi ripetuti: state.series = [{…campi blocco, rule:{freq,interval,dows,from,until}, skip:{data:1}, done:{data:1}}]
+     ogni ripetizione è calcolata al volo; modificarne una sola la "stacca" (skip + blocco singolo).
+   - orari dopo mezzanotte salvati come "24:30" / "25:00" (stesso giorno di calendario).
+   - salvataggio: localStorage subito + Supabase (tabella calendar_state) in background. */
+(function(){
+const root = document.getElementById("panel-cal");
+const $ = id => document.getElementById("cal-" + id);
+const KEY = "lifeos_calendar_v1", ROW_ID = "federico", TABLE = "calendar_state";
+const LEMUR_KEY = "lifeos_cal_lemur", WE_KEY = "lifeos_cal_we";
+const PX = 40, DSTART = 7*60, DEND = 25*60;
+// il piano di partenza (seed) e i "regimi" valgono solo per la sessione invernale
+const RANGE_START = "2026-11-02", RANGE_END = "2027-02-21";
+const HOLIDAYS = ["2026-12-25","2027-01-01"];
+const DOW = ["Dom","Lun","Mar","Mer","Gio","Ven","Sab"];
+const MON = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+const HUES = [24,228,150,320,265,190,55,0,100];
+const TYPES = {studio:"Studio",lezione:"Lezione",tesi:"Tesi / lab",progetto:"Progetto",palestra:"Palestra",impegno:"Impegno",altro:"Altro"};
+const TYPE_HUE = {palestra:145, impegno:285};
+const assignable = t => t === "studio" || t === "progetto";
+
+const uid = () => Math.random().toString(36).slice(2,10);
+const pad = n => String(n).padStart(2,"0");
+const ds = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const pd = s => { const [a,b,c] = s.split("-").map(Number); return new Date(a,b-1,c); };
+const addD = (s,n) => { const d = pd(s); d.setDate(d.getDate()+n); return ds(d); };
+const mins = t => { const [a,b] = t.split(":").map(Number); return a*60+b; };
+const hm = m => pad(Math.floor(m/60))+":"+pad(m%60);
+const dur = b => Math.max(0,(mins(b.end)-mins(b.start))/60);
+const fmtT = t => { const m = mins(t); return (Math.floor(m/60)%24)+":"+pad(m%60); };
+const toInput = t => { const m = mins(t); return pad(Math.floor(m/60)%24)+":"+pad(m%60); };
+const fromInput = v => { let m = mins(v); if (m < DSTART) m += 1440; return m; }; // 00:30 = dopo mezzanotte
+const fh = h => (Math.round(h*4)/4).toString().replace(".",",");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let today = ds(new Date());
+const mondayOf = s => { const d = pd(s); const w = (d.getDay()+6)%7; d.setDate(d.getDate()-w); return ds(d); };
+const inRange = s => s >= RANGE_START && s <= RANGE_END;
+const regime = s => !inRange(s) ? "" : s < "2026-11-16" ? "basso" : s < "2026-11-30" ? "medio" : "alto";
+const dshort = s => { const d = pd(s); return d.getDate()+" "+MON[d.getMonth()]; };
+const daysTo = dt => Math.round((pd(dt)-pd(today))/864e5);
+const lsGet = k => { try { return localStorage.getItem(k); } catch(e) { return null; } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v); } catch(e) {} };
+
+/* ---------- piano di partenza (sessione invernale) ---------- */
+const SEED = [
+  {id:"strume",name:"Biomedical Instrumentation",h:24,exam:"2026-12-21",tasks:[["Progetto",24],["Leggere slides",12],["Flashcard",6]]},
+  {id:"neural",name:"Neural Systems",h:228,exam:"2027-01-13",tasks:[["Sistemare appunti lezioni",14],["Rileggere appunti",10],["Flashcards",8],["Lab",8]]},
+  {id:"eeg",name:"Advanced Techniques for EEG",h:150,exam:"2027-01-26",tasks:[["Sistemare appunti lezioni",12],["Rileggere appunti",8],["Flashcards",6],["Lab",8]]},
+  {id:"neuro",name:"Computational Neuroimaging",h:320,exam:"",tasks:[["Sistemare appunti lezioni",12],["Rileggere appunti",8],["Flashcards",6]]},
+];
+function defaultState(){
+  const subjects = [], tasks = [];
+  SEED.forEach(s => { subjects.push({id:s.id,name:s.name,h:s.h,exam:s.exam}); s.tasks.forEach(([n,e],i) => tasks.push({id:s.id+"-"+i,subjectId:s.id,name:n,est:e})); });
+  const days = {};
+  for (let d = RANGE_START; d <= RANGE_END; d = addD(d,1)) {
+    const dow = pd(d).getDay(), r = regime(d), B = [];
+    const mk = (type,start,end,extra) => B.push(Object.assign({id:uid(),type,start,end,subjectId:"",taskId:"",note:"",done:false},extra||{}));
+    if (HOLIDAYS.includes(d) || dow === 0 || SEED.some(s => s.exam === d)) { if (B.length) days[d] = B; continue; }
+    const lesson = dow>=1 && dow<=3 && d<="2026-12-16";
+    const thesis = dow===4 && d<="2026-12-01";
+    const proj = dow===5 && d<="2026-12-18";
+    const n = {basso:2,medio:3,alto:4}[r];
+    if (lesson) { mk("lezione","09:00","14:00"); if (r!=="basso") mk("studio","16:00","17:30"); }
+    else if (thesis) { mk("tesi","09:00","17:30"); }
+    else if (dow===5) {
+      if (proj) { mk("progetto","09:00","12:15",{subjectId:"strume",taskId:"strume-0"}); mk("studio","15:30","17:30"); }
+      else [["09:00","10:30"],["10:45","12:15"],["15:30","17:30"]].slice(0,Math.min(n,3)).forEach(([a,b]) => mk("studio",a,b));
+    }
+    else [["09:00","10:30"],["10:45","12:15"],["14:00","15:30"],["16:00","17:30"]].slice(0,n).forEach(([a,b]) => mk("studio",a,b));
+    if (B.length) days[d] = B;
+  }
+  const todos = subjects.map(s => ({id:uid(),subjectId:s.id,text:"Iscriversi all'appello su AlmaEsami",due:"",done:false}));
+  // updated:0 = piano "intatto": qualsiasi copia salvata su Supabase ha la precedenza
+  return {v:3, updated:0, subjects, tasks, days, todos, series:[]};
+}
+function migrate(s){
+  if (!s.days) s.days = {};
+  if (!Array.isArray(s.subjects)) s.subjects = [];
+  if (!Array.isArray(s.tasks)) s.tasks = [];
+  if (!Array.isArray(s.todos)) s.todos = [];
+  if (!Array.isArray(s.series)) s.series = [];
+  s.v = 3;
+  return s;
+}
+
+/* ---------- stato & salvataggio ---------- */
+let state = null;
+try { const raw = lsGet(KEY); if (raw) state = JSON.parse(raw); } catch(e) {}
+state = migrate(state || defaultState());
+let week = mondayOf(today);
+let showWe = lsGet(WE_KEY) !== "0";
+let showLemur = lsGet(LEMUR_KEY) === "1";
+let brush = null, selDay = null, openGroups = {}, regOpen = false;
+let authed = false, syncTimer = null;
+const mq = matchMedia("(max-width:640px)");
+mq.addEventListener?.("change", () => render());
+
+function setStatus(t){ $("status").textContent = t; }
+function saveLocal(){ lsSet(KEY, JSON.stringify(state)); }
+function persist(){
+  state.updated = Date.now();
+  saveLocal();
+  setStatus("Salvato su questo browser");
+  scheduleSync();
+  render();
+}
+const missingTable = e => e && (e.code === "42P01" || e.code === "PGRST205" || /calendar_state/.test(e.message || ""));
+function scheduleSync(){
+  if (!authed || !window.sb) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(pushRemote, 700);
+}
+async function pushRemote(){
+  try {
+    const { error } = await window.sb.from(TABLE).upsert({ id: ROW_ID, data: state, updated_at: new Date().toISOString() });
+    if (error) throw error;
+    setStatus("Sincronizzato · " + new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}));
+  } catch(e) {
+    setStatus(missingTable(e) ? "Manca la tabella calendar_state su Supabase: per ora salvato solo su questo browser" : "Non sincronizzato, salvato su questo browser");
+  }
+}
+async function loadRemote(){
+  authed = true;
+  if (!window.sb) return;
+  try {
+    const { data, error } = await window.sb.from(TABLE).select("data").eq("id", ROW_ID).maybeSingle();
+    if (error) throw error;
+    const remote = data && data.data;
+    if (remote && (remote.updated || 0) >= (state.updated || 0)) {
+      state = migrate(remote); saveLocal(); render();
+      setStatus("Sincronizzato");
+    } else pushRemote(); // locale più recente (o niente online): lo carico io
+  } catch(e) {
+    setStatus(missingTable(e) ? "Manca la tabella calendar_state su Supabase: per ora salvato solo su questo browser" : "Offline: salvato su questo browser");
+  }
+}
+
+/* ---------- eventi ripetuti ---------- */
+const seriesById = id => state.series.find(s => s.id === id);
+function matches(s, d){
+  const r = s.rule;
+  if (!r || d < r.from) return false;
+  if (r.until && d > r.until) return false;
+  if (s.skip && s.skip[d]) return false;
+  const iv = Math.max(1, r.interval || 1);
+  if (r.freq === "daily") return Math.round((pd(d)-pd(r.from))/864e5) % iv === 0;
+  if (r.freq === "weekly") {
+    if (!(r.dows || []).includes(pd(d).getDay())) return false;
+    return Math.round((pd(mondayOf(d))-pd(mondayOf(r.from)))/(7*864e5)) % iv === 0;
+  }
+  if (r.freq === "monthly") return pd(d).getDate() === pd(r.from).getDate();
+  return false;
+}
+function occ(s, d){
+  return {id:"r:"+s.id+":"+d, seriesId:s.id, type:s.type, start:s.start, end:s.end, subjectId:s.subjectId||"", taskId:s.taskId||"", note:s.note||"", done:!!(s.done && s.done[d])};
+}
+function blocksOn(d){
+  return (state.days[d] || []).concat(state.series.filter(s => matches(s,d)).map(s => occ(s,d)));
+}
+function findBlock(d, id){
+  if (id && id.startsWith("r:")) { const s = seriesById(id.split(":")[1]); return s && matches(s,d) ? occ(s,d) : null; }
+  return (state.days[d] || []).find(x => x.id === id) || null;
+}
+// "solo questo giorno": salta la ripetizione e crea un blocco singolo con gli stessi dati
+function detach(d, vb, targetDay){
+  const s = seriesById(vb.seriesId);
+  (s.skip || (s.skip = {}))[d] = 1;
+  if (s.done) delete s.done[d];
+  const nb = {id:uid(), type:vb.type, start:vb.start, end:vb.end, subjectId:vb.subjectId, taskId:vb.taskId, note:vb.note, done:vb.done};
+  const td = targetDay || d;
+  (state.days[td] || (state.days[td] = [])).push(nb);
+  return nb;
+}
+function setDone(d, b, val){
+  if (b.seriesId) { const s = seriesById(b.seriesId); s.done = s.done || {}; if (val) s.done[d] = 1; else delete s.done[d]; }
+  else { const real = (state.days[d] || []).find(x => x.id === b.id); if (real) real.done = val; }
+}
+function ruleLabel(r){
+  if (!r) return "";
+  const days = (r.dows || []).slice().sort((a,b) => ((a+6)%7)-((b+6)%7)).map(x => DOW[x].toLowerCase()).join(", ");
+  let t = r.freq === "daily" ? "ogni giorno"
+    : r.freq === "monthly" ? "ogni mese, il " + pd(r.from).getDate()
+    : (r.interval === 2 ? "ogni 2 settimane" : "ogni settimana") + (days ? " (" + days + ")" : "");
+  if (r.freq === "weekly" && r.interval !== 2 && (r.dows||[]).length === 5 && [1,2,3,4,5].every(x => r.dows.includes(x))) t = "giorni feriali";
+  return t + (r.until ? ", fino al " + dshort(r.until) : "");
+}
+
+/* ---------- derivati ---------- */
+const subj = id => state.subjects.find(s => s.id === id);
+const task = id => state.tasks.find(t => t.id === id);
+const sortedSubjects = () => state.subjects.slice().sort((a,b) => (a.exam||"9") < (b.exam||"9") ? -1 : 1);
+const workBlocks = d => blocksOn(d).filter(b => b.type === "studio" || b.type === "progetto");
+const examsOn = d => state.subjects.filter(s => s.exam === d);
+function statRange(){
+  const keys = Object.keys(state.days).filter(k => (state.days[k]||[]).length).sort();
+  let from = keys[0] || today, to = keys[keys.length-1] || today;
+  state.series.forEach(s => { if (s.rule.from < from) from = s.rule.from; });
+  if (from < addD(today,-366)) from = addD(today,-366);
+  if (to < addD(today,120)) to = addD(today,120);
+  return [from, to];
+}
+function stats(){
+  const alloc = {}, done = {}; let future = 0, futureFree = 0, doneBlocks = 0;
+  const [from, to] = statRange();
+  for (let d = from; d <= to; d = addD(d,1)) for (const b of blocksOn(d)) {
+    if (b.type !== "studio" && b.type !== "progetto") continue;
+    const h = dur(b);
+    if (b.done) doneBlocks++;
+    if (b.type === "studio" && d >= today) { future += h; if (!b.taskId) futureFree += h; }
+    if (b.taskId) { alloc[b.taskId] = (alloc[b.taskId]||0)+h; if (b.done) done[b.taskId] = (done[b.taskId]||0)+h; }
+  }
+  return {alloc, done, future, futureFree, doneBlocks};
+}
+
+/* ---------- toast con annulla (ripristina lo stato di prima) ---------- */
+let toastT = null, undoFn = null;
+function toast(msg, undo){
+  $("toastTxt").textContent = msg; undoFn = undo; $("toastUndo").hidden = !undo; $("toast").hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { $("toast").hidden = true; undoFn = null; }, 5000);
+}
+$("toastUndo").onclick = () => { if (undoFn) undoFn(); undoFn = null; $("toast").hidden = true; };
+const snapshot = () => JSON.stringify(state);
+const restore = snap => () => { state = migrate(JSON.parse(snap)); persist(); };
+
+function delBlock(d, id){
+  const b = findBlock(d, id); if (!b) return;
+  if (b.seriesId) {
+    askScope("Eliminare l'evento ripetuto?", scope => {
+      const snap = snapshot(), s = seriesById(b.seriesId);
+      if (scope === "one") (s.skip || (s.skip = {}))[d] = 1;
+      else if (scope === "next" && d > s.rule.from) s.rule.until = addD(d,-1);
+      else state.series = state.series.filter(x => x !== s);
+      persist();
+      toast(scope === "one" ? "Eliminato solo questo giorno" : scope === "next" ? "Eliminati questo e i successivi" : "Evento ripetuto eliminato", restore(snap));
+    });
+    return;
+  }
+  const snap = snapshot();
+  state.days[d] = (state.days[d]||[]).filter(x => x.id !== id);
+  persist();
+  toast(`Blocco ${fmtT(b.start)}–${fmtT(b.end)} eliminato`, restore(snap));
+}
+
+/* ---------- lemure (nascosto di base) ---------- */
+let cheerUntil = 0, tapN = 0;
+const PH = {
+  sleep:["La sessione parte lunedì 2/11. Mi godo le ultime ore di letargo.","Zzz… ancora pochi giorni di pace. Poi si spinge.","Sto caricando le energie per la sessione. Tu fai lo stesso."],
+  chill:["Oggi niente blocchi studio. Occhiali da sole e liana.","Giorno libero. Il lemure approva il riposo.","Riposa oggi, domani si ricomincia a spingere."],
+  ok:["Ancora {left} blocchi oggi. Io ti fisso con questi occhioni finché non li fai.","Il primo blocco è il più duro. Poi è tutta discesa (credo).","Se chiudi i blocchi di oggi ti faccio la danza della coda.","Ogni blocco fatto è una banana per me. Ho fame."],
+  sad:["È passato mezzogiorno e zero blocchi fatti. Il lemure è deluso ma ci crede ancora.","Fallo per il lemure. Anche solo un blocco.","Sto guardando i tuoi appunti. Loro guardano me. Nessuno studia."],
+  happy:["Più di metà fatta! Ancora {left} e mi metto a ballare.","Stai andando forte. Io intanto tengo il conto delle banane.","Così si fa. Il lemure saltella di approvazione."],
+  party:["HAI FATTO TUTTO. Il lemure lancia banane in aria.","Giornata chiusa al 100%. Stasera si balla sulle liane.","Neanche un lemure del Madagascar studia così tanto."],
+  cheer:["BANANA GUADAGNATA!","Un blocco in meno, una banana in più.","Il lemure fa la ruota per te.","Gnam. Un'altra."],
+  poke:["Ehi, non toccarmi, studia.","Sì, sono un lemure. Sì, sono qui per giudicarti.","Le flashcard non si fanno da sole.","Pensavi fossi un procione? Sono un lemure catta."],
+};
+function lemurSVG(mood){
+  const up = mood==="party"||mood==="happy"||mood==="cheer";
+  const closed = mood==="sleep";
+  const fur="#9c9ca3", furD="#7d7d85", face="#f2efe8", patch="#2a2a2e";
+  const mouth = {party:`<ellipse cx="55" cy="67" rx="5" ry="4.5" fill="#5a2525"/>`,cheer:`<ellipse cx="55" cy="67" rx="5" ry="4.5" fill="#5a2525"/>`,
+    happy:`<path d="M48 64 Q55 72 62 64" fill="none" stroke="${patch}" stroke-width="2" stroke-linecap="round"/>`,
+    chill:`<path d="M49 65 Q56 70 62 64" fill="none" stroke="${patch}" stroke-width="2" stroke-linecap="round"/>`,
+    ok:`<path d="M49 66 Q55 69 61 66" fill="none" stroke="${patch}" stroke-width="2" stroke-linecap="round"/>`,
+    sad:`<path d="M48 69 Q55 63 62 69" fill="none" stroke="${patch}" stroke-width="2" stroke-linecap="round"/>`,
+    sleep:`<path d="M51 66 L59 66" stroke="${patch}" stroke-width="2" stroke-linecap="round"/>`}[mood];
+  const py = mood==="sad" ? 3 : 0;
+  const eyes = closed
+    ? `<path d="M41 48 Q46 51 51 48 M59 48 Q64 51 69 48" fill="none" stroke="#f2a531" stroke-width="2.4" stroke-linecap="round"/>`
+    : mood==="chill"
+      ? `<rect x="37" y="42" width="15" height="10" rx="4" fill="#111"/><rect x="58" y="42" width="15" height="10" rx="4" fill="#111"/><path d="M52 46 L58 46" stroke="#111" stroke-width="2.5"/><path d="M40 44 L45 44" stroke="#666" stroke-width="1.5" stroke-linecap="round"/>`
+      : `<g class="eyes"><circle cx="46" cy="47" r="6.5" fill="#f2a531"/><circle cx="64" cy="47" r="6.5" fill="#f2a531"/><circle cx="${46+(up?0:1)}" cy="${47+py}" r="${mood==="party"||mood==="cheer"?3.6:2.8}" fill="#111"/><circle cx="${64-(up?0:1)}" cy="${47+py}" r="${mood==="party"||mood==="cheer"?3.6:2.8}" fill="#111"/><circle cx="44.5" cy="45" r="1.2" fill="#fff"/><circle cx="62.5" cy="45" r="1.2" fill="#fff"/></g>`;
+  const brows = mood==="sad" ? `<path d="M39 39 L50 41 M71 39 L60 41" stroke="${patch}" stroke-width="2" stroke-linecap="round"/>` : "";
+  const arms = up
+    ? `<path d="M38 78 L22 58" stroke="${fur}" stroke-width="7" stroke-linecap="round"/><path d="M72 78 L88 58" stroke="${fur}" stroke-width="7" stroke-linecap="round"/><circle cx="21" cy="56" r="4.5" fill="${patch}"/><circle cx="89" cy="56" r="4.5" fill="${patch}"/>`
+    : `<path d="M38 78 L32 98" stroke="${fur}" stroke-width="7" stroke-linecap="round"/><path d="M72 78 L78 98" stroke="${fur}" stroke-width="7" stroke-linecap="round"/><circle cx="32" cy="99" r="4" fill="${patch}"/><circle cx="78" cy="99" r="4" fill="${patch}"/>`;
+  const extras = closed ? `<g class="zzz" fill="var(--c-muted)" font-family="var(--c-display)" font-weight="700"><text x="78" y="28" font-size="13">z</text><text x="86" y="18" font-size="10">z</text></g>`
+    : (mood==="party"||mood==="cheer") ? `<g class="confetti">${[[14,8,"#e0563b",0],[30,0,"#f2a531",.3],[80,4,"#3f8fd2",.6],[96,10,"#3fae6a",.15],[60,-4,"#c457c8",.9],[44,6,"#f2a531",1.1]].map(([x,y,c,dl]) => `<rect x="${x}" y="${y}" width="5" height="5" fill="${c}" style="animation-delay:${dl}s"/>`).join("")}</g>` : "";
+  const banana = mood==="cheer" ? `<path d="M86 52 Q96 44 94 32 Q98 46 88 56 Z" fill="#f4d03f" stroke="#b7950b" stroke-width="1"/>` : "";
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="Lemure">
+    <g class="lemur">
+      <g class="tail">
+        <path d="M70 100 C 100 102, 112 78, 104 54 C 99 38, 84 34, 86 48" fill="none" stroke="#f4f2ec" stroke-width="10" stroke-linecap="round"/>
+        <path d="M70 100 C 100 102, 112 78, 104 54 C 99 38, 84 34, 86 48" fill="none" stroke="${patch}" stroke-width="10" stroke-dasharray="7 7" stroke-linecap="butt"/>
+      </g>
+      <ellipse cx="55" cy="86" rx="22" ry="25" fill="${fur}"/>
+      <ellipse cx="55" cy="91" rx="13" ry="16" fill="${face}"/>
+      <ellipse cx="45" cy="110" rx="7" ry="4" fill="${furD}"/><ellipse cx="65" cy="110" rx="7" ry="4" fill="${furD}"/>
+      ${arms}
+      <ellipse cx="35" cy="30" rx="7" ry="8" fill="${fur}"/><ellipse cx="75" cy="30" rx="7" ry="8" fill="${fur}"/>
+      <ellipse cx="35" cy="31" rx="3.5" ry="4.5" fill="${patch}"/><ellipse cx="75" cy="31" rx="3.5" ry="4.5" fill="${patch}"/>
+      <circle cx="55" cy="49" r="22" fill="${fur}"/>
+      <ellipse cx="55" cy="56" rx="17" ry="14" fill="${face}"/>
+      <ellipse cx="46" cy="47" rx="9" ry="8" fill="${patch}" transform="rotate(-15 46 47)"/>
+      <ellipse cx="64" cy="47" rx="9" ry="8" fill="${patch}" transform="rotate(15 64 47)"/>
+      ${eyes}${brows}
+      <path d="M51 58 L59 58 L55 62 Z" fill="${patch}"/>
+      ${mouth}${banana}
+    </g>${extras}
+  </svg>`;
+}
+function streak(){
+  const ok = d => { const bl = workBlocks(d); if (!bl.length) return null; return bl.filter(b => b.done).length >= Math.ceil(bl.length/2); };
+  let n = 0;
+  for (let d = addD(today,-1), i = 0; i < 180; d = addD(d,-1), i++) { const r = ok(d); if (r === null) continue; if (r) n++; else break; }
+  if (ok(today)) n++;
+  return n;
+}
+function renderBuddy(){
+  $("lemurTog").setAttribute("aria-pressed", showLemur ? "true" : "false");
+  $("buddy").hidden = !showLemur;
+  if (!showLemur) return;
+  const bl = workBlocks(today).slice().sort((a,b) => mins(a.start)-mins(b.start));
+  const done = bl.filter(b => b.done).length, left = bl.length-done;
+  const hour = new Date().getHours();
+  let mood;
+  if (today < RANGE_START) mood = "sleep";
+  else if (!bl.length) mood = "chill";
+  else if (done === bl.length) mood = "party";
+  else if (done/bl.length >= .5) mood = "happy";
+  else if (done === 0 && hour >= 12) mood = "sad";
+  else mood = "ok";
+  const cheering = Date.now() < cheerUntil;
+  const shown = cheering ? "cheer" : mood;
+  const box = $("buddy"); box.className = "buddy mood-"+(cheering ? "party" : mood)+(box.classList.contains("jump") ? " jump" : "");
+  $("lemurBtn").innerHTML = lemurSVG(shown);
+  const next = sortedSubjects().find(s => s.exam && s.exam >= today);
+  const list = tapN > 0 && !cheering ? PH.poke : PH[shown];
+  const dayIdx = Math.floor(pd(today)/864e5);
+  $("bubble").textContent = list[(dayIdx+tapN)%list.length].replace("{left}", left);
+  const st = stats(), stk = streak(), bananas = st.doneBlocks + state.todos.filter(t => t.done).length;
+  $("bstats").innerHTML = `<span>Oggi <b>${done}/${bl.length}</b> blocchi</span><span>Serie <b>${stk}</b> ${stk===1?"giorno":"giorni"}</span><span>Banane al lemure <b>${bananas}</b> 🍌</span>`+
+    (next ? `<span>${esc(next.name)} <b>${daysTo(next.exam)===0?"oggi":"tra "+daysTo(next.exam)+" gg"}</b></span>` : "");
+  const tc = $("todayChips"); tc.innerHTML = "";
+  bl.forEach(b => { const s = b.subjectId && subj(b.subjectId), t = b.taskId && task(b.taskId);
+    const c = document.createElement("button"); c.type = "button"; c.className = "tdc"; c.style.setProperty("--h", s ? s.h : 210); c.setAttribute("aria-pressed", b.done ? "true" : "false");
+    c.innerHTML = `<span class="bx"></span><span class="mono">${fmtT(b.start)}</span> ${esc(s ? (t ? t.name : s.name) : "Studio libero")}`;
+    c.onclick = () => toggleDone(today, b); tc.appendChild(c); });
+}
+function cheer(){ cheerUntil = Date.now()+2600; tapN = 0; setTimeout(() => renderBuddy(), 2700); }
+function toggleDone(d, b){ const v = !b.done; setDone(d, b, v); if (v) cheer(); persist(); }
+$("lemurBtn").onclick = () => { tapN++; const box = $("buddy"); box.classList.remove("jump"); void box.offsetWidth; box.classList.add("jump"); setTimeout(() => box.classList.remove("jump"), 650); renderBuddy(); };
+$("lemurTog").onclick = () => { showLemur = !showLemur; lsSet(LEMUR_KEY, showLemur ? "1" : "0"); renderBuddy(); };
+
+/* ---------- render ---------- */
+function render(){ renderHead(); renderBuddy(); renderStrip(); renderWeek(); renderBrush(); if (regOpen) renderReg(); }
+function renderHead(){
+  const next = sortedSubjects().find(s => s.exam && s.exam >= today);
+  $("sub").textContent = next ? `Prossimo esame: ${next.name} · ${daysTo(next.exam)===0 ? "oggi" : daysTo(next.exam)===1 ? "domani" : "tra "+daysTo(next.exam)+" giorni"} (${dshort(next.exam)})` : "Nessun esame in programma";
+}
+function renderBrush(){
+  const t = brush && task(brush), s = t && subj(t.subjectId);
+  $("brush").hidden = !t;
+  if (t) $("brushTxt").textContent = `Tocca i blocchi per assegnare: ${s ? s.name+" · " : ""}${t.name}`;
+}
+$("brushStop").onclick = () => { brush = null; render(); };
+
+function renderStrip(){
+  const el = $("strip"); el.innerHTML = "";
+  for (let w = addD(week,-35); w <= addD(week,70); w = addD(w,7)) {
+    let tot = 0, as = 0; const ex = [];
+    for (let i = 0; i < 7; i++) { const d = addD(w,i); blocksOn(d).forEach(b => { if (b.type === "studio") { tot += dur(b); if (b.taskId) as += dur(b); } }); examsOn(d).forEach(s => ex.push(s)); }
+    const r = regime(addD(w,4));
+    const b = document.createElement("button"); b.type = "button";
+    b.className = "wk"; b.setAttribute("aria-current", w === week ? "true" : "false");
+    const dd = pd(w);
+    b.title = `Settimana del ${dd.getDate()} ${MON[dd.getMonth()]}: ${fh(as)}h di studio assegnate su ${fh(tot)}h`;
+    b.innerHTML = `<div class="d">${dd.getDate()} ${MON[dd.getMonth()]}${w === mondayOf(today) ? " ·" : ""}</div><div class="r" style="background:${r ? "var(--c-"+r+")" : "var(--c-line)"}"></div><div class="fill"><b style="width:${tot ? Math.round(as/tot*100) : 0}%"></b></div>`+
+      (ex.length ? `<div class="ex">${ex.map(s => `<span style="background:hsl(${s.h} 60% 45%)" title="Esame ${esc(s.name)}"></span>`).join("")}</div>` : "");
+    b.onclick = () => { week = w; selDay = null; render(); };
+    el.appendChild(b);
+  }
+  const cur = el.querySelector('[aria-current="true"]');
+  if (cur && cur.scrollIntoView && root.classList.contains("active")) cur.scrollIntoView({block:"nearest",inline:"nearest"});
+}
+
+function nowPos(){ // dove disegnare la linea "adesso": tra 0:00 e 1:00 appartiene al giorno prima
+  const n = new Date(); let m = n.getHours()*60+n.getMinutes(), d = ds(n);
+  if (m < DSTART) { m += 1440; d = addD(d,-1); }
+  return m <= DEND ? {d, m} : null;
+}
+function renderWeek(){
+  const s = pd(week), e = pd(addD(week,6));
+  $("wkTitle").textContent = `${s.getDate()} ${MON[s.getMonth()]} – ${e.getDate()} ${MON[e.getMonth()]} ${e.getFullYear()}`;
+  const r = regime(addD(week,4));
+  $("wkChip").innerHTML = r ? `<span class="chip ${r}">Regime ${r}</span>` : "";
+  $("showWe").checked = showWe;
+  const n = showWe ? 7 : 5;
+  const narrow = mq.matches;
+  if (selDay === null || selDay >= n) { const ti = Math.round((pd(today)-pd(week))/864e5); selDay = ti >= 0 && ti < n ? ti : 0; }
+  const tabs = $("daytabs"); tabs.style.setProperty("--cols", n); tabs.innerHTML = "";
+  for (let i = 0; i < n; i++) { const d = addD(week,i), dd = pd(d), ex = examsOn(d);
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-pressed", i === selDay ? "true" : "false");
+    b.innerHTML = `${DOW[dd.getDay()]}<b>${dd.getDate()}</b>${ex.length ? `<span class="exdot" style="background:hsl(${ex[0].h} 60% 45%)"></span>` : ""}`;
+    b.onclick = () => { selDay = i; renderWeek(); }; tabs.appendChild(b); }
+  const idx = narrow ? [selDay] : [...Array(n).keys()];
+  const grid = $("grid"); grid.style.setProperty("--cols", idx.length); grid.innerHTML = "";
+  const H = (DEND-DSTART)/60*PX;
+  const ruler = document.createElement("div"); ruler.className = "ruler"; ruler.style.height = H+"px";
+  for (let m = DSTART; m <= DEND; m += 60) { const sp = document.createElement("span"); sp.className = "mono"; sp.style.top = ((m-DSTART)/60*PX)+"px"; sp.textContent = ((m/60)%24)+":00"; ruler.appendChild(sp); }
+  grid.appendChild(ruler);
+  const now = nowPos();
+  for (const i of idx) {
+    const d = addD(week,i), dd = pd(d), blocks = blocksOn(d).sort((a,b) => mins(a.start)-mins(b.start));
+    const col = document.createElement("div"); col.className = "day";
+    col.innerHTML = `<div class="dh ${regime(d)} ${d === today ? "c-today" : ""}"><div><div class="nm">${DOW[dd.getDay()]}</div><div class="num">${dd.getDate()} <span style="font-size:12px;font-weight:500;color:var(--c-muted)">${MON[dd.getMonth()]}</span></div></div><button class="add" type="button" aria-label="Aggiungi blocco il ${dd.getDate()}">+</button></div>`;
+    const body = document.createElement("div"); body.className = "dbody"; body.style.height = H+"px"; body.dataset.day = d;
+    const ex = examsOn(d);
+    if (ex.length) { const x = document.createElement("div"); x.className = "exam"; x.style.setProperty("--h", ex[0].h); x.textContent = "Esame · "+ex.map(s => s.name).join(", "); body.appendChild(x); }
+    if (!blocks.length && !ex.length && HOLIDAYS.includes(d)) { const o = document.createElement("div"); o.className = "offday"; o.textContent = "Festa"; body.appendChild(o); }
+    blocks.forEach(b => body.appendChild(blockEl(b,d)));
+    if (now && now.d === d) { const nl = document.createElement("div"); nl.className = "nowline"; nl.style.top = ((now.m-DSTART)/60*PX)+"px"; body.appendChild(nl); }
+    attachCreate(body, d);
+    col.appendChild(body);
+    col.querySelector(".add").onclick = () => openEditor(d, null);
+    grid.appendChild(col);
+  }
+}
+
+/* ---------- creare, spostare, allungare ---------- */
+let lastTouch = 0, drag = null, skipUntil = 0;
+const snap = m => Math.round(m/15)*15;
+function attachCreate(body, d){
+  const rawMin = cy => DSTART+(cy-body.getBoundingClientRect().top)/PX*60;
+  const yToMin = cy => Math.max(DSTART, Math.min(DEND, snap(rawMin(cy))));
+  const create = (s,e) => {
+    const b = {id:uid(),type:"studio",start:hm(s),end:hm(Math.min(e,DEND)),subjectId:"",taskId:"",note:"",done:false};
+    if (brush) { const tk = task(brush); if (tk) { b.subjectId = tk.subjectId; b.taskId = tk.id; } }
+    (state.days[d] || (state.days[d] = [])).push(b); persist();
+    if (!brush) openQuick(d, b.id);
+  };
+  body.addEventListener("mousedown", ev => {
+    if (ev.button !== 0 || ev.target.closest(".blk") || Date.now()-lastTouch < 800) return;
+    ev.preventDefault();
+    const a = Math.min(yToMin(ev.clientY), DEND-15); let s = a, e = a+15, moved = false;
+    const g = document.createElement("div"); g.className = "c-ghost"; body.appendChild(g);
+    const draw = () => { g.style.top = ((s-DSTART)/60*PX)+"px"; g.style.height = ((e-s)/60*PX-2)+"px"; g.textContent = fmtT(hm(s))+"–"+fmtT(hm(moved ? e : Math.min(s+90,DEND))); };
+    draw();
+    const mm = x => { const m = yToMin(x.clientY); if (m !== a) moved = true; s = Math.min(a,m); e = Math.max(a,m); if (e-s < 15) e = s+15; draw(); };
+    const mu = () => { window.removeEventListener("mousemove",mm); window.removeEventListener("mouseup",mu); g.remove(); create(s, moved ? e : s+90); };
+    window.addEventListener("mousemove",mm); window.addEventListener("mouseup",mu);
+  });
+  let x0 = 0, y0 = 0, t0 = 0, still = false;
+  body.addEventListener("touchstart", ev => { lastTouch = Date.now(); if (ev.touches.length !== 1 || ev.target.closest(".blk")) { still = false; return; }
+    const t = ev.touches[0]; x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); still = true; }, {passive:true});
+  body.addEventListener("touchmove", ev => { const t = ev.touches[0]; if (Math.hypot(t.clientX-x0,t.clientY-y0) > 8) still = false; }, {passive:true});
+  body.addEventListener("touchend", ev => { lastTouch = Date.now(); if (!still || drag || Date.now()-t0 > 600) return; still = false; ev.preventDefault();
+    const s = Math.max(DSTART, Math.min(DEND-30, Math.floor(rawMin(y0)/30)*30)); create(s, s+90); });
+  body.addEventListener("touchcancel", () => { still = false; });
+}
+
+function blockEl(b, d){
+  const el = document.createElement("div");
+  el.setAttribute("role","button"); el.tabIndex = 0;
+  const s = b.subjectId ? subj(b.subjectId) : null, t = b.taskId ? task(b.taskId) : null;
+  el.className = "blk "+b.type+(s ? " subj" : "")+(b.type === "studio" && !s ? " c-empty" : "")+(b.done ? " c-done" : "");
+  const place = (st,en) => { el.style.top = ((st-DSTART)/60*PX+1)+"px"; el.style.height = Math.max(18,(en-st)/60*PX-3)+"px"; };
+  place(mins(b.start), mins(b.end));
+  if (s) el.style.setProperty("--h", s.h);
+  else if (TYPE_HUE[b.type] !== undefined) el.style.setProperty("--h", TYPE_HUE[b.type]);
+  let label;
+  if (b.type === "studio") label = s ? `<span class="s">${esc(s.name)}</span><span class="k">${esc(t ? t.name : "Attività da scegliere")}</span>` : `<span class="k">Studio · libero</span>`;
+  else if (b.type === "palestra" || b.type === "impegno" || b.type === "altro") label = `<span class="s">${esc(b.note || TYPES[b.type])}</span>${b.note ? `<span class="k">${TYPES[b.type]}</span>` : ""}`;
+  else label = `<span class="s">${TYPES[b.type]}${s ? " · "+esc(s.name) : ""}</span>${t ? `<span class="k">${esc(t.name)}</span>` : ""}`;
+  const showNote = b.note && !["palestra","impegno","altro"].includes(b.type);
+  el.innerHTML = `<span class="t">${b.done ? "✓ " : ""}${fmtT(b.start)}–${fmtT(b.end)}${b.seriesId ? '<span class="rep" title="Si ripete">↻</span>' : ""}</span>${label}${showNote ? `<span class="k" style="opacity:.8">${esc(b.note)}</span>` : ""}<button class="bdel" type="button" aria-label="Elimina blocco">×</button><span class="rsz" aria-hidden="true"></span>`;
+  el.setAttribute("aria-label", `${TYPES[b.type]} ${fmtT(b.start)}–${fmtT(b.end)}${s ? ", "+s.name : ""}${t ? ", "+t.name : ""}${b.note ? ", "+b.note : ""}`);
+  const tl = el.querySelector(".t");
+  el.querySelector(".bdel").onclick = ev => { ev.stopPropagation(); delBlock(d, b.id); };
+  const act = () => {
+    if (brush && assignable(b.type)) { const tk = task(brush); if (!tk) return;
+      let real = b.seriesId ? detach(d, b) : findBlock(d, b.id);
+      if (real.taskId === tk.id) { real.taskId = ""; real.subjectId = ""; } else { real.subjectId = tk.subjectId; real.taskId = tk.id; }
+      persist(); return; }
+    openQuick(d, b.id);
+  };
+  el.onclick = ev => { if (Date.now() < skipUntil || ev.target.closest(".bdel")) return; act(); };
+  el.onkeydown = ev => { if (ev.target === el && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); act(); } };
+
+  const begin = (mode,y) => { drag = {mode,y0:y,s0:mins(b.start),e0:mins(b.end),s:null,e:null,day:d,body:el.parentElement,moved:false,el}; };
+  const move = (x,y) => {
+    if (!drag) return;
+    if (Math.abs(y-drag.y0) > 4 && !drag.moved) { drag.moved = true; el.classList.add("c-dragging"); }
+    if (!drag.moved) return;
+    const dm = snap((y-drag.y0)/PX*60); let st = drag.s0, en = drag.e0;
+    if (drag.mode === "move") { const L = en-st; st = Math.max(DSTART, Math.min(DEND-L, st+dm)); en = st+L;
+      if (!mq.matches) { const tgt = document.elementFromPoint(x,y)?.closest("#panel-cal .dbody");
+        if (tgt && tgt.dataset.day && tgt !== drag.body) { drag.body = tgt; drag.day = tgt.dataset.day; tgt.appendChild(el); } } }
+    else en = Math.max(st+15, Math.min(DEND, en+dm));
+    drag.s = st; drag.e = en; place(st,en); tl.textContent = fmtT(hm(st))+"–"+fmtT(hm(en));
+  };
+  const end = save => {
+    const g = drag; drag = null; el.classList.remove("c-dragging"); if (!g) return false;
+    if (save && g.moved && g.s !== null) {
+      if (b.seriesId) { // trascinare un evento ripetuto cambia solo quel giorno
+        const nb = detach(d, b, g.day); nb.start = hm(g.s); nb.end = hm(g.e);
+        persist(); toast("Spostato solo questo giorno (per tutti: Altro → Tutti gli eventi)");
+        return true;
+      }
+      const real = findBlock(d, b.id);
+      real.start = hm(g.s); real.end = hm(g.e);
+      if (g.day !== d) { state.days[d] = (state.days[d]||[]).filter(x => x !== real); (state.days[g.day] || (state.days[g.day] = [])).push(real); }
+      persist(); return true;
+    }
+    if (g.moved) render();
+    return false;
+  };
+  el.addEventListener("mousedown", ev => {
+    if (ev.button !== 0 || ev.target.closest(".bdel") || Date.now()-lastTouch < 800) return;
+    ev.preventDefault(); ev.stopPropagation();
+    const isR = !!ev.target.closest(".rsz");
+    begin(isR ? "resize" : "move", ev.clientY);
+    const mm = e => move(e.clientX, e.clientY);
+    const mu = () => { window.removeEventListener("mousemove",mm); window.removeEventListener("mouseup",mu);
+      const wasMoved = drag && drag.moved; end(true); if (wasMoved) skipUntil = Date.now()+200; };
+    window.addEventListener("mousemove",mm); window.addEventListener("mouseup",mu);
+  });
+  let lt = null, x0 = 0, y0 = 0;
+  el.addEventListener("touchstart", ev => {
+    lastTouch = Date.now(); if (ev.touches.length !== 1 || ev.target.closest(".bdel")) return;
+    const tt = ev.touches[0]; x0 = tt.clientX; y0 = tt.clientY;
+    if (ev.target.closest(".rsz")) { begin("resize", y0); return; }
+    clearTimeout(lt); lt = setTimeout(() => { begin("move", y0); drag.moved = true; el.classList.add("c-dragging"); navigator.vibrate?.(12); }, 350);
+  }, {passive:true});
+  el.addEventListener("touchmove", ev => {
+    const tt = ev.touches[0];
+    if (drag && drag.el === el) { ev.preventDefault(); move(tt.clientX, tt.clientY); return; }
+    if (Math.hypot(tt.clientX-x0, tt.clientY-y0) > 8) clearTimeout(lt);
+  }, {passive:false});
+  el.addEventListener("touchend", ev => {
+    lastTouch = Date.now(); clearTimeout(lt);
+    if (drag && drag.el === el) { ev.preventDefault(); const g = drag; const saved = end(true); if (!saved && g.mode === "move") act(); }
+  });
+  el.addEventListener("touchcancel", () => { clearTimeout(lt); if (drag && drag.el === el) end(false); });
+  el.addEventListener("contextmenu", ev => ev.preventDefault());
+  return el;
+}
+
+/* ---------- overlay: scheda rapida, editor, scelta "solo questo / tutti", registro ---------- */
+const ov = $("ov");
+function closeOv(){ ov.hidden = true; ov.innerHTML = ""; ov.className = "ov"; regOpen = false; }
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !ov.hidden) closeOv(); });
+
+function askScope(title, onPick){
+  ov.className = "ov sheet-mode"; ov.hidden = false;
+  ov.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+    <div class="sheet-head"><h3>${esc(title)}</h3><button class="x" type="button" data-s="x" aria-label="Chiudi">×</button></div>
+    <div class="scope">
+      <button class="c-btn" type="button" data-s="one">Solo questo giorno</button>
+      <button class="c-btn" type="button" data-s="next">Questo e i successivi</button>
+      <button class="c-btn" type="button" data-s="all">Tutti gli eventi</button>
+    </div></div>`;
+  ov.onclick = e => { if (e.target === ov) closeOv(); };
+  ov.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { const s = b.dataset.s; closeOv(); if (s !== "x") onPick(s); });
+}
+
+function openQuick(d0, id0){
+  let d = d0, id = id0, detachedOnce = false;
+  ov.className = "ov sheet-mode"; ov.hidden = false;
+  ov.onclick = e => { if (e.target === ov) closeOv(); };
+  // ogni modifica a un evento ripetuto da qui vale solo per quel giorno
+  const real = () => {
+    const b = findBlock(d, id); if (!b) return null;
+    if (!b.seriesId) return b;
+    const nb = detach(d, b); id = nb.id;
+    if (!detachedOnce) { detachedOnce = true; toast("Modificato solo questo giorno (per tutti: Altro → Tutti gli eventi)"); }
+    return nb;
+  };
+  const draw = () => {
+    const b = findBlock(d, id); if (!b) { closeOv(); return; }
+    const dd = pd(d), s = b.subjectId && subj(b.subjectId), t = b.taskId && task(b.taskId), st = stats();
+    const groups = assignable(b.type) ? sortedSubjects().map(sj => {
+      const ts = state.tasks.filter(x => x.subjectId === sj.id); if (!ts.length) return "";
+      return `<div class="grp" style="--h:${sj.h}"><span class="gname">${esc(sj.name)}</span><div class="chips">${ts.map(x => `<button class="tchip" type="button" data-t="${x.id}" aria-pressed="${x.id === b.taskId}">${esc(x.name)}<small>${fh(st.alloc[x.id]||0)}/${fh(+x.est||0)}h</small></button>`).join("")}</div></div>`;
+    }).join("") : "";
+    const sc = ov.querySelector(".sheet")?.scrollTop || 0;
+    const head = assignable(b.type) ? (t ? esc((s ? s.name+" · " : "")+t.name) : "Scegli cosa fare in questo blocco") : esc(b.note || TYPES[b.type]);
+    ov.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cal-qt">
+      <div class="sheet-head"><div><h3 id="cal-qt">${DOW[dd.getDay()]} ${dd.getDate()} ${MON[dd.getMonth()]} · ${fmtT(b.start)}–${fmtT(b.end)}</h3>
+        <div class="cur">${head} · ${fh(dur(b))}h${b.seriesId ? " · ↻ "+esc(ruleLabel(seriesById(b.seriesId).rule)) : ""}</div></div>
+        <button class="x" type="button" data-q="x" aria-label="Chiudi">×</button></div>
+      <div class="typechips">${Object.entries(TYPES).map(([k,v]) => `<button type="button" data-type="${k}" aria-pressed="${k === b.type}">${v}</button>`).join("")}</div>
+      <div class="tb">
+        <div class="tbg"><span>Orario</span><button class="sb" type="button" data-a="sp-" aria-label="Anticipa di 15 minuti">−</button><button class="sb" type="button" data-a="sp+" aria-label="Posticipa di 15 minuti">+</button></div>
+        <div class="tbg"><span>Durata</span><button class="sb" type="button" data-a="du-" aria-label="Accorcia di 15 minuti">−</button><button class="sb" type="button" data-a="du+" aria-label="Allunga di 15 minuti">+</button></div>
+        <div class="tbg"><span>Giorno</span><button class="sb" type="button" data-a="dy-" aria-label="Giorno prima">←</button><button class="sb" type="button" data-a="dy+" aria-label="Giorno dopo">→</button></div>
+      </div>
+      <label class="f">${assignable(b.type) ? "Nota" : "Titolo"}<input data-q="note" value="${esc(b.note)}" placeholder="${b.type === "palestra" ? "es. Push, gambe…" : b.type === "impegno" ? "es. Dentista" : "es. capitoli 3–4"}"></label>
+      <div class="qa"><button class="c-btn c-primary" type="button" data-q="done">${b.done ? "Segna da fare" : "Segna fatto ✓"}</button>${assignable(b.type) && t ? `<button class="c-btn" type="button" data-q="free">Libera blocco</button>` : ""}</div>
+      ${assignable(b.type) ? (groups || `<p class="note">Aggiungi prima delle attività nel 📒 Registro studio.</p>`) : ""}
+      <div class="qa"><button class="c-btn" type="button" data-q="edit">Altro (tipo, ripeti, nota)…</button><button class="c-btn danger" type="button" data-q="del">Elimina blocco</button></div>
+    </div>`;
+    ov.querySelector(".sheet").scrollTop = sc;
+    ov.querySelector('[data-q="x"]').onclick = closeOv;
+    ov.querySelectorAll("[data-type]").forEach(btn => btn.onclick = () => { const r = real(); r.type = btn.dataset.type; if (!assignable(r.type)) { r.subjectId = r.subjectId && r.type === "lezione" ? r.subjectId : ""; r.taskId = ""; } persist(); draw(); });
+    ov.querySelectorAll(".sb").forEach(btn => btn.onclick = () => {
+      const a = btn.dataset.a, r = real(); let S = mins(r.start), E = mins(r.end);
+      if (a === "sp-" && S-15 >= DSTART) { S -= 15; E -= 15; }
+      if (a === "sp+" && E+15 <= DEND) { S += 15; E += 15; }
+      if (a === "du-" && E-15 > S) E -= 15;
+      if (a === "du+" && E+15 <= DEND) E += 15;
+      if (a === "dy-" || a === "dy+") { const nd = addD(d, a === "dy-" ? -1 : 1);
+        state.days[d] = state.days[d].filter(x => x !== r); (state.days[nd] || (state.days[nd] = [])).push(r); d = nd;
+        const wk = mondayOf(d); if (wk !== week) week = wk; selDay = Math.round((pd(d)-pd(week))/864e5); if (selDay >= 5 && !showWe) showWe = true; }
+      r.start = hm(S); r.end = hm(E); persist(); draw();
+    });
+    const noteIn = ov.querySelector('[data-q="note"]');
+    noteIn.onchange = () => { const v = noteIn.value.trim(); const cur = findBlock(d,id); if (cur && cur.note !== v) { const r = real(); r.note = v; persist(); draw(); } };
+    noteIn.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); noteIn.blur(); } };
+    ov.querySelectorAll(".tchip").forEach(c => c.onclick = () => { const tk = task(c.dataset.t), r = real(); r.subjectId = tk.subjectId; r.taskId = tk.id; closeOv(); persist(); });
+    ov.querySelector('[data-q="done"]').onclick = () => { const cur = findBlock(d,id); closeOv(); toggleDone(d, cur); };
+    const fr = ov.querySelector('[data-q="free"]'); if (fr) fr.onclick = () => { const r = real(); r.taskId = ""; r.subjectId = ""; r.done = false; closeOv(); persist(); };
+    ov.querySelector('[data-q="edit"]').onclick = () => { closeOv(); openEditor(d, id); };
+    ov.querySelector('[data-q="del"]').onclick = () => { closeOv(); delBlock(d, id); };
+  };
+  draw();
+}
+
+const REP_OPTS = [["none","Non si ripete"],["daily","Ogni giorno"],["weekdays","Giorni feriali (lun–ven)"],["weekly","Ogni settimana"],["biweekly","Ogni 2 settimane"],["monthly","Ogni mese"]];
+function repKey(r){
+  if (!r) return "none";
+  if (r.freq === "daily") return "daily";
+  if (r.freq === "monthly") return "monthly";
+  if (r.interval === 2) return "biweekly";
+  if ((r.dows||[]).length === 5 && [1,2,3,4,5].every(x => r.dows.includes(x))) return "weekdays";
+  return "weekly";
+}
+function openEditor(d, id){
+  const isNew = !id;
+  let defS = "09:00", defE = "10:30";
+  if (isNew) { const bl = blocksOn(d).sort((a,c) => mins(a.end)-mins(c.end)); const last = bl[bl.length-1];
+    if (last) { const m = Math.max(mins(last.end), 9*60), e = Math.min(m+90, DEND); if (e > m) { defS = hm(m); defE = hm(e); } } }
+  const found = isNew ? null : findBlock(d, id);
+  if (!isNew && !found) return;
+  const b = isNew ? {id:uid(),type:"studio",start:defS,end:defE,subjectId:"",taskId:"",note:"",done:false} : Object.assign({}, found);
+  const ser = b.seriesId ? seriesById(b.seriesId) : null;
+  let dows = ser && ser.rule.dows ? ser.rule.dows.slice() : [pd(d).getDay()];
+  const dd = pd(d);
+  ov.className = "ov";
+  const subjOpts = `<option value="">—</option>`+state.subjects.map(s => `<option value="${s.id}" ${s.id === b.subjectId ? "selected" : ""}>${esc(s.name)}</option>`).join("");
+  ov.innerHTML = `<form class="c-modal" novalidate role="dialog" aria-modal="true" aria-labelledby="cal-mt">
+    <h3 id="cal-mt">${isNew ? "Nuovo blocco" : "Blocco"} · ${DOW[dd.getDay()]} ${dd.getDate()} ${MON[dd.getMonth()]}</h3>
+    <label class="f">Tipo<select id="cal-e-type">${Object.entries(TYPES).map(([k,v]) => `<option value="${k}" ${k === b.type ? "selected" : ""}>${v}</option>`).join("")}</select></label>
+    <div class="row2"><label class="f">Dalle<input id="cal-e-start" type="time" value="${toInput(b.start)}"></label><label class="f">Alle<input id="cal-e-end" type="time" value="${toInput(b.end)}"></label></div>
+    <div id="cal-e-subjwrap">
+      <label class="f">Materia<select id="cal-e-subj">${subjOpts}</select></label>
+      <label class="f" style="margin-top:10px">Attività<select id="cal-e-task"></select></label>
+    </div>
+    <label class="f"><span id="cal-e-notelbl">Nota</span><input id="cal-e-note" value="${esc(b.note)}"></label>
+    <label class="f">Ripeti<select id="cal-e-rep">${REP_OPTS.map(([k,v]) => `<option value="${k}" ${k === repKey(ser && ser.rule) ? "selected" : ""}>${v}</option>`).join("")}</select></label>
+    <div class="dows" id="cal-e-dows">${[1,2,3,4,5,6,0].map(x => `<button type="button" data-dow="${x}" aria-pressed="${dows.includes(x)}">${DOW[x]}</button>`).join("")}</div>
+    <label class="f" id="cal-e-untilwrap">Fino al (vuoto = per sempre)<input id="cal-e-until" type="date" value="${ser && ser.rule.until ? ser.rule.until : ""}"></label>
+    ${ser ? `<div class="rephint">Ora: ↻ ${esc(ruleLabel(ser.rule))}, dal ${dshort(ser.rule.from)}</div>` : ""}
+    <label class="tog" style="font-size:13px;color:var(--c-ink)"><input type="checkbox" id="cal-e-done" ${b.done ? "checked" : ""}> Fatto</label>
+    <div class="c-err" id="cal-e-err"></div>
+    <div class="scope" id="cal-e-scope" hidden>
+      <div class="rephint">Questo evento si ripete. Applica le modifiche a:</div>
+      <button class="c-btn" type="button" data-s="one">Solo questo giorno</button>
+      <button class="c-btn" type="button" data-s="next">Questo e i successivi</button>
+      <button class="c-btn" type="button" data-s="all">Tutti gli eventi</button>
+    </div>
+    <div class="mact" id="cal-e-act">${isNew ? "<span></span>" : `<button type="button" class="c-btn danger" id="cal-e-del">Elimina</button>`}
+      <div><button type="button" class="c-btn" id="cal-e-cancel">Annulla</button><button class="c-btn c-primary">Salva</button></div></div>
+  </form>`;
+  ov.hidden = false;
+  const E = id2 => document.getElementById("cal-e-"+id2);
+  const fillTasks = () => { const sid = E("subj").value; E("task").innerHTML = `<option value="">—</option>`+state.tasks.filter(t => t.subjectId === sid).map(t => `<option value="${t.id}" ${t.id === b.taskId ? "selected" : ""}>${esc(t.name)}</option>`).join(""); };
+  const syncUI = () => {
+    const ty = E("type").value, rep = E("rep").value;
+    E("subjwrap").hidden = !(assignable(ty) || ty === "lezione" || ty === "tesi");
+    E("notelbl").textContent = assignable(ty) || ty === "lezione" || ty === "tesi" ? "Nota" : "Titolo";
+    E("note").placeholder = ty === "palestra" ? "es. Push, gambe…" : ty === "impegno" ? "es. Dentista" : "es. capitoli 3–4";
+    E("dows").hidden = !(rep === "weekly" || rep === "biweekly");
+    E("untilwrap").hidden = rep === "none";
+  };
+  fillTasks(); syncUI();
+  E("subj").onchange = fillTasks; E("type").onchange = syncUI; E("rep").onchange = syncUI;
+  E("dows").querySelectorAll("button").forEach(btn => btn.onclick = () => {
+    const x = +btn.dataset.dow; dows = dows.includes(x) ? dows.filter(y => y !== x) : dows.concat(x);
+    btn.setAttribute("aria-pressed", dows.includes(x) ? "true" : "false");
+  });
+  E("cancel").onclick = closeOv;
+  ov.onclick = e => { if (e.target === ov) closeOv(); };
+  const del = E("del"); if (del) del.onclick = () => { closeOv(); delBlock(d, id); };
+
+  const readForm = () => {
+    const st = E("start").value, en = E("end").value;
+    if (!st || !en) return { err: "Inserisci inizio e fine." };
+    const S = fromInput(st), En = fromInput(en);
+    if (S < DSTART || S >= DEND || En > DEND) return { err: "Il calendario va dalle 7:00 all'1:00 di notte." };
+    if (En <= S) return { err: "L'orario di fine deve essere dopo l'inizio." };
+    const repK = E("rep").value;
+    let rep = null;
+    if (repK !== "none") {
+      rep = { freq: repK === "daily" ? "daily" : repK === "monthly" ? "monthly" : "weekly", interval: repK === "biweekly" ? 2 : 1, until: E("until").value || "" };
+      if (repK === "weekdays") rep.dows = [1,2,3,4,5];
+      else if (repK === "weekly" || repK === "biweekly") { if (!dows.length) return { err: "Scegli almeno un giorno della settimana." }; rep.dows = dows.slice().sort(); }
+      if (rep.until && rep.until < d) return { err: "La data di fine ripetizione è prima di questo giorno." };
+    }
+    const ty = E("type").value;
+    const keepSubj = assignable(ty) || ty === "lezione" || ty === "tesi";
+    return { vals: { type: ty, start: hm(S), end: hm(En), subjectId: keepSubj ? E("subj").value : "", taskId: keepSubj ? E("task").value : "", note: E("note").value.trim() }, done: E("done").checked, rep };
+  };
+  const newSeries = (vals, rep, from, done) => ({ id: uid(), ...vals, rule: { ...rep, from }, skip: {}, done: done ? { [from]: 1 } : {} });
+
+  const saveScope = (f, scope) => {
+    const s = seriesById(b.seriesId), snap = snapshot();
+    if (scope === "next" && d <= s.rule.from) scope = "all";
+    if (scope === "one") { const nb = detach(d, b); Object.assign(nb, f.vals, { done: f.done }); }
+    else if (scope === "next") {
+      s.rule.until = addD(d,-1);
+      if (f.rep) {
+        const ns = newSeries(f.vals, f.rep, d, false);
+        // le eccezioni e i "fatto" da qui in avanti passano alla serie nuova
+        for (const k of Object.keys(s.skip || {})) if (k >= d) { ns.skip[k] = 1; delete s.skip[k]; }
+        for (const k of Object.keys(s.done || {})) if (k >= d) { ns.done[k] = 1; delete s.done[k]; }
+        if (f.done) ns.done[d] = 1; else delete ns.done[d];
+        state.series.push(ns);
+      } else (state.days[d] || (state.days[d] = [])).push({ id: uid(), ...f.vals, done: f.done });
+    } else { // tutti
+      if (f.rep) {
+        Object.assign(s, f.vals); s.rule = { ...f.rep, from: s.rule.from };
+        s.done = s.done || {}; if (f.done) s.done[d] = 1; else delete s.done[d];
+      } else {
+        state.series = state.series.filter(x => x !== s);
+        (state.days[d] || (state.days[d] = [])).push({ id: uid(), ...f.vals, done: f.done });
+      }
+    }
+    if (f.done && !b.done) cheer();
+    closeOv(); persist();
+    if (scope !== "one") toast(scope === "next" ? "Modificati questo e i successivi" : "Modificati tutti gli eventi", restore(snap));
+  };
+
+  ov.querySelector("form").onsubmit = e => {
+    e.preventDefault();
+    const f = readForm();
+    if (f.err) { E("err").textContent = f.err; return; }
+    E("err").textContent = "";
+    if (b.seriesId) { // evento ripetuto: chiedo a cosa applicare
+      E("act").hidden = true; E("scope").hidden = false;
+      E("scope").querySelectorAll("[data-s]").forEach(btn => btn.onclick = () => saveScope(f, btn.dataset.s));
+      return;
+    }
+    if (f.rep) { // un blocco singolo (o nuovo) diventa ripetuto da questo giorno
+      if (!isNew) state.days[d] = (state.days[d]||[]).filter(x => x.id !== b.id);
+      state.series.push(newSeries(f.vals, f.rep, d, f.done));
+    } else {
+      const list = state.days[d] || (state.days[d] = []);
+      const nb = Object.assign(isNew ? b : list.find(x => x.id === b.id), f.vals, { done: f.done });
+      if (isNew) list.push(nb);
+    }
+    if (f.done && !b.done) cheer();
+    closeOv(); persist();
+  };
+}
+
+/* ---------- registro studio (popup) ---------- */
+function openReg(){
+  regOpen = true;
+  ov.className = "ov sheet-mode"; ov.hidden = false;
+  ov.onclick = e => { if (e.target === ov) closeOv(); };
+  ov.innerHTML = `<div class="sheet reg" role="dialog" aria-modal="true" aria-labelledby="cal-rt">
+    <div class="sheet-head"><div><h3 id="cal-rt">📒 Registro studio</h3><div class="cur">Ore per materia e task degli esami. Tocca un'attività per assegnarla a più blocchi.</div></div>
+    <button class="x" type="button" id="cal-reg-x" aria-label="Chiudi">×</button></div>
+    <div class="reg-grid">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="c-panel"><h2>Ore di studio</h2><div class="totals" id="cal-totals"></div><p class="note" id="cal-totNote"></p></div>
+        <div class="c-panel"><h2>Attività di studio</h2><div id="cal-subjects"></div>
+          <p class="note">Ore: <span class="mono">stimate · allocate · fatte</span>. Le stime iniziali sono indicative, cambiale pure.</p></div>
+        <div class="c-panel"><h2>Nuova materia</h2>
+          <form class="addrow" id="cal-addSubj"><input id="cal-newSubj" placeholder="Nome materia" aria-label="Nome nuova materia"><button class="c-btn c-primary">Aggiungi</button></form></div>
+      </div>
+      <div class="c-panel"><h2>Task list esami</h2><div id="cal-todos"></div></div>
+    </div></div>`;
+  $("reg-x").onclick = closeOv;
+  $("addSubj").onsubmit = e => { e.preventDefault(); const n = $("newSubj").value.trim(); if (!n) return;
+    const used = state.subjects.map(s => s.h); const h = HUES.find(x => !used.includes(x)) ?? Math.floor(Math.random()*360);
+    state.subjects.push({id:uid(),name:n,h,exam:""}); persist(); };
+  renderReg();
+}
+function renderReg(){
+  if (!$("totals")) return;
+  const sheet = ov.querySelector(".sheet"), sc = sheet ? sheet.scrollTop : 0;
+  const st = stats();
+  $("totals").innerHTML = `<div><b>${fh(st.future)}h</b><small>Studio da oggi</small></div><div><b>${fh(st.future-st.futureFree)}h</b><small>Assegnate</small></div><div><b>${fh(st.futureFree)}h</b><small>Ancora libere</small></div>`;
+  const est = state.tasks.reduce((a,t) => a+(+t.est||0), 0), allocAll = state.tasks.reduce((a,t) => a+(st.alloc[t.id]||0), 0);
+  const missing = Math.max(0, est-allocAll);
+  $("totNote").textContent = missing > 0 ? `Mancano ${fh(missing)}h da allocare per coprire tutte le stime (${fh(est)}h in totale).` : `Tutte le stime sono coperte dal calendario (${fh(est)}h in totale).`;
+
+  const wrap = $("subjects"); wrap.innerHTML = "";
+  sortedSubjects().forEach(s => {
+    const c = document.createElement("div"); c.className = "subj-card"; c.style.setProperty("--h", s.h);
+    const ts = state.tasks.filter(t => t.subjectId === s.id);
+    const Es = ts.reduce((a,t) => a+(+t.est||0), 0), A = ts.reduce((a,t) => a+(st.alloc[t.id]||0), 0), D = ts.reduce((a,t) => a+(st.done[t.id]||0), 0);
+    const dt = s.exam ? daysTo(s.exam) : null;
+    c.innerHTML = `<div class="sh"><span class="sw"></span><h3>${esc(s.name)}</h3><button class="subj-del" type="button">Rimuovi</button></div>
+      <div class="sm"><span>Esame</span><input type="date" value="${s.exam||""}" aria-label="Data esame ${esc(s.name)}">${dt !== null ? `<span class="cd ${dt<=14&&dt>=0 ? "soon" : ""}">${dt>0 ? "tra "+dt+" giorni" : dt===0 ? "oggi" : "fatto"}</span>` : `<span>data da inserire</span>`}
+      <span class="mono">${fh(Es)} · ${fh(A)} · ${fh(D)}h</span></div>
+      <ul class="c-tasks"></ul>
+      <form class="addrow"><input placeholder="Nuova attività di studio" aria-label="Nuova attività per ${esc(s.name)}"><input class="h mono" type="number" min="0" step="0.5" placeholder="ore" aria-label="Ore stimate"><button class="c-btn">+</button></form>`;
+    c.querySelector('input[type=date]').onchange = e => { s.exam = e.target.value; persist(); };
+    const del = c.querySelector(".subj-del");
+    del.onclick = () => { if (!del.classList.contains("arm")) { del.classList.add("arm"); del.textContent = "Conferma rimozione"; setTimeout(() => { del.classList.remove("arm"); del.textContent = "Rimuovi"; }, 3000); return; }
+      state.tasks = state.tasks.filter(t => t.subjectId !== s.id); state.todos = state.todos.filter(t => t.subjectId !== s.id); state.subjects = state.subjects.filter(x => x.id !== s.id);
+      Object.values(state.days).forEach(bl => bl.forEach(b => { if (b.subjectId === s.id) { b.subjectId = ""; b.taskId = ""; } }));
+      state.series.forEach(x => { if (x.subjectId === s.id) { x.subjectId = ""; x.taskId = ""; } }); persist(); };
+    const ul = c.querySelector(".c-tasks");
+    ts.forEach(t => {
+      const a = st.alloc[t.id]||0, dn = st.done[t.id]||0, e = +t.est||0;
+      const li = document.createElement("li"); li.className = "c-task"+(brush === t.id ? " armed" : "");
+      li.title = "Tocca per assegnare questa attività a più blocchi";
+      li.innerHTML = `<span class="c-n">${esc(t.name)}</span><span class="nums mono"><input type="number" min="0" step="0.5" value="${e}" aria-label="Ore stimate ${esc(t.name)}">
+        <span class="${a>e&&e>0 ? "over" : ""}" title="Allocate">${fh(a)}</span>·<span title="Fatte">${fh(dn)}</span><button class="del" type="button" aria-label="Elimina ${esc(t.name)}">×</button></span>
+        <span class="bar"><i style="width:${e ? Math.min(100,a/e*100) : 0}%"></i><u style="width:${e ? Math.min(100,dn/e*100) : 0}%"></u></span>`;
+      li.addEventListener("click", ev => { if (ev.target.closest("input,button")) return; brush = brush === t.id ? null : t.id; closeOv(); render(); });
+      li.querySelector("input").onchange = ev => { t.est = Math.max(0, parseFloat(ev.target.value)||0); persist(); };
+      li.querySelector(".del").onclick = () => { state.tasks = state.tasks.filter(x => x.id !== t.id);
+        Object.values(state.days).forEach(bl => bl.forEach(b => { if (b.taskId === t.id) b.taskId = ""; }));
+        state.series.forEach(x => { if (x.taskId === t.id) x.taskId = ""; });
+        if (brush === t.id) brush = null; persist(); };
+      ul.appendChild(li);
+    });
+    c.querySelector("form").onsubmit = ev => { ev.preventDefault(); const [n,h] = ev.target.querySelectorAll("input"); const name = n.value.trim(); if (!name) return; state.tasks.push({id:uid(),subjectId:s.id,name,est:parseFloat(h.value)||0}); persist(); };
+    wrap.appendChild(c);
+  });
+  renderTodos();
+  const sh2 = ov.querySelector(".sheet"); if (sh2) sh2.scrollTop = sc;
+}
+function renderTodos(){
+  const wrap = $("todos"); wrap.innerHTML = "";
+  const groups = [...sortedSubjects(), {id:"",name:"Generale",h:210}];
+  groups.forEach(g => {
+    const items = state.todos.filter(t => t.subjectId === g.id).sort((a,b) => (a.done-b.done) || ((a.due||"9") < (b.due||"9") ? -1 : (a.due||"9") > (b.due||"9") ? 1 : 0));
+    const open = items.filter(t => !t.done).length;
+    const det = document.createElement("details"); det.className = "tgrp"; det.style.setProperty("--h", g.h);
+    det.open = openGroups[g.id] ?? true;
+    det.addEventListener("toggle", () => { openGroups[g.id] = det.open; });
+    det.innerHTML = `<summary><span class="sw"></span>${esc(g.name)} <span class="cnt">${open ? open+" da fare" : items.length ? "tutto fatto" : ""}</span></summary>
+      <ul class="todos"></ul>
+      <form class="addrow"><input placeholder="Aggiungi task" aria-label="Nuova task per ${esc(g.name)}"><input type="date" aria-label="Scadenza"><button class="c-btn">+</button></form>`;
+    const ul = det.querySelector(".todos");
+    items.forEach(t => {
+      const li = document.createElement("li"); li.className = "todo"+(t.done ? " c-done" : "");
+      const dd = t.due ? daysTo(t.due) : null;
+      li.innerHTML = `<label><input type="checkbox" ${t.done ? "checked" : ""}><span class="tx">${esc(t.text)}</span></label>${t.due ? `<span class="due ${!t.done && dd<=3 ? "soon" : ""}">${dd<0 && !t.done ? "scaduta " : ""}${dshort(t.due)}</span>` : ""}<button class="del" type="button" aria-label="Elimina task">×</button>`;
+      li.querySelector("input").onchange = e => { t.done = e.target.checked; if (t.done) cheer(); persist(); };
+      li.querySelector(".del").onclick = () => { const snap = snapshot(); state.todos.splice(state.todos.indexOf(t),1); persist(); toast("Task eliminata", restore(snap)); };
+      ul.appendChild(li);
+    });
+    det.querySelector("form").onsubmit = ev => { ev.preventDefault(); const [n,dt] = ev.target.querySelectorAll("input"); const text = n.value.trim(); if (!text) return;
+      state.todos.push({id:uid(),subjectId:g.id,text,due:dt.value||"",done:false}); openGroups[g.id] = true; persist();
+      const f = [...document.querySelectorAll("#cal-todos .tgrp")][groups.indexOf(g)]; f?.querySelector(".addrow input")?.focus(); };
+    wrap.appendChild(det);
+  });
+}
+$("reg").onclick = openReg;
+
+/* ---------- controlli ---------- */
+$("prev").onclick = () => { week = addD(week,-7); selDay = null; render(); };
+$("next").onclick = () => { week = addD(week,7); selDay = null; render(); };
+$("now").onclick = () => { week = mondayOf(today); selDay = null; render(); };
+$("showWe").onchange = e => { showWe = e.target.checked; lsSet(WE_KEY, showWe ? "1" : "0"); render(); };
+// ogni minuto: sposta la linea "adesso"; a mezzanotte aggiorna il giorno
+setInterval(() => {
+  const t = ds(new Date());
+  if (t !== today) { const wasThisWeek = week === mondayOf(today); today = t; if (wasThisWeek) week = mondayOf(today); render(); }
+  else if (!drag && ov.hidden) renderWeek();
+}, 60000);
+// quando apri la tab, porta in vista la settimana corrente nella striscia
+document.querySelector('.tab-btn[data-tab="cal"]')?.addEventListener("click", () => setTimeout(renderStrip, 0));
+
+setStatus("Salvato su questo browser");
+render();
+window.onAuthReady(loadRemote);
+// per i test automatici
+window.__cal = { get state(){ return state; }, set state(v){ state = migrate(v); }, render, blocksOn, matches, openEditor, openQuick, delBlock, persist, setToday(t){ today = t; week = mondayOf(t); render(); } };
+})();
+</script>
+
 </body>
 </html>
