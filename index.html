@@ -754,6 +754,14 @@ html[data-theme="dark"] #panel-cal{
 #panel-cal .blk .rep{font-size:10px;opacity:.65;margin-left:3px}
 #panel-cal .grid-scroll{padding-bottom:14px}
 #panel-cal .ov2{z-index:1010}
+#panel-cal .strip-row{display:flex;align-items:stretch;gap:6px;margin-bottom:14px}
+#panel-cal .strip-row .strip-wrap{flex:1;min-width:0;margin-bottom:0}
+#panel-cal .strip-arrow{flex:none;width:38px;margin:8px 0 4px;font-size:20px;line-height:1;padding:0;border-radius:8px}
+#panel-cal .qadd{width:100%;border:1.5px solid var(--c-accent);background:var(--c-surface);border-radius:10px;padding:12px;font-size:16px}
+#panel-cal .qprev{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;align-items:center}
+#panel-cal .qchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c-line);background:var(--c-surface-2);border-radius:99px;padding:4px 10px;font-size:13px}
+#panel-cal .qchip .dot{width:9px;height:9px;border-radius:50%;background:hsl(var(--h) 60% 50%)}
+#panel-cal .qhelp summary{cursor:pointer;font-size:12px;color:var(--c-muted)}
 #panel-cal .ruler{margin-top:76px}
 #panel-cal .dh .star{border:none;background:none;color:var(--c-muted);font-size:15px;line-height:1;padding:0 2px}
 #panel-cal .dh .star.on{color:#d9a441}
@@ -903,7 +911,11 @@ html[data-theme="dark"] #panel-cal{
         </div>
       </section>
 
-      <div class="strip-wrap"><div class="strip" id="cal-strip"></div></div>
+      <div class="strip-row">
+        <button class="c-btn strip-arrow" id="cal-sprev" type="button" aria-label="Settimana precedente">‹</button>
+        <div class="strip-wrap"><div class="strip" id="cal-strip"></div></div>
+        <button class="c-btn strip-arrow" id="cal-snext" type="button" aria-label="Settimana successiva">›</button>
+      </div>
 
       <section class="board">
         <div class="board-head">
@@ -911,6 +923,7 @@ html[data-theme="dark"] #panel-cal{
             <h2 id="cal-wkTitle"></h2><span id="cal-wkChip"></span>
           </div>
           <div class="nav">
+            <button class="c-btn c-primary" id="cal-quickAdd" type="button" title="Scrivi l'impegno a parole (tasto N)">＋ Impegno</button>
             <label class="tog"><input type="checkbox" id="cal-showWe"> Weekend</label>
             <button class="c-btn" id="cal-prev" type="button" aria-label="Settimana precedente">←</button>
             <button class="c-btn" id="cal-now" type="button">Oggi</button>
@@ -5074,7 +5087,7 @@ function attachCreate(body, d){
     const b = {id:uid(),type:"studio",start:hm(s),end:hm(Math.min(e,DEND)),subjectId:"",taskId:"",note:"",done:false};
     if (brush) { const tk = task(brush); if (tk) { b.subjectId = tk.subjectId; b.taskId = tk.id; } }
     (state.days[d] || (state.days[d] = [])).push(b); persist();
-    if (!brush) openQuick(d, b.id);
+    if (!brush) openQuick(d, b.id, true);
   };
   body.addEventListener("mousedown", ev => {
     if (ev.button !== 0 || ev.target.closest(".blk") || Date.now()-lastTouch < 800) return;
@@ -5221,8 +5234,8 @@ function askScope(title, onPick){
   ov.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { const s = b.dataset.s; closeOv(); if (s !== "x") onPick(s); });
 }
 
-function openQuick(d0, id0){
-  let d = d0, id = id0, detachedOnce = false, adding = null; // adding: "cat" | "sub"
+function openQuick(d0, id0, fresh){
+  let d = d0, id = id0, detachedOnce = false, adding = null, focusTitle = !!fresh; // adding: "cat" | "sub"
   ov.className = "ov sheet-mode"; ov.hidden = false;
   ov.onclick = e => { if (e.target === ov) closeOv(); };
   // ogni modifica a un evento ripetuto da qui vale solo per quel giorno
@@ -5311,7 +5324,23 @@ function openQuick(d0, id0){
     });
     const noteIn = Q('[data-q="note"]');
     noteIn.onchange = () => { const nv = noteIn.value.trim(); const cur = findBlock(d,id); if (cur && cur.note !== nv) { const r = real(); r.note = nv; persist(); draw(); } };
-    noteIn.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); noteIn.blur(); } };
+    // Invio salva e chiude. Se il blocco non ha ancora una categoria, riconosco le parole chiave (es. "cena ema", "pale")
+    noteIn.onkeydown = e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const txt = noteIn.value.trim(), cur = findBlock(d, id);
+      if (cur) {
+        const generic = (cur.type === "studio" && !cur.subjectId) || (cur.type === "cat" && !cur.cat);
+        const p = txt && generic ? parseEvent(txt) : null;
+        if (p && p.kind !== "cat:") {
+          const r = real(); applyKind(r, p.kind);
+          if (p.kind === "studio") { r.subjectId = p.subjectId; r.taskId = p.taskId; } else if (r.type === "cat") r.sub = p.sub;
+          r.note = p.title; persist();
+        } else if (cur.note !== txt) { const r = real(); r.note = txt; persist(); }
+      }
+      noteIn.onchange = null; closeOv();
+    };
+    if (focusTitle) { focusTitle = false; setTimeout(() => { noteIn.focus(); noteIn.select(); }, 0); }
     Q('[data-q="done"]').onclick = () => { const cur = findBlock(d,id); closeOv(); toggleDone(d, cur); };
     const fr = Q('[data-q="free"]'); if (fr) fr.onclick = () => { const r = real(); r.taskId = ""; r.subjectId = ""; r.done = false; closeOv(); persist(); };
     Q('[data-q="edit"]').onclick = () => { closeOv(); openEditor(d, id); };
@@ -5868,7 +5897,207 @@ $("exams").onclick = openExams;
 $("cats").onclick = openCats;
 $("habits").onclick = () => openHabits(today);
 
+/* ---------- ＋ Impegno: scrivi a parole, il calendario capisce giorno, ora, categoria e ripetizione ----------
+   Passi espliciti (niente regex unica), ognuno segna i pezzi di testo che ha riconosciuto. */
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/’/g, "'"); // stessa lunghezza per l'italiano
+const DOW_WORDS = {domenica:0, lunedi:1, martedi:2, mercoledi:3, giovedi:4, venerdi:5, sabato:6, dom:0, lun:1, mar:2, mer:3, gio:4, ven:5, sab:6};
+const MONTH_WORDS = {gennaio:1,febbraio:2,marzo:3,aprile:4,maggio:5,giugno:6,luglio:7,agosto:8,settembre:9,ottobre:10,novembre:11,dicembre:12};
+const FILLER = new Set(["con","da","a","al","alla","alle","ai","il","lo","la","le","i","gli","di","del","della","e","per","in","ore","h","un","una","uno","dalle","fino","poi","che","mi","devo","vado","fare"]);
+const GENERIC_SUBJ_WORDS = new Set(["advanced","techniques","for","and","the","of","systems","di","e","del","della","per","introduction"]);
+const wordsOf = s => norm(s).split(/[^a-z0-9']+/).filter(Boolean);
+
+function parseEvent(raw){
+  const text = raw || "", n = norm(text);
+  const used = []; // [start, end] dei pezzi riconosciuti
+  const take = m => { used.push([m.index, m.index + m[0].length]); };
+  const free = (i, j) => !used.some(([a,b]) => i < b && j > a);
+  const r = { date: null, start: null, end: null, dur: null, rep: null, kind: null, cat: "", sub: "", subjectId: "", taskId: "", title: "", notes: [] };
+  let m;
+
+  // 1. ripetizione: "ogni giorno", "tutti i giorni", "giorni feriali", "ogni lunedì e mercoledì", "ogni 2 settimane", "ogni mese"
+  if ((m = n.match(/\b(ogni giorno|tutti i giorni)\b/))) { r.rep = {freq:"daily", interval:1}; take(m); }
+  else if ((m = n.match(/\b(giorni feriali|nei feriali|dal lunedi al venerdi|da lunedi a venerdi)\b/))) { r.rep = {freq:"weekly", interval:1, dows:[1,2,3,4,5]}; take(m); }
+  else if ((m = n.match(/\bogni (2|due) settimane\b/))) { r.rep = {freq:"weekly", interval:2, dows:[]}; take(m); }
+  else if ((m = n.match(/\bogni settimana\b/))) { r.rep = {freq:"weekly", interval:1, dows:[]}; take(m); }
+  else if ((m = n.match(/\bogni mese\b/))) { r.rep = {freq:"monthly", interval:1}; take(m); }
+  else if ((m = n.match(/\bogni ((?:(?:lunedi|martedi|mercoledi|giovedi|venerdi|sabato|domenica|lun|mar|mer|gio|ven|sab|dom)\b(?:\s*(?:,|e)\s*)?)+)/))) {
+    const dows = [...m[1].matchAll(/lunedi|martedi|mercoledi|giovedi|venerdi|sabato|domenica|lun|mar|mer|gio|ven|sab|dom/g)].map(x => DOW_WORDS[x[0]]);
+    r.rep = {freq:"weekly", interval:1, dows:[...new Set(dows)]}; take(m);
+  }
+  // fine ripetizione: "fino al 20 dicembre" / "fino al 20/12"
+  if (r.rep && (m = n.match(/\bfino (?:al|a) (\d{1,2})(?:\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)|[\/\-](\d{1,2}))\b/))) {
+    const day = +m[1], mon = m[2] ? MONTH_WORDS[m[2]] : +m[3];
+    let y = pd(today).getFullYear(); let c = ds(new Date(y, mon-1, day)); if (c < today) c = ds(new Date(y+1, mon-1, day));
+    r.rep.until = c; take(m);
+  }
+
+  // 2. giorno: oggi / domani / dopodomani / tra N giorni / giorno della settimana / 15 novembre / 15/11 / il 15
+  if ((m = n.match(/\boggi\b/)) && free(m.index, m.index+m[0].length)) { r.date = today; take(m); }
+  else if ((m = n.match(/\bdopodomani\b/))) { r.date = addD(today, 2); take(m); }
+  else if ((m = n.match(/\bdomani\b/))) { r.date = addD(today, 1); take(m); }
+  else if ((m = n.match(/\btra (\d{1,2}) giorni\b/))) { r.date = addD(today, +m[1]); take(m); }
+  if (!r.date) {
+    const re = /\b(?:(questo|prossimo)\s+)?(lunedi|martedi|mercoledi|giovedi|venerdi|sabato|domenica)\b/g;
+    while ((m = re.exec(n))) { if (!free(m.index, m.index+m[0].length)) continue;
+      const dow = DOW_WORDS[m[2]], cur = pd(today).getDay();
+      let diff = (dow - cur + 7) % 7; if (diff === 0) diff = m[1] === "prossimo" ? 7 : 0; // "sabato" detto di sabato = oggi
+      r.date = addD(today, diff); take(m); break; }
+  }
+  if (!r.date && (m = n.match(/\b(?:il\s+)?(\d{1,2})\s+(?:di\s+)?(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\b/)) && free(m.index, m.index+m[0].length)) {
+    const y = pd(today).getFullYear(); let c = ds(new Date(y, MONTH_WORDS[m[2]]-1, +m[1])); if (c < today) c = ds(new Date(y+1, MONTH_WORDS[m[2]]-1, +m[1]));
+    r.date = c; take(m);
+  }
+  if (!r.date && (m = n.match(/\b(?:il\s+)?(\d{1,2})\/(\d{1,2})\b/)) && free(m.index, m.index+m[0].length)) {
+    const y = pd(today).getFullYear(); let c = ds(new Date(y, +m[2]-1, +m[1])); if (c < today) c = ds(new Date(y+1, +m[2]-1, +m[1]));
+    r.date = c; take(m);
+  }
+  if (!r.date && (m = n.match(/\bil (\d{1,2})\b(?![:.]\d)/)) && free(m.index, m.index+m[0].length)) {
+    const t = pd(today); let c = ds(new Date(t.getFullYear(), t.getMonth(), +m[1])); if (c < today) c = ds(new Date(t.getFullYear(), t.getMonth()+1, +m[1]));
+    r.date = c; take(m);
+  }
+
+  // 3. orario: "dalle 18 alle 20" / "18-20" / "alle 18:30" / "ore 9" / "18:30" / mezzogiorno / mezzanotte
+  const toMin = (h, mi) => (+h)*60 + (+(mi||0));
+  // il calendario parte alle 7: "alle 3" = 15:00; "0:30" o "00:30" = dopo mezzanotte
+  const fixStart = (h, mi) => { const x = toMin(h, mi); if (x >= DSTART) return x; return (h === "0" || h === "00") ? x + 1440 : x + 720; };
+  // la fine deve venire dopo l'inizio: "9-1" = 9–13, "23-1" = 23–1 di notte
+  const fixEnd = (S, h, mi) => { let E = toMin(h, mi); if (E <= S) E += 720; if (E <= S) E += 720; return E; };
+  const okH = (...hs) => hs.every(h => +h <= 24);
+  if ((m = n.match(/\bdalle?\s*(?:ore\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*(?:alle|a|fino alle)\s*(\d{1,2})(?:[:.](\d{2}))?\b/)) && okH(m[1], m[3]) && free(m.index, m.index+m[0].length)) {
+    r.start = fixStart(m[1], m[2]); r.end = fixEnd(r.start, m[3], m[4]); take(m);
+  } else if ((m = n.match(/(?<![\d\/])\b(\d{1,2})(?:[:.](\d{2}))?\s*[-–]\s*(\d{1,2})(?:[:.](\d{2}))?\b(?![\/])/)) && okH(m[1], m[3]) && free(m.index, m.index+m[0].length)) {
+    r.start = fixStart(m[1], m[2]); r.end = fixEnd(r.start, m[3], m[4]); take(m);
+  } else if ((m = n.match(/\b(?:a\s+)?mezzogiorno\b/))) { r.start = 720; take(m); }
+  else if ((m = n.match(/\b(?:a\s+)?mezzanotte\b/))) { r.start = 1440; take(m); }
+  else if ((m = n.match(/\b(?:alle|ore|h)\s*(\d{1,2})(?:[:.](\d{2}))?\b/)) && okH(m[1]) && free(m.index, m.index+m[0].length)) { r.start = fixStart(m[1], m[2]); take(m); }
+  else if ((m = n.match(/\b(\d{1,2})[:.](\d{2})\b/)) && okH(m[1]) && free(m.index, m.index+m[0].length)) { r.start = fixStart(m[1], m[2]); take(m); }
+  // durata: "per 2 ore", "per 1h30", "per 45 min", "un'ora", "mezz'ora", "2h"
+  if (r.end === null) {
+    if ((m = n.match(/\b(?:per\s+)?(\d{1,2})\s*(?:h|ore|ora)\s*(\d{1,2})?\b/)) && free(m.index, m.index+m[0].length)) { r.dur = (+m[1])*60 + (+(m[2]||0)); take(m); }
+    else if ((m = n.match(/\b(?:per\s+)?(\d{2,3})\s*(?:min|minuti)\b/))) { r.dur = +m[1]; take(m); }
+    else if ((m = n.match(/\b(?:per\s+)?(?:un'ora e mezza|un ora e mezza|un'ora e mezzo)\b/))) { r.dur = 90; take(m); }
+    else if ((m = n.match(/\b(?:per\s+)?(?:un'ora|un ora)\b/))) { r.dur = 60; take(m); }
+    else if ((m = n.match(/\b(?:per\s+)?mezz'ora\b/))) { r.dur = 30; take(m); }
+  }
+
+  // 4. categoria: sottocategorie, categorie, esami e attività, lezione/tesi/progetto
+  const findWord = w => { const re = new RegExp("\\b" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "g"); let x; while ((x = re.exec(n))) if (free(x.index, x.index + x[0].length)) return x; return null; };
+  const hits = []; // pezzi di testo che sono "solo" la categoria
+  for (const c of state.cats) for (const sb of (c.subs||[])) {
+    const w = norm(sb.name); if (w.length < 3) continue;
+    if ((m = findWord(w))) { r.kind = "cat:"+c.id; r.cat = c.id; r.sub = sb.id; hits.push(m); break; }
+  }
+  if (!r.kind) for (const c of state.cats) {
+    const names = [norm(c.name), ...wordsOf(c.name).filter(w => w.length >= 4 && !FILLER.has(w))];
+    for (const w of names) if ((m = findWord(w))) { r.kind = "cat:"+c.id; r.cat = c.id; hits.push(m); break; }
+    if (r.kind) break;
+  }
+  if (!r.kind) {
+    // esami attivi: nome intero o una parola caratteristica (es. "EEG", "neural", "neuroimaging")
+    for (const s of sortedSubjects().filter(x => !x.done)) {
+      const cand = [norm(s.name), ...wordsOf(s.name).filter(w => w.length >= 3 && !GENERIC_SUBJ_WORDS.has(w))];
+      for (const w of cand) if ((m = findWord(w))) { r.subjectId = s.id; hits.push(m); break; }
+      if (r.subjectId) break;
+    }
+    const studyWord = findWord("studio") || findWord("studiare") || findWord("ripasso") || findWord("ripassare");
+    if (studyWord) hits.push(studyWord);
+    if (r.subjectId || studyWord) {
+      r.kind = "studio";
+      if (r.subjectId) for (const t of state.tasks.filter(t => t.subjectId === r.subjectId)) { if ((m = findWord(norm(t.name)))) { r.taskId = t.id; hits.push(m); break; } }
+    }
+  }
+  if (!r.kind) for (const [k, words] of [["lezione",["lezione","lezioni"]],["tesi",["tesi","laboratorio"]],["progetto",["progetto"]]]) {
+    for (const w of words) if ((m = findWord(w))) { r.kind = k; hits.push(m); break; }
+    if (r.kind) break;
+  }
+
+  // 5. titolo: quello che resta togliendo giorno/ora/ripetizione; se resta solo la categoria, niente titolo
+  const strip = (spans) => { let t = text; spans.slice().sort((a,b) => b[0]-a[0]).forEach(([a,b]) => { t = t.slice(0,a) + " " + t.slice(b); }); return t; };
+  const meaningful = wordsOf(strip(used.concat(hits.map(h => [h.index, h.index + h[0].length])))).filter(w => !FILLER.has(w));
+  if (meaningful.length) {
+    // il nome della categoria si capisce dal colore: nel titolo resta solo il resto ("cena con Ema" → "Cena")
+    let t = strip(used.concat(hits.map(h => [h.index, h.index + h[0].length]))).replace(/\s{2,}/g, " ").replace(/\s+([,.])/g, "$1").trim();
+    const edge = /^(?:alle|il|di|a|e|con|da|per|,)\s+|\s+(?:alle|il|di|a|e|con|da|dalle|per|,)$|^(?:con|da|per|e|,)$/i;
+    for (let k = 0; k < 4 && edge.test(t); k++) t = t.replace(edge, "").trim();
+    r.title = t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  if (!r.kind) r.kind = "cat:";
+
+  // 6. valori di default
+  if (r.rep && r.rep.freq === "weekly" && !r.rep.dows.length) r.rep.dows = [pd(r.date || today).getDay()];
+  if (!r.date) {
+    if (r.rep && r.rep.freq === "weekly") { // primo giorno utile della ripetizione (anche oggi)
+      for (let i = 0; i < 14; i++) { const x = addD(today, i); if (r.rep.dows.includes(pd(x).getDay())) { r.date = x; break; } }
+    } else { r.date = today; r.notes.push("nessun giorno: oggi"); }
+  }
+  if (r.start === null) { r.start = 9*60; r.notes.push("nessun orario: alle 9:00"); }
+  if (r.end === null) r.end = r.start + (r.dur || (r.kind === "studio" ? 90 : 60));
+  if (r.end > DEND) { r.end = DEND; r.notes.push("tagliato all'1:00"); }
+  if (r.start >= DEND) { r.start = DEND - 60; r.end = DEND; }
+  return r;
+}
+function eventSummary(r){
+  const dd = pd(r.date);
+  let what;
+  if (r.kind === "studio") { const s = subj(r.subjectId), t = task(r.taskId); what = t ? `${s.name} › ${t.name}` : s ? s.name : "Studio"; }
+  else if (r.kind.startsWith("cat:") && r.cat) { const c = catById(r.cat), sb = c && (c.subs||[]).find(x => x.id === r.sub); what = c.name + (sb ? " › " + sb.name : ""); }
+  else if (r.kind.startsWith("cat:")) what = "Senza categoria";
+  else what = TYPES[r.kind];
+  const h = r.kind === "studio" ? (subj(r.subjectId)?.h ?? null) : r.cat ? catById(r.cat)?.h : null;
+  return { day: `${DOW[dd.getDay()]} ${dd.getDate()} ${MON[dd.getMonth()]}`, time: `${fmtT(hm(r.start))}–${fmtT(hm(r.end))}`, what, h,
+    rep: r.rep ? ruleLabel({...r.rep, from: r.date}) : "", title: r.title };
+}
+function createFromParsed(r){
+  const vals = { type: r.kind === "studio" ? "studio" : r.kind.startsWith("cat:") ? "cat" : r.kind, cat: r.cat, sub: r.sub, h: r.kind === "cat:" ? randomHue() : null,
+    start: hm(r.start), end: hm(r.end), subjectId: r.subjectId, taskId: r.taskId, note: r.title };
+  const snap = snapshot();
+  if (r.rep) state.series.push({ id: uid(), ...vals, rule: { ...r.rep, until: r.rep.until || "", from: r.date }, skip: {}, done: {} });
+  else (state.days[r.date] || (state.days[r.date] = [])).push({ id: uid(), ...vals, done: false });
+  week = mondayOf(r.date); selDay = Math.round((pd(r.date)-pd(week))/864e5); if (selDay >= 5 && !showWe) { showWe = true; lsSet(WE_KEY, "1"); }
+  persist();
+  const sm = eventSummary(r);
+  toast(`Aggiunto: ${r.title || sm.what} · ${sm.day} ${sm.time}`, restore(snap));
+}
+function openQuickAdd(){
+  openSheet("＋ Nuovo impegno", "Scrivi come parleresti: giorno, ora e categoria li riconosco io.", false, body => {
+    body.innerHTML = `<input class="qadd" id="cal-qadd" placeholder="es. pale lunedì 18-19:30 · cena con Ema venerdì alle 20 · studio EEG flashcards domani 9-11" autocomplete="off">
+      <div class="qprev" id="cal-qprev"></div>
+      <div class="qa"><button class="c-btn c-primary" type="button" id="cal-qok">Aggiungi</button><span class="note" style="margin:0;align-self:center">Invio per aggiungere</span></div>
+      <details class="qhelp"><summary>Cosa capisco</summary><p class="note">
+        <b>Giorno:</b> oggi, domani, dopodomani, tra 3 giorni, venerdì, prossimo lunedì, 15 novembre, 15/11, il 15.<br>
+        <b>Ora:</b> alle 18, 18:30, dalle 18 alle 20, 18-20, per 2 ore, per 45 min, mezzogiorno. "alle 3" = 15:00, "0:30" = dopo mezzanotte.<br>
+        <b>Categoria:</b> i nomi delle categorie e sottocategorie (pale, tappa, admin, ema…), studio + nome esame + attività (studio EEG flashcards), lezione, tesi, progetto.<br>
+        <b>Ripeti:</b> ogni giorno, giorni feriali, ogni lunedì e giovedì, ogni settimana, ogni 2 settimane, ogni mese, … fino al 20 dicembre.<br>
+        Quello che resta diventa il titolo.</p></details>`;
+    const inp = $("qadd"), prev = $("qprev");
+    const show = () => {
+      if (!inp.value.trim()) { prev.innerHTML = '<span class="note" style="margin:0">Scrivi qualcosa…</span>'; return; }
+      const r = parseEvent(inp.value), sm = eventSummary(r);
+      prev.innerHTML = `<span class="qchip">📅 ${esc(sm.day)}</span><span class="qchip">🕐 ${esc(sm.time)}</span>` +
+        `<span class="qchip"${sm.h != null ? ` style="--h:${sm.h}"` : ""}>${sm.h != null ? '<span class="dot"></span>' : "🏷️ "}${esc(sm.what)}</span>` +
+        (sm.title ? `<span class="qchip">✏️ ${esc(sm.title)}</span>` : "") + (sm.rep ? `<span class="qchip">↻ ${esc(sm.rep)}</span>` : "") +
+        (r.notes.length ? `<div class="note" style="margin:4px 0 0;width:100%">${esc(r.notes.join(" · "))}</div>` : "");
+    };
+    const go = () => { if (!inp.value.trim()) { inp.focus(); return; } const r = parseEvent(inp.value); closeOv(); createFromParsed(r); };
+    inp.oninput = show;
+    inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); go(); } };
+    $("qok").onclick = go;
+    show(); inp.focus();
+  });
+}
+$("quickAdd").onclick = openQuickAdd;
+// tastiera, quando il calendario è aperto e non stai scrivendo: ← → settimane, N nuovo impegno
+document.addEventListener("keydown", e => {
+  if (!root.classList.contains("active") || !ov.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+  const tg = e.target; if (tg && (tg.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))) return;
+  if (e.key === "ArrowLeft") { e.preventDefault(); week = addD(week,-7); selDay = null; render(); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); week = addD(week,7); selDay = null; render(); }
+  else if (e.key === "n" || e.key === "N") { e.preventDefault(); openQuickAdd(); }
+});
+
 /* ---------- controlli ---------- */
+$("sprev").onclick = () => { week = addD(week,-7); selDay = null; render(); };
+$("snext").onclick = () => { week = addD(week,7); selDay = null; render(); };
 $("prev").onclick = () => { week = addD(week,-7); selDay = null; render(); };
 $("next").onclick = () => { week = addD(week,7); selDay = null; render(); };
 $("now").onclick = () => { week = mondayOf(today); selDay = null; render(); };
@@ -5886,7 +6115,7 @@ setStatus("Salvato su questo browser");
 render();
 window.onAuthReady(loadRemote);
 // per i test automatici
-window.__cal = { get state(){ return state; }, set state(v){ state = migrate(v); }, render, blocksOn, matches, openEditor, openQuick, delBlock, persist, openCats, openExams, openTask, openTop3, openHabits, scheduleTask, taskPillsOn, taskBlocksOn, libretto, setToday(t){ today = t; week = mondayOf(t); render(); } };
+window.__cal = { get state(){ return state; }, set state(v){ state = migrate(v); }, render, blocksOn, matches, openEditor, openQuick, delBlock, persist, openCats, openExams, openTask, openTop3, openHabits, scheduleTask, parseEvent, openQuickAdd, createFromParsed, taskPillsOn, taskBlocksOn, libretto, setToday(t){ today = t; week = mondayOf(t); render(); } };
 })();
 </script>
 
